@@ -7,3 +7,7 @@ doc/generated/**/*
 
 # Ignore temp joe files
 *~
+
+# Ignore eclipse files
+.project
+.cproject
