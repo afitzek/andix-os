@@ -1,0 +1,6 @@
+
+# Ignore build dir
+build/**/*
+
+# Ignore generated docs
+doc/generated/**/*
