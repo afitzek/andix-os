@@ -1,0 +1,16 @@
+/*
+ * task_fs.h
+ *
+ *  Created on: Feb 7, 2013
+ *      Author: Andreas Fitzek 
+ *       Email: andreas.fitzek@gmail.com
+ */
+
+#ifndef TASK_FS_H_
+#define TASK_FS_H_
+
+typedef struct {
+
+} ;
+
+#endif /* TASK_FS_H_ */

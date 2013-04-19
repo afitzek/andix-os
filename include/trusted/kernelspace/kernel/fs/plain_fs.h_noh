@@ -1,0 +1,31 @@
+/*
+ * plain_fs.h
+ *
+ *  Created on: Feb 1, 2013
+ *      Author: Andreas Fitzek 
+ *       Email: andreas.fitzek@gmail.com
+ */
+
+#ifndef PLAIN_FS_H_
+#define PLAIN_FS_H_
+
+#include <kprintf.h>
+#include <communication_types.h>
+
+typedef struct {
+	void* nonsec_handle;
+} pfs_t;
+
+typedef struct {
+	uint8_t block[TZ_BLOCK_SIZE];
+} pfs_blk_t;
+
+
+uint8_t pfs_create_file_blk(uint8_t *storename, uint8_t *filename);
+uint8_t pfs_open_file_blk(uint8_t *storename, uint8_t *filename,
+		uint32_t flags, uint32_t mode, pfs_t* file_handle);
+uint8_t pfs_close_file_blk(pfs_t* file_handle);
+uint8_t pfs_write_file_blk(pfs_t* file_handle, pfs_blk_t* blk, uint32_t blkpos);
+uint8_t pfs_read_file_blk(pfs_t* file_handle, pfs_blk_t* blk, uint32_t blkpos);
+
+#endif /* PLAIN_FS_H_ */

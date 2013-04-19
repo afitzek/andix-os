@@ -1,0 +1,121 @@
+/*
+ * task.h
+ *
+ *  Created on: Nov 26, 2012
+ *      Author: Andreas Fitzek 
+ *       Email: andreas.fitzek@gmail.com
+ */
+
+#ifndef TASK_H_
+#define TASK_H_
+
+#include <monitor/monitor.h>
+#include <common.h>
+
+#define TASKNAME_SIZE 50
+
+#define PROCESS_TASK "NS_PROCESSOR"
+#define SERVICE_TASK "NS_SERVICE"
+#define TEE_TASK "TEE_TASK"
+
+typedef enum {
+	SECURE,
+	NONSECURE
+} EXEC_CONTEXT_t;
+
+typedef enum {
+	RUNNING,
+	READY,
+	BLOCKED
+} TASK_STATE;
+
+typedef enum {
+	NEW,
+	CREATING,
+	CREATED,
+	PERFORMING,
+	DESTROYING,
+	DESTROYED
+} TRUSTLET_STATE;
+
+#define UUID_STR_LEN 40
+
+typedef struct
+{
+	uint32_t timeLow;
+	uint16_t timeMid;
+	uint16_t timeHiAndVersion;
+	uint8_t clockSeqAndNode[8];
+}
+TASK_UUID;
+
+typedef struct {
+	mon_context_t 		context;
+	mon_sys_context_t 	sys_context;
+	char 				name[TASKNAME_SIZE];
+	tid_t				tid; // TASK ID
+	EXEC_CONTEXT_t		exec_context;
+	TASK_STATE			state;
+	TASK_UUID			uuid;
+	TRUSTLET_STATE		trustlet_state;
+	uint32_t			membitmap[800];
+	list				*files;
+	// Kernel stuff
+	uint32_t			kernelStartSP;
+	uint32_t			kernelSP;
+	// Userspace stuff
+	uint32_t			userSP;
+	uintptr_t			userPD;
+	uintptr_t			vuserPD;
+	uintptr_t			vheap;
+} task_t;
+
+typedef struct {
+	int32_t 			user_fd;
+	void* 				data;
+} task_file_handle_t;
+
+#define USER_START_MAPPED_MEM 0x70001000
+
+void idle_task_entry();
+
+/**
+ * Entrypoint for main kernel task
+ */
+void entry_main_task();
+
+void init_task();
+task_t* get_current_task();
+tid_t get_current_task_id();
+void set_current_task(task_t* task);
+task_t* create_kernel_task(uint32_t mode, EXEC_CONTEXT_t context);
+void nonsecure_set_cp_access(uint32_t cp);
+void task_set_name(task_t* task, char* name);
+
+void set_idle_task(task_t* task);
+
+void set_nonsecure_task(task_t* task);
+task_t* get_nonsecure_task();
+
+void add_task(task_t* task);
+void rem_task(task_t* task);
+task_t* get_task_by_id(tid_t tid);
+task_t* get_task_by_name(char* name);
+task_t* get_task_by_uuid(TASK_UUID* uuid);
+task_t* task_get_next_ready();
+
+void set_uuid_emtpy(TASK_UUID *uuid);
+void cpy_uuid(TASK_UUID *dst, TASK_UUID *src);
+uint8_t is_uuid_empty(TASK_UUID *uuid);
+uint8_t match_uuids(TASK_UUID *a, TASK_UUID *b);
+void print_tasks();
+
+void init_userspace_task(task_t* task);
+task_t* prepare_static_userspace_task(uintptr_t start, uintptr_t end);
+
+void process_entry();
+
+void task_add_fhandle(task_t* task, task_file_handle_t* hdl);
+task_file_handle_t* task_get_fhandle(task_t* task, int32_t fd);
+
+#endif /* TASK_H_ */

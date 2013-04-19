@@ -1,0 +1,61 @@
+/*
+ * crypto_fs.h
+ *
+ *  Created on: Jan 18, 2013
+ *      Author: Andreas Fitzek 
+ *       Email: andreas.fitzek@gmail.com
+ */
+
+#ifndef CRYPTO_FS_H_
+#define CRYPTO_FS_H_
+
+#include <common.h>
+#include <kprintf.h>
+#include <fs/plain_fs.h>
+
+#define CRYPTO_FS_INIT_MAGIC (0x8d7d3618)
+
+#define CFS_SEEK_CUR_POS		(0)
+#define CFS_SEEK_START			(1)
+
+#define CFS_BLK_SIZE			(864)
+
+#define S_IRWXU	(0x00700) /*!< user (file owner) has read, write and execute permission */
+#define S_IRUSR (0x00400) /*!< user has read permission */
+#define S_IWUSR	(0x00200) /*!< user has write permission */
+#define S_IXUSR	(0x00100) /*!< user has execute permission */
+
+#define S_IRWXG	(0x00070) /*!< group has read, write and execute permission */
+#define S_IRGRP	(0x00040) /*!< group has read permission */
+#define S_IWGRP (0x00020) /*!< group has write permission */
+#define S_IXGRP	(0x00010) /*!< group has execute permission */
+
+#define S_IRWXO	(0x00007) /*!< others have read, write and execute permission */
+#define S_IROTH	(0x00004) /*!< others have read permission */
+#define S_IWOTH	(0x00002) /*!< others have write permission */
+#define S_IXOTH	(0x00001) /*!< others have execute permission */
+
+void cryptfs_set_secret(uint8_t* secret, uint32_t len);
+
+uint8_t cryptfs_create_file(uint8_t* storename, uint32_t storenlen,
+		uint8_t* filename, uint32_t fnamelen);
+
+uint8_t cryptfs_open_file(uint8_t* storename, uint32_t storenlen,
+		uint8_t* filename, uint32_t fnamelen, uint32_t flags, uint32_t mode,
+		cfs_t* handle);
+
+uint8_t cryptfs_close_file(cfs_t* handle);
+
+uint8_t cryptfs_seek_file(cfs_t* handle, uint32_t offset, uint8_t flag);
+
+uint32_t cryptfs_write_file(cfs_t* handle, uint8_t* buffer, uint32_t len);
+
+uint32_t cryptfs_read_file(cfs_t* handle, uint8_t* buffer, uint32_t len);
+
+uint8_t cryptofs_encrypt_and_sign(cfs_blk_t *cfs, uint8_t* key, uint32_t klen,
+		uint8_t* inputdata, uint32_t blknum);
+
+uint8_t cryptofs_decrypt_and_verify(cfs_blk_t *cfs, uint8_t* key, uint32_t klen,
+		uint8_t* outputdata, uint32_t blknum);
+
+#endif /* CRYPTO_FS_H_ */
