@@ -1,0 +1,189 @@
+/*
+ * atags.c
+ *
+ *  Created on: Aug 31, 2012
+ *      Author: Andreas Fitzek 
+ *       Email: andreas.fitzek@gmail.com
+ */
+
+#include <common.h>
+#include <kprintf.h>
+#include <mm/mm.h>
+
+
+/**
+ * \defgroup atags ATAGS - Bootparameters
+ *
+ * Bootparameter functions
+ */
+
+/**
+ * The current ATAGS
+ *
+ * These are set by copyAtags
+ */
+struct atag* cur_atags;
+
+struct atag* atag_copy(struct atag* startTag) {
+	struct atag* atag = startTag;
+	uint8_t* ptr = (uint8_t*) startTag;
+
+	uint32_t size = 0;
+	do {
+		size += (atag->hdr.size * 4);
+		ptr = (uint8_t*) atag;
+		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
+	} while (atag->hdr.tag != ATAG_NONE);
+	size += (2 * 4);
+	struct atag* newTag = kmalloc(size);
+	memcpy(newTag, startTag, size);
+	cur_atags = newTag;
+	return (newTag);
+}
+
+struct atag* atag_get_current() {
+	return (cur_atags);
+}
+
+void atag_generate_nonsecure(uintptr_t start) {
+	atag_setup_core(start);
+	list* pos = NULL;
+	list* next = NULL;
+	list* phys_mem = pmm_get_mem_list();
+	list_for_each_safe(pos, next, phys_mem) {
+		phys_mem_area* area = (phys_mem_area*) pos->data;
+		if(area) {
+			if(area->type == MEM_TYPE_UNSECURE) {
+				atag_setup_mem(area->pstart, area->pend - area->pstart);
+			}
+		}
+	}
+	//atag_setup_mem(0x70000000, 0x20000000); // TODO: We should generate this
+	//atag_setup_mem(0xC0000000, 0x10000000); // TODO: We should generate this
+	atag_setup_end();
+}
+
+void atag_dump(struct atag* startTag) {
+	struct atag* atag = startTag;
+	uint8_t* ptr = (uint8_t*) startTag;
+	//dump_stack_trace();
+	atag_debug("Reading ATAGS:");
+	atag_debug("=================================");
+
+	do {
+		atag_debug("ATAG: @ 0x%x", atag);
+		atag_debug("   TYPE :  %s", atag_get_type_name(atag->hdr.tag));
+		atag_debug("   NUM  :  0x%x", atag->hdr.tag);
+		atag_debug("   SIZE :  0x%x", atag->hdr.size);
+
+		if (atag->hdr.tag == ATAG_CORE) {
+			atag_debug("   FLAGS:  0x%x", atag->u.core.flags);
+			atag_debug("   PSIZE:  0x%x", atag->u.core.pagesize);
+			atag_debug("   ROOT :  0x%x", atag->u.core.rootdev);
+		} else if (atag->hdr.tag == ATAG_REVISION) {
+			atag_debug("   REVS :  0x%x", atag->u.revision.rev);
+		} else if (atag->hdr.tag == ATAG_MEM) {
+			atag_debug("   START:  0x%x", atag->u.mem.start);
+			atag_debug(
+					"   SIZE :  0x%x (%d MB)", atag->u.mem.size, atag->u.mem.size / (1024 * 1024));
+			atag_debug("   END  :  0x%x", atag->u.mem.start + atag->u.mem.size);
+		}
+
+		ptr = (uint8_t*) atag;
+
+		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
+	} while (atag->hdr.tag != ATAG_NONE);
+
+	atag_debug("ATAG: @ 0x%x", atag);
+	atag_debug("   NAME:  %s", atag_get_type_name(atag->hdr.tag));
+	atag_debug("   NUM :  0x%x", atag->hdr.tag);
+	atag_debug("   SIZE:  0x%x", atag->hdr.size);
+	atag = atag + atag->hdr.size;
+
+	atag_debug("=================================");
+}
+
+struct atag* atag_get_next_mem_tag(struct atag* startTag) {
+	struct atag* atag = startTag;
+	uint8_t* ptr = (uint8_t*) startTag;
+	if (atag->hdr.tag == ATAG_MEM) {
+		ptr = (uint8_t*) atag;
+		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
+	}
+
+	do {
+		if (atag->hdr.tag == ATAG_MEM) {
+			return (atag);
+		}
+
+		ptr = (uint8_t*) atag;
+
+		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
+	} while (atag->hdr.tag != ATAG_NONE);
+
+	return (NULL );
+}
+
+char* atag_get_type_name(uint32_t tag) {
+	switch (tag) {
+	case ATAG_NONE:
+		return ("NONE");
+	case ATAG_CORE:
+		return ("CORE");
+	case ATAG_MEM:
+		return ("MEM");
+	case ATAG_VIDEOTEXT:
+		return ("VIDEOTEXT");
+	case ATAG_RAMDISK:
+		return ("RAMDISK");
+	case ATAG_INITRD2:
+		return ("INITRD2");
+	case ATAG_SERIAL:
+		return ("SERIAL");
+	case ATAG_REVISION:
+		return ("REVISION");
+	case ATAG_VIDEOLFB:
+		return ("VIDEOLFB");
+	case ATAG_CMDLINE:
+		return ("CMDLINE");
+	default:
+		return ("UNKOWN");
+	}
+}
+
+// ===================================================================
+// Internal atag functions
+// ===================================================================
+
+/**
+ * ATAG params for setup functions
+ */
+static atag_t* params;
+
+void atag_setup_core(uintptr_t address) {
+	params = (atag_t*) address; /* Initialise parameters to start at given address */
+
+	params->hdr.tag = ATAG_CORE; /* start with the core tag */
+	params->hdr.size = tag_size(atag_core); /* size the tag */
+
+	params->u.core.flags = 1; /* ensure read-only */
+	params->u.core.pagesize = 0; /* systems pagesize (4k) */
+	params->u.core.rootdev = 0; /* zero root device (typicaly overidden from commandline )*/
+
+	params = tag_next(params); /* move pointer to next tag */
+}
+
+void atag_setup_mem(uint32_t start, uint32_t len) {
+	params->hdr.tag = ATAG_MEM; /* Memory tag */
+	params->hdr.size = tag_size(atag_mem); /* size tag */
+
+	params->u.mem.start = start; /* Start of memory area (physical address) */
+	params->u.mem.size = len; /* Length of area */
+
+	params = tag_next(params); /* move pointer to next tag */
+}
+
+void atag_setup_end(void) {
+	params->hdr.tag = ATAG_NONE; /* Empty tag ends list */
+	params->hdr.size = 0; /* zero length */
+}

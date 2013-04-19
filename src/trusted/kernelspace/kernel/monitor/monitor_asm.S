@@ -1,0 +1,153 @@
+/*
+ * monitor.S
+ *
+ *  Created on: Nov 5, 2012
+ *      Author: Andreas Fitzek 
+ *       Email: andreas.fitzek@gmail.com
+ */
+
+#include <platform/platform.h>
+
+.section .text, "ax"
+.code 32
+.align 5
+.global __monitor_vector
+__monitor_vector:
+	/*
+	 * Monitor vector table
+	 */
+	LDR		pc, __mon_reset 	// Reset
+	LDR		pc, __mon_undef		// undefined instruction
+	LDR		pc, __mon_smc		// software unterrupt
+	LDR		pc, __mon_pabt		// prefetch abort
+	LDR		pc, __mon_dabt		// data abort
+	B		.					// reserved
+	LDR		pc, __mon_irq		// IRQ
+	LDR		pc, __mon_fiq		// FIQ
+
+__mon_reset:       .word __mon_no_handler
+__mon_undef:       .word __mon_no_handler
+__mon_smc:         .word __mon_smc_handler
+__mon_pabt:        .word __mon_no_handler
+__mon_dabt:        .word __mon_no_handler
+__mon_irq:         .word __mon_no_handler
+__mon_fiq:         .word __mon_no_handler
+
+__mon_no_handler:
+	B		.
+
+
+.macro	mon_save_context pc_ret_off=0
+	ISB
+	DSB
+	DMB
+	// Store return state
+	SRSDB 	sp!, #0x16
+
+	// Store register context r0 - r12
+	STMFD 	sp!, {r0-r12}
+
+	// READ SCR
+	MRC 	p15, 0, r0, c1, c1, 0
+	// STORE SCR
+	STMFD 	sp!, {r0}
+	TST		r0, #1
+	BICNE	r0, #1
+	MCRNE	p15, 0, r0, c1, c1, 0
+.endm
+
+.macro mon_restore_context
+	LDMFD	sp!, {r0}
+	TST 	r0, #1
+	MCRNE	p15, 0, r0, c1, c1, 0
+
+	LDMFD	sp!, {r0-r12}
+	RFEIA	sp!
+	ISB
+	DSB
+.endm
+
+__mon_smc_handler:
+
+	mon_save_context
+
+	MOV		r0, sp
+	BL 		mon_smc_handler
+
+	mon_restore_context
+
+
+
+        .global monitor_save_sys_regs
+        .global monitor_restore_sys_regs
+
+        //----------------------------------------------------------------------
+        // Saves the current system registers.
+        //
+        // C prototype: void monitor_save_sys_regs(monitor_sys_regs_t *sysregs)
+        .text
+        .arm
+monitor_save_sys_regs:
+        CPS   #SVC_MODE
+        MRS   r1,  SPSR
+        STMIA r0!, {r1, sp, lr}
+
+        CPS   #ABT_MODE
+        MRS   r1,  SPSR
+        STMIA r0!, {r1, sp, lr}
+
+        CPS   #UND_MODE
+        MRS   r1,  SPSR
+        STMIA r0!, {r1, sp, lr}
+
+        CPS #IRQ_MODE
+        MRS   r1,  SPSR
+        STMIA r0!, {r1, sp, lr}
+
+        CPS   #FIQ_MODE
+        MRS   r1,  SPSR
+        STMIA r0!, {r1, r8-r12, sp, lr}
+
+        CPS   #SYS_MODE
+        STMIA r0!, {sp, lr}
+
+        CPS   #MON_MODE
+        BX    LR
+        .type monitor_save_sys_regs, function
+        .size monitor_save_sys_regs, . - monitor_save_sys_regs
+
+        //----------------------------------------------------------------------
+        // Restores the current system registers.
+        //
+        //
+        // C prototype: void monitor_restore_sys_regs(monitor_sys_regs_t *sysregs)
+        .text
+        .arm
+monitor_restore_sys_regs:
+        CPS   #SVC_MODE
+        LDMIA r0!, {r1, sp, lr}
+        MSR   SPSR, r1
+
+        CPS   #ABT_MODE
+        LDMIA r0!, {r1, sp, lr}
+        MSR   SPSR, r1
+
+        CPS   #UND_MODE
+        LDMIA r0!, {r1, sp, lr}
+        MSR   SPSR, r1
+
+        CPS   #IRQ_MODE
+        LDMIA r0!, {r1, sp, lr}
+        MSR   SPSR, r1
+
+        CPS   #FIQ_MODE
+        STMIA r0!, {r1, r8-r12, sp, lr}
+        MSR   SPSR, r1
+
+        CPS   #SYS_MODE
+        LDMIA r0!, {sp, lr}
+
+        CPS   #MON_MODE
+        BX    LR
+        .type monitor_restore_sys_regs, function
+        .size monitor_restore_sys_regs, . - monitor_restore_sys_regs

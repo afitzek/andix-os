@@ -1,0 +1,270 @@
+/*
+ * hal.c
+ *
+ *  Created on: Aug 24, 2012
+ *      Author: Andreas Fitzek 
+ *       Email: andreas.fitzek@gmail.com
+ */
+
+#include <hal.h>
+#include <kprintf.h>
+
+/**
+ * \defgroup hal HAL - Hardware Abstraction Layer
+ *
+ * Stuff for Hardware access
+ */
+
+list* hal_devices = NULL;/*{ .data = (uintptr_t) NULL,
+ .next = &hal_devices, .prev = &hal_devices };*/
+
+extern platform_driver_t * __hal_driver_table[];
+extern platform_driver_t * __hal_driver_table_end;
+
+extern hal_platform_t * __hal_platform_table[];
+extern hal_platform_t * __hal_platform_table_end;
+
+hal_platform_t * current_platform;
+
+uint32_t hal_init_magic = 0;
+
+void hal_init(uint32_t sysid, atag_t* atags) {
+	hal_debug(
+			"HAL initializing ... from 0x%x - 0x%x", &__hal_platform_table[0], &__hal_platform_table_end);
+	hal_debug("for System: 0x%x", sysid);
+	current_platform = NULL;
+	int idx = 0;
+	int devidx = 0;
+
+	hal_platform_t* platform = NULL;
+	while (&__hal_platform_table[idx] < &__hal_platform_table_end) {
+		hal_platform_t* check = __hal_platform_table[idx];
+		hal_debug("checking platform @ 0x%x [%d]", check, check->sys_id);
+		if (check->sys_id == sysid) {
+			hal_debug("Platform @ 0x%x", check);
+			platform = check;
+		}
+		idx++;
+	}
+	if (platform == 0) {
+		hal_debug("HAL initializing [failed]");
+		return;
+	}
+
+	current_platform = platform;
+
+	hal_devices = (list*) kmalloc(sizeof(list));
+	hal_devices->next = hal_devices;
+	hal_devices->prev = hal_devices;
+	hal_devices->data = NULL;
+
+	for (devidx = 0; devidx < platform->device_count; devidx++) {
+		device_info_t* dev_info = &(platform->dev_map[devidx]);
+		platform_driver_t* driver = hal_find_driver(dev_info->driver);
+		hal_debug(
+				"Device %s.%d [%s:0x%x] @ 0x%x", dev_info->name, dev_info->id, dev_info->driver, driver, dev_info->base);
+		if (driver == NULL ) {
+			hal_debug("Driver %s not found ...", dev_info->driver);
+		} else {
+			platform_device_t* device = kmalloc(sizeof(platform_device_t));
+			device->driver = driver;
+			device->id = dev_info->id;
+			device->info = dev_info;
+			device->size = dev_info->size;
+
+			if (device->driver->probe) {
+				if (device->driver->probe(device) != HAL_SUCCESS) {
+					kfree(device);
+					hal_debug("Failed to add hal device!");
+				} else {
+					hal_add_device(device);
+					hal_debug(
+							"## REGISTERED Device %s.%d [%s:0x%x] @ 0x%x ##", dev_info->name, dev_info->id, dev_info->driver, driver, device);
+				}
+			} else {
+				kfree(device);
+				hal_debug("Failed to add hal device!");
+			}
+		}
+	}
+
+	hal_init_magic = 0x96456281;
+
+	timing_init();
+}
+
+hal_platform_t* hal_get_platform() {
+	return (current_platform);
+}
+
+int32_t hal_add_device(platform_device_t* dev) {
+	if (!dev) {
+		return HAL_E_INVALID_DEV;
+	}
+
+	list_add(hal_devices, (uintptr_t) dev);
+	return HAL_SUCCESS;
+}
+
+void hal_rem_device(platform_device_t *dev) {
+	list* entry = list_find_data(hal_devices, (uintptr_t) dev);
+	if (entry != NULL ) {
+		list_remove(entry);
+	}
+}
+
+void hal_map_io_mem(platform_device_t *dev) {
+
+	dev->vbase = map_io_mem(dev->info->base, dev->size);
+	/*
+	 kernel_mem_info_t section_description;
+
+	 uint32_t frames = dev->size / SMALL_PAGE_SIZE;
+
+	 // Setup IO Mappings
+	 section_description.domain = 0;
+	 section_description.ap = AP_SVC_RW_USR_NO;
+	 section_description.execute = EXEC_NON;
+	 section_description.tex = 0x0;
+	 section_description.cacheable = 0;
+	 section_description.bufferable = 0;
+	 section_description.nonsecure = 0;
+	 section_description.shareable = 0;
+	 section_description.type = SMALL_PAGE;
+	 section_description.paddr = (uint32_t)dev->info->base;
+	 if (frames == 1) {
+	 section_description.vaddr = (uint32_t)allocate_mapped_page();
+	 } else {
+	 section_description.vaddr = (uint32_t)allocate_mapped_page_frames(frames);
+	 }
+	 dev->vbase = (uintptr_t)section_description.vaddr;
+	 //hal_debug("Got vAddr: 0x%x", dev->vbase);
+	 //dump_mmm_info();
+	 map_kernel_memory(&section_description);
+	 */
+	//hal_debug(
+	//		"Mapped [%d frames] IO 0x%x .. 0x%x -> 0x%x .. 0x%x", frames, section_description.paddr, section_description.paddr + dev->size, section_description.vaddr, section_description.vaddr + dev->size);
+}
+
+void hal_unmap_io_mem(platform_device_t* dev) {
+	//TODO
+}
+
+platform_device_t* hal_find_device(const char* name, uint32_t id) {
+	list* pos;
+	list* next;
+	platform_device_t* device = NULL;
+	platform_device_t* device_res = NULL;
+
+	if (hal_init_magic != 0x96456281) {
+		return (NULL );
+	}
+
+	if (hal_devices == NULL ) {
+		return (NULL );
+	}
+	hal_debug("Searching @ %s %d", name, id);
+	list_for_each_safe(pos, next, hal_devices)
+	{
+		if (pos->data != NULL ) {
+			device = (platform_device_t*) pos->data;
+			if (strncmp(device->info->name, name, strlen(name)) == 0
+					&& device->id == id) {
+				device_res = device;
+				break;
+			}
+		}
+	}
+
+	return (device_res);
+}
+
+uint32_t hal_write(platform_device_t* dev, void* data, uint32_t size) {
+	if (dev == NULL || dev->driver == NULL ) {
+		return HAL_E_INVALID_DEV;
+	}
+
+	if (dev->driver->write) {
+		return (dev->driver->write(dev, data, size));
+	}
+	return HAL_E_FUNC_NOT_AVAIL;
+}
+
+uint32_t hal_read(platform_device_t* dev, void* data, uint32_t nsize) {
+	if (dev == NULL || dev->driver == NULL ) {
+		return HAL_E_INVALID_DEV;
+	}
+
+	if (dev->driver->read) {
+		return (dev->driver->read(dev, data, nsize));
+	}
+	return HAL_E_FUNC_NOT_AVAIL;
+}
+
+uint32_t hal_probe(platform_device_t* dev) {
+	if (dev == NULL || dev->driver == NULL ) {
+		return HAL_E_INVALID_DEV;
+	}
+
+	if (dev->driver->probe) {
+		return (dev->driver->probe(dev));
+	}
+	return HAL_E_FUNC_NOT_AVAIL;
+}
+
+void hal_release(platform_device_t* dev) {
+	if (dev == NULL || dev->driver == NULL ) {
+		return;
+	}
+
+	if (dev->driver->release) {
+		dev->driver->release(dev);
+	}
+	return;
+}
+
+uint32_t hal_ioctl(platform_device_t* dev, uint32_t request, uintptr_t param,
+		uint32_t psize) {
+	if (dev == NULL || dev->driver == NULL ) {
+		return HAL_E_INVALID_DEV;
+	}
+
+	if (dev->driver->ioctl) {
+		return (dev->driver->ioctl(dev, request, param, psize));
+	}
+	return HAL_E_FUNC_NOT_AVAIL;
+}
+
+void hal_set_device_id(platform_device_t* dev) {
+	uint32_t max = 0;
+    list* pos;
+    list* next;
+    platform_device_t* device;
+	list_for_each_safe(pos, next, hal_devices)
+	{
+		if (pos->data != NULL ) {
+			device = (platform_device_t*) pos->data;
+			if (device->driver == dev->driver) {
+				if(device->id > max) {
+					max = device->id;
+				}
+			}
+		}
+	}
+
+	max++;
+	dev->id = max;
+}
+
+platform_driver_t* hal_find_driver(const char* name) {
+	//platform_driver_t** ptr = (platform_driver_t**)__hal_driver_table;
+	int idx = 0;
+	while (&__hal_driver_table[idx] < &__hal_driver_table_end) {
+		platform_driver_t* driver = __hal_driver_table[idx];
+		if (strncmp(driver->driver.name, name, strlen(name)) == 0) {
+			return (driver);
+		}
+		idx++;
+	}
+	return (NULL );
+}
