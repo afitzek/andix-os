@@ -4,3 +4,6 @@ build/**/*
 
 # Ignore generated docs
 doc/generated/**/*
+
+# Ignore temp joe files
+*~
