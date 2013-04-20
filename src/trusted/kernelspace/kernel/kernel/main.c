@@ -73,6 +73,23 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 #endif
 #endif
 
+	// Show Copyright information
+	main_info("	  Andix is an ARM TrustZone monitor operating system.");
+	main_info("	  Copyright (C) 2013  Andreas Fitzek <andreas.fitzek[at]iaik.tugraz.at>");
+
+	main_info("	  This system is free software: you can redistribute it and/or modify");
+	main_info("	  it under the terms of the GNU General Public License as published by");
+	main_info("	  the Free Software Foundation, either version 3 of the License, or");
+	main_info("	  (at your option) any later version.");
+
+	main_info("	  This program is distributed in the hope that it will be useful,");
+	main_info("	  but WITHOUT ANY WARRANTY; without even the implied warranty of");
+	main_info("	  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+	main_info("	  GNU General Public License for more details.");
+
+	main_info("	  You should have received a copy of the GNU General Public License");
+	main_info("	  along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+
 #ifdef SHOW_MEM_LAYOUT
 	// ========================================================================
 	// MEMORY LAYOUT OUTPUT

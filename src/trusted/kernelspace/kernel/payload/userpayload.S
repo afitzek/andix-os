@@ -8,6 +8,6 @@
 .section ".usrpayload", "awx"
 
 payload_user:
-        .incbin "payload/tz_sys_daemon.bin"
+        .incbin "payload/manager.bin"
 
 
