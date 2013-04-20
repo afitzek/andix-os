@@ -17,7 +17,6 @@
 #include <task/task.h>
 #include <scheduler.h>
 
-
 #ifdef SHOW_MEM_LAYOUT
 extern uint32_t _data;
 extern uint32_t _data_end;
@@ -63,32 +62,40 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	// ========================================================================
 	init_serial();
 	// ========================================================================
+	main_info("============================================================================");
+	main_info("");
 #ifdef VERSION
-	main_debug("ANDIX (%s)", VERSION);
+	main_info("      ANDIX (%s)", VERSION);
 #ifdef USER
-	main_debug("      compiled by %s", USER);
+	main_info("      compiled by %s", USER);
 #endif
 #ifdef GITHASH
-	main_debug("      GIT Commit %s", GITHASH);
+	main_info("      GIT Commit %s", GITHASH);
 #endif
 #endif
+
+	main_info("");
+	main_info("============================================================================");
 
 	// Show Copyright information
-	main_info("	  Andix is an ARM TrustZone monitor operating system.");
-	main_info("	  Copyright (C) 2013  Andreas Fitzek <andreas.fitzek[at]iaik.tugraz.at>");
-
-	main_info("	  This system is free software: you can redistribute it and/or modify");
-	main_info("	  it under the terms of the GNU General Public License as published by");
-	main_info("	  the Free Software Foundation, either version 3 of the License, or");
-	main_info("	  (at your option) any later version.");
-
-	main_info("	  This program is distributed in the hope that it will be useful,");
-	main_info("	  but WITHOUT ANY WARRANTY; without even the implied warranty of");
-	main_info("	  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
-	main_info("	  GNU General Public License for more details.");
-
-	main_info("	  You should have received a copy of the GNU General Public License");
-	main_info("	  along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+	main_info("");
+	main_info("      ANDIX is an ARM TrustZone monitor operating system.");
+	main_info("      Copyright (C) 2013  Andreas Fitzek <andreas.fitzek[at]iaik.tugraz.at>");
+	main_info("");
+	main_info("      This system is free software: you can redistribute it and/or modify");
+	main_info("      it under the terms of the GNU General Public License as published by");
+	main_info("      the Free Software Foundation, either version 3 of the License, or");
+	main_info("      (at your option) any later version.");
+	main_info("");
+	main_info("      This program is distributed in the hope that it will be useful,");
+	main_info("      but WITHOUT ANY WARRANTY; without even the implied warranty of");
+	main_info("      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+	main_info("      GNU General Public License for more details.");
+	main_info("");
+	main_info("      You should have received a copy of the GNU General Public License");
+	main_info("      along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+	main_info("");
+	main_info("============================================================================");
 
 #ifdef SHOW_MEM_LAYOUT
 	// ========================================================================
