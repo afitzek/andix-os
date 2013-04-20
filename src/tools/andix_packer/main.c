@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 
 void usage() {
 	printf("Usage:\n");
@@ -25,8 +27,9 @@ int parse_uuid(char* uuid, PACK_UUID* tee) {
 
 	memset(bytes, 0, 20);
 
-	if (sscanf(uuid, "%08x-%04x-%04x-%04x-%s", &tee->timeLow, &tee->timeMid,
-			&tee->timeHiAndVersion, &tee->clockSeqAndNode[6], bytes) != 5) {
+	if (sscanf(uuid, "%08x-%04x-%04x-%04x-%s", (unsigned int*)&tee->timeLow,
+			 (unsigned int*)&tee->timeMid, (unsigned int*)&tee->timeHiAndVersion,
+			 (unsigned int*)&tee->clockSeqAndNode[6],  bytes) != 5) {
 		return (-1);
 	}
 
@@ -38,7 +41,7 @@ int parse_uuid(char* uuid, PACK_UUID* tee) {
 		memset(byte, 0, 3);
 		memcpy(byte, &bytes[(i - 1) * 2], 2);
 		printf("scanning: %s\n", byte);
-		if (sscanf(byte, "%02x", &tee->clockSeqAndNode[6 - i]) != 1) {
+		if (sscanf(byte, "%02x",  (unsigned int*)&tee->clockSeqAndNode[6 - i]) != 1) {
 			return (-1);
 		}
 	}
