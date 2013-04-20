@@ -30,8 +30,6 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 ###############################################################################
 
-#LIBS = $(ARM_TOOLCHAIN_LIB_DIR)libgcc.a $(ARM_TOOLCHAIN_LIB_DIR)crtbegin.o $(ARM_TOOLCHAIN_LIB_DIR)crtend.o $(ARM_TOOLCHAIN_LIB_DIR)crti.o $(ARM_TOOLCHAIN_LIB_DIR)crtn.o
-
 ASFLAGS = -g -mcpu=cortex-a8
 CFLAGS = -g -I$(NORM_US_SERVICE_DAEMON_INC) -I$(ANDIX_INC_COMMON) -mcpu=cortex-a8 
 LDFLAGS = -L$(ARM_TOOLCHAIN_LIB_DIR) -lgcc

@@ -242,6 +242,26 @@ linux_serv_daemon_clean:
 
 ####
 
+####
+# Andix linux application daemon
+####
+
+LINUX_APP_DAEMON = ANDIX LINUX APPLICATION DAEMON
+
+linux_app_daemon_build:
+	$(start-build-command) $(LINUX_APP_DAEMON)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_DAEMON_SRC)
+	$(sep-command)
+
+linux_app_daemon_clean:
+	$(start-clean-command) $(LINUX_APP_DAEMON)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_DAEMON_SRC) clean
+	$(sep-command)
+
+####
+
 .PHONY: mkdirs
 mkdirs: mkdeploydir mkbuilddir
 
