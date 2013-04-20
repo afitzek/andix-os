@@ -3,10 +3,10 @@ include script/vars.mk
 include script/rules.mk
 
 .PHONY: all
-all: mkdirs tz_kernel_build tz_newlib_c_build tz_tee_runtime_build
+all: mkdirs tz_kernel_build tz_newlib_c_build tz_tee_runtime_build tz_manager_build
 
 .PHONY: clean
-clean: rmdirs tz_kernel_clean tz_newlib_c_clean tz_tee_runtime_clean
+clean: rmdirs tz_kernel_clean tz_newlib_c_clean tz_tee_runtime_clean tz_manager_clean
 
 .PHONY: doc
 doc: tz_kernel_doc tz_tee_runtime_doc
@@ -15,7 +15,7 @@ doc: tz_kernel_doc tz_tee_runtime_doc
 pdfdoc: tz_kernel_pdfdoc tz_tee_runtime_pdfdoc
 	
 ####
-# Anidx TZ Kernel
+# Andix TZ Kernel
 ####
 
 TZ_KERNEL = ANDIX TZ KERNEL
@@ -43,7 +43,7 @@ tz_kernel_pdfdoc:
 ####
 
 ####
-# Anidx TZ TEE Runtime
+# Andix TZ TEE Runtime
 ####
 
 TZ_TEE_RUNTIME = ANDIX TZ TEE RUNTIME
@@ -66,6 +66,34 @@ tz_tee_runtime_doc:
 tz_tee_runtime_pdfdoc:
 	$(start-build-pdfdoc-command) $(TZ_TEE_RUNTIME)
 	@$(make-command) $(TZ_USER_TEE_SRC) pdfdoc
+	$(sep-command)
+
+####
+
+####
+# Andix TZ Manager
+####
+
+TZ_TEE_MANAGER = ANDIX TZ MANAGER
+
+tz_manager_build:
+	$(start-build-command) $(TZ_TEE_MANAGER)
+	@$(make-command) $(TZ_USER_MANAGER_SRC)
+	$(sep-command)
+
+tz_manager_clean:
+	$(start-clean-command) $(TZ_TEE_MANAGER)
+	@$(make-command) $(TZ_USER_MANAGER_SRC) clean
+	$(sep-command)
+
+tz_manager_doc:
+	$(start-build-doc-command) $(TZ_TEE_MANAGER)
+	@$(make-command) $(TZ_USER_MANAGER_SRC) doc
+	$(sep-command)
+	
+tz_manager_pdfdoc:
+	$(start-build-pdfdoc-command) $(TZ_TEE_MANAGER)
+	@$(make-command) $(TZ_USER_MANAGER_SRC) pdfdoc
 	$(sep-command)
 
 ####
