@@ -1,8 +1,10 @@
 
 # Ignore build dir
+build
 build/**/*
 
 # Ignore deploy dir
+deploy
 deploy/**/*
 
 # Ignore generated docs
