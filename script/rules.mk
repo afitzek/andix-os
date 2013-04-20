@@ -1,4 +1,50 @@
 
+define sep-command
+@echo =====================================================================
+endef
+
+define start-command
+@echo
+$(sep-command)
+endef
+
+define build-msg
+@echo Building
+endef
+
+define clean-msg
+@echo Cleaning
+endef
+
+define build-doc-msg
+@echo Building Documentation
+endef
+
+define build-pdfdoc-msg
+@echo Building PDF Documentation
+endef
+
+
+define start-build-command
+$(start-command)
+$(build-msg)
+endef
+
+define start-build-doc-command
+$(start-command)
+$(build-doc-msg)
+endef
+
+define start-build-pdfdoc-command
+$(start-command)
+$(build-pdfdoc-msg)
+endef
+
+define start-clean-command
+$(start-command)
+$(clean-msg)
+endef
+
 define make-command
 @$(MAKE) -I $(MAKE_INC) -C
 endef
