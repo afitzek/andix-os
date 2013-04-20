@@ -150,6 +150,26 @@ tool_packer_clean:
 
 ####
 
+####
+# Andix linux service module
+####
+
+LINUX_MOD = ANDIX LINUX MODULES
+
+linux_service_build:
+	$(start-build-command) $(LINUX_MOD)
+	$(sep-command)
+	@$(make-command) $(NORM_K_SRC)
+	$(sep-command)
+
+linux_service_clean:
+	$(start-clean-command) $(LINUX_MOD)
+	$(sep-command)
+	@$(make-command) $(NORM_K_SRC) clean
+	$(sep-command)
+
+####
+
 .PHONY: mkdirs
 mkdirs: mkdeploydir mkbuilddir
 
