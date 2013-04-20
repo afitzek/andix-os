@@ -125,3 +125,4 @@ NORM_US_SERVICE_DAEMON_SRC := $(NORM_U_SRC)/tz_service_daemon
 ####
 
 TOOL_PACKER_SRC := $(TOOLS_SRC)/andix_packer
+TOOL_SCRIPTS_SRC := $(TOOLS_SRC)/scripts

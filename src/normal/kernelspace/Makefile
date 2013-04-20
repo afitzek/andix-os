@@ -42,10 +42,10 @@ KBUILD_OUTPUT := $(OUTDIR)
 all:
 	@echo $(INC_DIR)
 	@mkdir -p $(OUTDIR)
-	@mkdir -p $(ANDIX_DEPLOY_DIR)
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/norm/module
 	@make -C $(LINUX_KERNEL_DIR) EXTRA_CFLAGS=$(EXTRACFLAGS) ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- M=`pwd` modules
 	@cp *.ko $(OUTDIR)
-	@cp *.ko $(ANDIX_DEPLOY_DIR)/
+	@cp *.ko $(ANDIX_DEPLOY_DIR)/norm/module
 	@make -C $(LINUX_KERNEL_DIR) EXTRA_CFLAGS=$(EXTRACFLAGS) ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- M=`pwd` clean
 	
 clean:

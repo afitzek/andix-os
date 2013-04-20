@@ -53,7 +53,8 @@ $(OUTDIR)libandixC.a: $(OBJS)
 	@cd $(OUTDIR)tmp/libgcc/; $(ARMAR) xo $(LIBGCC_NAME)
 	@echo Packing $@
 	@$(ARMAR) rcs $@ $^ $(OUTDIR)tmp/libc/*.o $(OUTDIR)tmp/libgcc/*.o
-	@cp $(OUTDIR)libandixC.a $(ANDIX_DEPLOY_DIR)
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/lib
+	@cp $(OUTDIR)libandixC.a $(ANDIX_DEPLOY_DIR)/tz/lib
 	@rm -rf $(OUTDIR)tmp
                 
 .PHONY: mkbuilddirs		

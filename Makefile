@@ -3,16 +3,48 @@ include script/vars.mk
 include script/rules.mk
 
 .PHONY: all
-all: mkdirs tool_packer_build tz_newlib_c_build tz_tee_runtime_build tz_manager_build tz_kernel_build linux_modules_build linux_serv_daemon_build
+all: mkdirs tool_builds tz_builds linux_builds
+	@cat src/instruction.txt
+	@tree -h deploy
 
 .PHONY: clean
-clean: rmdirs tool_packer_clean tz_newlib_c_clean tz_tee_runtime_clean tz_manager_clean tz_kernel_clean linux_modules_clean linux_serv_daemon_clean
+clean: rmdirs tool_clean tz_clean linux_clean
 
 .PHONY: doc
 doc: tz_kernel_doc tz_tee_runtime_doc
 
 .PHONY: pdfdoc
 pdfdoc: tz_kernel_pdfdoc tz_tee_runtime_pdfdoc
+
+####
+# Tool Build targets
+####
+
+tool_builds: tool_packer_build tool_scripts_build
+
+tool_clean: tool_packer_clean tool_scripts_clean
+
+####
+
+####
+# Linux Build targets
+####
+
+linux_builds: linux_modules_build linux_serv_daemon_build
+
+linux_clean: linux_modules_clean linux_serv_daemon_clean
+
+####
+
+####
+# TZ Build targets
+####
+
+tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_manager_build tz_kernel_build
+	
+tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_manager_clean tz_kernel_clean	
+	
+####	
 	
 ####
 # Andix TZ Kernel
@@ -146,6 +178,26 @@ tool_packer_clean:
 	$(start-clean-command) $(PACKER_TOOLS)
 	$(sep-command)
 	@$(make-command) $(TOOL_PACKER_SRC) clean
+	$(sep-command)
+
+####
+
+####
+# Andix tools scripts
+####
+
+TOOL_SCRIPTS = ANDIX LINUX SCRIPTS
+
+tool_scripts_build:
+	$(start-build-command) $(TOOL_SCRIPTS)
+	$(sep-command)
+	@$(make-command) $(TOOL_SCRIPTS_SRC)
+	$(sep-command)
+
+tool_scripts_clean:
+	$(start-clean-command) $(TOOL_SCRIPTS)
+	$(sep-command)
+	@$(make-command) $(TOOL_SCRIPTS_SRC) clean
 	$(sep-command)
 
 ####

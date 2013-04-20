@@ -41,12 +41,13 @@ MKIMAGEARGS = -A arm -O linux -T kernel -a 0xB0000000 -e 0xB0008000 -n "ANDIX" -
 
 .PHONY: all
 
-all:	mkbuilddirs $(OUTDIR)uImage.bin
+all:	getpayloads mkbuilddirs $(OUTDIR)uImage.bin
 
 $(OUTDIR)uImage.bin: $(OUTDIR)andix.elfagain $(OUTDIR)andix.symagain
 	@echo "GITHASH: $(GITHASH)"
 	@$(MKIMAGE) $(MKIMAGEARGS) $(OUTDIR)uImage.bin
-	@cp $(OUTDIR)uImage.bin $(ANDIX_DEPLOY_DIR)/andix.img
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/kernel
+	@cp $(OUTDIR)uImage.bin $(ANDIX_DEPLOY_DIR)/tz/kernel/andix.img
 
 $(OUTDIR)%.symagain: $(OUTDIR)%.elfagain
 	$(arm-sym-command)
@@ -92,6 +93,11 @@ doc:
 pdfdoc: doc
 	@make -C $(OUTDIR_DOC)/latex/
 	@cp $(OUTDIR_DOC)/latex/refman.pdf $(ANDIX_DOC_GEN_DIR)/$(PROGRAM)
+
+.PHONY: getpayloads
+getpayloads:
+	cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/manager.bin $(realpath $(TOP))/payload/manager.bin
+	touch $(realpath $(TOP))/payload/userpayload.S
 
 .PHONY: mkbuilddirs		
 mkbuilddirs:

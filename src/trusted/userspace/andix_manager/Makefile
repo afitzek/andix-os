@@ -34,14 +34,15 @@ ANDIXRUNTIME = $(ANDIX_DEPLOY_DIR)/libandix.a
 
 ASFLAGS = -g -mcpu=cortex-a8
 CFLAGS = -I $(ANDIX_INC_COMMON) -I $(ARM_NEWLIB_INC_DIR) -I $(TZ_USER_TEE_INC) -I $(ARM_POLARSSL_INC_DIR) -I $(TZ_USER_C_INC) -I $(TZ_USER_MANAGER_INC) -g -mcpu=cortex-a8
-LDFLAGS = -static -L$(ANDIX_DEPLOY_DIR)
+LDFLAGS = -static -L$(ANDIX_DEPLOY_DIR)/tz/lib
 
 all: mkbuilddirs $(OUTDIR)manager.bin
 
 $(OUTDIR)manager.bin: $(OBJS)
 	@echo Linking $@
 	@$(ARMLD) $(LDFLAGS) -o $@ $^ -landix 
-	@cp $(OUTDIR)manager.bin $(ANDIX_DEPLOY_DIR)/manager.bin
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/trustlets
+	@cp $(OUTDIR)manager.bin $(ANDIX_DEPLOY_DIR)/tz/trustlets/manager.bin
 	
 .PHONY: mkbuilddirs		
 mkbuilddirs:

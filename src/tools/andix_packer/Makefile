@@ -38,7 +38,8 @@ all: mkbuilddirs $(OUTDIR)andix_packer
 $(OUTDIR)andix_packer: $(OBJS)
 	@echo Linking $@
 	@$(CC) -o $@ $^ 
-	@cp $(OUTDIR)andix_packer $(ANDIX_DEPLOY_DIR)/andix_packer
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/tools
+	@cp $(OUTDIR)andix_packer $(ANDIX_DEPLOY_DIR)/tools/andix_packer
 	
 .PHONY: mkbuilddirs		
 mkbuilddirs:

@@ -40,7 +40,8 @@ all: mkbuilddirs $(OUTDIR)tzsd
 
 $(OUTDIR)tzsd: $(OBJS)
 	@$(ARMNORMCC) $(LDFLAGS) -o $@ $^
-	@cp $(OUTDIR)tzsd $(ANDIX_DEPLOY_DIR)/
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/norm/daemons
+	@cp $(OUTDIR)tzsd $(ANDIX_DEPLOY_DIR)/norm/daemons
                 
 .PHONY: mkbuilddirs		
 mkbuilddirs:

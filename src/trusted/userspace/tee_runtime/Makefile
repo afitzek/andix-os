@@ -32,7 +32,7 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 ANDIXC_NAME = libandixC.a
 POLAR_NAME = libpolarssl.a
-ANDIXC_FILE = $(ANDIX_DEPLOY_DIR)/$(ANDIXC_NAME)
+ANDIXC_FILE = $(ANDIX_DEPLOY_DIR)/tz/lib/$(ANDIXC_NAME)
 POLAR_FILE = $(ARM_POLARSSL_LIB_DIR)/$(POLAR_NAME)
 
 ASFLAGS = -g -mcpu=cortex-a8
@@ -52,7 +52,8 @@ $(OUTDIR)libandix.a: $(OBJS)
 	@cd $(OUTDIR)tmp/polar/; $(ARMAR) xo $(POLAR_NAME)
 	@echo Building Runtime archiv
 	@$(ARMAR) rcs $@ $^ $(OUTDIR)tmp/mylib/*.o $(OUTDIR)tmp/polar/*.o
-	@cp $(OUTDIR)libandix.a $(ANDIX_DEPLOY_DIR)
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/lib
+	@cp $(OUTDIR)libandix.a $(ANDIX_DEPLOY_DIR)/tz/lib
 	@rm -rf tmp
 	
 .PHONY: mkbuilddirs		
