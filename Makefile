@@ -30,9 +30,9 @@ tool_clean: tool_packer_clean tool_scripts_clean
 # Linux Build targets
 ####
 
-linux_builds: linux_modules_build linux_serv_daemon_build
+linux_builds: linux_modules_build linux_serv_daemon_build linux_app_lib_build linux_app_daemon_build
 
-linux_clean: linux_modules_clean linux_serv_daemon_clean
+linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean linux_app_daemon_clean
 
 ####
 
@@ -258,6 +258,26 @@ linux_app_daemon_clean:
 	$(start-clean-command) $(LINUX_APP_DAEMON)
 	$(sep-command)
 	@$(make-command) $(NORM_US_APP_DAEMON_SRC) clean
+	$(sep-command)
+
+####
+
+####
+# Andix linux application daemon
+####
+
+LINUX_APP_LIB = ANDIX LINUX APPLICATION LIBRARY
+
+linux_app_lib_build:
+	$(start-build-command) $(LINUX_APP_LIB)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_LIB_SRC)
+	$(sep-command)
+
+linux_app_lib_clean:
+	$(start-clean-command) $(LINUX_APP_LIB)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_LIB_SRC) clean
 	$(sep-command)
 
 ####
