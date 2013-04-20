@@ -13,7 +13,7 @@ OUTDIR = $(ANDIX_BUILD_DIR)/$(PROGRAM)
 D_DIR = $(ANDIX_BUILD_DIR)/$(PROGRAM)doc
 OUTDIR_DOC = $(subst /,\/,$(D_DIR))
 
-DOC_LOGO = $(realpath $(TOP))/doc/logo.png
+DOC_LOGO = $(ANDIX_DOC_DIR)/logo.png
 E_DOC_LOGO = $(subst /,\/,$(DOC_LOGO))
 
 C_SRCS = $(shell find -name '*.[c]' | sed 's|./||')
