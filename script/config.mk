@@ -19,6 +19,10 @@ ARM_NEWLIB_INC_DIR := $(ANDIX_PREBUILD_DIR)/newlib/include
 ARM_POLARSSL_LIB_DIR := $(ANDIX_PREBUILD_DIR)/polarSSL/lib
 ARM_POLARSSL_INC_DIR := $(ANDIX_PREBUILD_DIR)/polarSSL/include
 
+ARM_NORM_TOOLCHAIN_DIR := 
+ARM_NORM_PREFIX := arm-linux-gnueabi-
+ARM_NORM_TOOLCHAIN_LIB_DIR := /home/andy/apps/CodeSourcery_ARM_EABI_2012/lib/gcc/arm-none-eabi/4.6.3/
+
 LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/3rdParty/imx-devel/KERNEL
 
 PERL := $(shell which perl)

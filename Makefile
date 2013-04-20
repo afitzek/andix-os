@@ -3,10 +3,10 @@ include script/vars.mk
 include script/rules.mk
 
 .PHONY: all
-all: mkdirs tool_packer_build tz_newlib_c_build tz_tee_runtime_build tz_manager_build tz_kernel_build
+all: mkdirs tool_packer_build tz_newlib_c_build tz_tee_runtime_build tz_manager_build tz_kernel_build linux_modules_build linux_serv_daemon_build
 
 .PHONY: clean
-clean: rmdirs tool_packer_clean tz_newlib_c_clean tz_tee_runtime_clean tz_manager_clean tz_kernel_clean
+clean: rmdirs tool_packer_clean tz_newlib_c_clean tz_tee_runtime_clean tz_manager_clean tz_kernel_clean linux_modules_clean linux_serv_daemon_clean
 
 .PHONY: doc
 doc: tz_kernel_doc tz_tee_runtime_doc
@@ -151,21 +151,41 @@ tool_packer_clean:
 ####
 
 ####
-# Andix linux service module
+# Andix linux service modules
 ####
 
 LINUX_MOD = ANDIX LINUX MODULES
 
-linux_service_build:
+linux_modules_build:
 	$(start-build-command) $(LINUX_MOD)
 	$(sep-command)
 	@$(make-command) $(NORM_K_SRC)
 	$(sep-command)
 
-linux_service_clean:
+linux_modules_clean:
 	$(start-clean-command) $(LINUX_MOD)
 	$(sep-command)
 	@$(make-command) $(NORM_K_SRC) clean
+	$(sep-command)
+
+####
+
+####
+# Andix linux service daemon
+####
+
+LINUX_SERV_DAEMON = ANDIX LINUX SERVICE DAEMON
+
+linux_serv_daemon_build:
+	$(start-build-command) $(LINUX_SERV_DAEMON)
+	$(sep-command)
+	@$(make-command) $(NORM_US_SERVICE_DAEMON_SRC)
+	$(sep-command)
+
+linux_serv_daemon_clean:
+	$(start-clean-command) $(LINUX_SERV_DAEMON)
+	$(sep-command)
+	@$(make-command) $(NORM_US_SERVICE_DAEMON_SRC) clean
 	$(sep-command)
 
 ####

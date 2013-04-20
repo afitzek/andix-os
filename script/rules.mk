@@ -54,16 +54,6 @@ define ld-command
 @$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 endef
 
-define arm-ld-command
-@echo [ARM] Linking: $@
-@$(ARMLD) $(LDFLAGS) -o $@ $^ $(LIBS)
-endef
-
-define arm-cc-command
-@echo [ARM] Building: $@
-@$(ARMCC) $(CFLAGS) -c $< -o $@
-endef
-
 define cc-command
 @echo Building: $@
 @$(CC) $(CFLAGS) -c $< -o $@
@@ -74,9 +64,34 @@ define as-command
 @$(AS) $(ASFLAGS) -c $< -o $@
 endef
 
+define arm-ld-command
+@echo [ARM-TZ] Linking: $@
+@$(ARMLD) $(LDFLAGS) -o $@ $^ $(LIBS)
+endef
+
+define arm-cc-command
+@echo [ARM-TZ] Building: $@
+@$(ARMCC) $(CFLAGS) -c $< -o $@
+endef
+
 define arm-as-command
-@echo [ARM] Building: $@
+@echo [ARM-TZ] Building: $@
 @$(ARMAS) $(ASFLAGS) -c $< -o $@
+endef
+
+define arm-norm-ld-command
+@echo [ARM-NORM] Linking: $@
+@$(ARMNORMLD) $(LDFLAGS) -o $@ $^ $(LIBS)
+endef
+
+define arm-norm-cc-command
+@echo [ARM-NORM] Building: $@
+@$(ARMNORMCC) $(CFLAGS) -c $< -o $@
+endef
+
+define arm-norm-as-command
+@echo [ARM-NORM] Building: $@
+@$(ARMNORMAS) $(ASFLAGS) -c $< -o $@
 endef
 
 define arm-sym-command
