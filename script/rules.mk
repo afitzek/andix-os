@@ -55,12 +55,12 @@ define ld-command
 endef
 
 define arm-ld-command
-@echo [ARM]Linking: $@
+@echo [ARM] Linking: $@
 @$(ARMLD) $(LDFLAGS) -o $@ $^ $(LIBS)
 endef
 
 define arm-cc-command
-@echo [ARM]Building: $@
+@echo [ARM] Building: $@
 @$(ARMCC) $(CFLAGS) -c $< -o $@
 endef
 
@@ -75,13 +75,13 @@ define as-command
 endef
 
 define arm-as-command
-@echo [ARM]Building: $@
+@echo [ARM] Building: $@
 @$(ARMAS) $(ASFLAGS) -c $< -o $@
 endef
 
 define arm-sym-command
 @echo 
-@echo [ARM]Generating symboltable: $@
+@echo [ARM] Generating symboltable: $@
 @$(ARMNM) -n $< | grep " T " > $@
 endef
 

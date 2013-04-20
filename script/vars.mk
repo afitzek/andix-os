@@ -87,6 +87,12 @@ NORM_US_APP_LIB_INC := $(NORM_U_INC)/tz_application_library
 NORM_US_SERVICE_DAEMON_INC := $(NORM_U_INC)/tz_service_daemon
 
 ####
+# Tool includes
+####
+
+TOOL_PACKER_INC := $(TOOLS_INC)/andix_packer
+
+####
 # Source Directory Variables
 ####
 
@@ -114,3 +120,8 @@ NORM_US_APP_DAEMON_SRC := $(NORM_U_SRC)/tz_application_daemon
 NORM_US_APP_LIB_SRC := $(NORM_U_SRC)/tz_application_library
 NORM_US_SERVICE_DAEMON_SRC := $(NORM_U_SRC)/tz_service_daemon
 
+####
+# Tool sources
+####
+
+TOOL_PACKER_SRC := $(TOOLS_SRC)/andix_packer
