@@ -8,6 +8,8 @@
 
 #include <tee/tee_session.h>
 #include <kprintf.h>
+#include <mm/mm.h>
+#include <devices/random/random.h>
 
 list* tee_session_list = NULL;
 
@@ -47,7 +49,7 @@ tee_session* tee_session_create(tee_context* ctx) {
 
 	if (list_add(tee_session_list, (uintptr_t) session) != 0) {
 		tee_error("Failed to create context (out of memory)");
-		kfree(session);
+		kfree((uintptr_t)session);
 		return (NULL );
 	}
 

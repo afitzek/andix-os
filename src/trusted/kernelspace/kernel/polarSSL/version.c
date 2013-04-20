@@ -28,7 +28,7 @@
 #if defined(POLARSSL_VERSION_C)
 
 #include <polarssl/version.h>
-//#include <string.h>
+#include <common/string.h>
 
 const char version[] = POLARSSL_VERSION_STRING;
 

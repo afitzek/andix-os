@@ -7,6 +7,8 @@
 #include <communication_types.h>
 #include <kprintf.h>
 #include <task/tee.h>
+#include <task/task.h>
+#include <scheduler.h>
 
 uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation) {
 	tee_context* ctx = tee_context_find(operation->context);
@@ -22,11 +24,11 @@ uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation) {
 	}
 
 	if (mem->vaddr != 0) {
-		uint32_t mmm_pages = needed_pages(mem->paddr, mem->size);
+		uint32_t mmm_pages = needed_pages((void*)(mem->paddr), mem->size);
 		uint32_t i = 0;
 		for (i = 0; i < mmm_pages; i++) {
 			unmap_kernel_memory(mem->vaddr + (SMALL_PAGE_SIZE * i));
-			mmm_free_page(mem->vaddr + (SMALL_PAGE_SIZE * i));
+			mmm_free_page((void*)(mem->vaddr + (SMALL_PAGE_SIZE * i)));
 		}
 	}
 
@@ -69,13 +71,13 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 	mem->size = operation->size;
 	mem->vaddr = 0;
 
-	uint32_t pages = needed_pages(operation->paddr, operation->size);
+	uint32_t pages = needed_pages((void*)operation->paddr, operation->size);
 
 	if (pages == 0) {
 		tee_error("Failed to calculate needed memory pages!");
 	}
 
-	mem->vaddr = mmm_allocate_pages(pages);
+	mem->vaddr = (uint32_t)mmm_allocate_pages(pages);
 
 	if (mem->vaddr == 0) {
 		result = TEE_ERROR_OUT_OF_MEMORY;
@@ -108,11 +110,11 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 
 	if (mem != NULL ) {
 		if (mem->vaddr != 0) {
-			uint32_t mmm_pages = needed_pages(operation->paddr,
+			uint32_t mmm_pages = needed_pages((void*)operation->paddr,
 					operation->size);
 			uint32_t i = 0;
 			for (i = 0; i < mmm_pages; i++) {
-				mmm_free_page(mem->vaddr + (SMALL_PAGE_SIZE * i));
+				mmm_free_page((void*)(mem->vaddr + (SMALL_PAGE_SIZE * i)));
 			}
 		}
 

@@ -8,13 +8,14 @@
 
 #include <common/queue.h>
 #include <common/typedefs.h>
+#include <mm/mm.h>
 
 /**
  * Initialize the queue
  * @return the new queue
  */
 queue* queue_init() {
-	queue* nq = kmalloc(sizeof(queue));
+	queue* nq = (queue*)kmalloc(sizeof(queue));
 	if (nq == NULL ) {
 		return (NULL );
 	}
@@ -37,7 +38,7 @@ int32_t queue_put(queue* que, void* data) {
 	queue* ptr;
 
 	if (que->previous == NULL ) {
-		que->previous = kmalloc(sizeof(que));
+		que->previous = (queue*)kmalloc(sizeof(que));
 		if (que->previous == NULL ) {
 			return (-1);
 		}
@@ -48,7 +49,7 @@ int32_t queue_put(queue* que, void* data) {
 		while (ptr->previous != NULL ) {
 			ptr = ptr->previous;
 		}
-		que->previous = kmalloc(sizeof(que));
+		que->previous = (queue*)kmalloc(sizeof(que));
 		if (que->previous == NULL ) {
 			return (-1);
 		}
@@ -69,7 +70,7 @@ void* queue_get(queue* que) {
 		ptr = que->previous;
 		que->previous = ptr->previous;
 		data = ptr->data;
-		kfree(ptr);
+		kfree((uintptr_t)ptr);
 		return (data);
 	} else {
 		return (NULL);

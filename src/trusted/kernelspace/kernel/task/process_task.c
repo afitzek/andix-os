@@ -10,9 +10,10 @@
 #include <task/task.h>
 #include <communication_types.h>
 #include <fs/fs.h>
+#include <scheduler.h>
 
 void process_entry() {
-	task_t* nonsec = get_nonsecure_task();
+	//task_t* nonsec = get_nonsecure_task();
 
 	while (1) {
 		TZ_CTLR_SPACE* ctrl = mon_get_control_space();
@@ -23,16 +24,14 @@ void process_entry() {
 				cfs_t file;
 				uint8_t sample_buf[100];
 				uint8_t sample_buf2[100];
-				uint8_t digest[32];
-				uint8_t digest2[32];
 				memset(sample_buf, 0, 100);
 				mon_info("!!!!!Creating file!!!!!");
-				if (fs_open("MASTER_DIR", strlen("MASTER_DIR"), "MASTER_FILE",
+				if (fs_open((uint8_t*)"MASTER_DIR", strlen("MASTER_DIR"), (uint8_t*)"MASTER_FILE",
 						strlen("MASTER_FILE"), O_CREAT, 0, &file) == 0) {
 
 					mon_info("!!!!!WRITING file!!!!!");
 
-					strncpy(sample_buf, "HELLO FILE!!", 100);
+					strncpy((char*)sample_buf, "HELLO FILE!!", 100);
 
 					//sha2(sample_buf, 100, digest, 0);
 

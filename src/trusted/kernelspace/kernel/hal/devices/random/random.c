@@ -30,7 +30,7 @@ void random_seed() {
 void random_seed_time() {
 	if (rand_device) {
 		clock_t value = clock();
-		hal_ioctl(rand_device, SRNG_IO_SEEDSIMPLE, value, 0);
+		hal_ioctl(rand_device, SRNG_IO_SEEDSIMPLE, (uintptr_t)value, 0);
 	}
 }
 
@@ -72,11 +72,11 @@ uint32_t random_next32() {
 
 uint64_t random_next64() {
 	if (rand_device) {
-		uint32_t result1 = 1;
-		uint32_t result2 = 1;
+		uint64_t result1 = 1;
+		uint64_t result2 = 1;
 		uint64_t result = 1;
-		hal_ioctl(rand_device, SRNG_IO_GETRAND, &result1, 0);
-		hal_ioctl(rand_device, SRNG_IO_GETRAND, &result2, 0);
+		hal_ioctl(rand_device, SRNG_IO_GETRAND, (uintptr_t)&result1, 0);
+		hal_ioctl(rand_device, SRNG_IO_GETRAND, (uintptr_t)&result2, 0);
 		result = (result1 << 32);
 		result = result | result2;
 		return (result);

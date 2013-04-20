@@ -8,8 +8,7 @@
 
 #include <common/typedefs.h>
 #include <kprintf.h>
-#include <mm/pmm.h>
-#include <mm/mmm.h>
+#include <mm/mm.h>
 #include <common/atags.h>
 #include <common.h>
 #include <platform/board.h>
@@ -18,18 +17,16 @@
 #include <task/task.h>
 #include <scheduler.h>
 
-extern uint32_t _end;
+
+#ifdef SHOW_MEM_LAYOUT
 extern uint32_t _data;
 extern uint32_t _data_end;
-extern uint32_t _code;
 extern uint32_t _code_end;
 extern uint32_t _rodata;
 extern uint32_t _rodata_end;
 extern uint32_t _bss;
 extern uint32_t _bss_end;
 extern uint32_t svc_stack;
-extern uint32_t __svc_vector;
-extern uint32_t __monitor_vector;
 extern uint32_t __phys_load_addr;
 extern uint32_t __virt_load_addr;
 extern uint32_t __kernel_mb_size;
@@ -39,6 +36,12 @@ extern uint32_t dtb;
 extern uint32_t dtb_end;
 extern uint32_t __symbol_table;
 extern uint32_t __symbol_table_end;
+#endif
+
+extern uint32_t __svc_vector;
+extern uint32_t __monitor_vector;
+extern uint32_t _code;
+extern uint32_t _end;
 
 /**
  * Main entry point
@@ -69,6 +72,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	main_debug("      GIT Commit %s", GITHASH);
 #endif
 #endif
+
+#ifdef SHOW_MEM_LAYOUT
 	// ========================================================================
 	// MEMORY LAYOUT OUTPUT
 	// ========================================================================
@@ -102,7 +107,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	main_info("%s STATIC MEMORY LAYOUT [DONE] %s", SEPERATOR, SEPERATOR);
 	// ========================================================================
-
+#endif
 	// ========================================================================
 	// BOOT PARAMETERS
 	// ========================================================================
@@ -139,7 +144,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	main_info("%s VIRTUAL MEMORY LAYOUT %s", SEPERATOR, SEPERATOR);
 
-	dump_kernel_mmu(&_code, &_end);
+	dump_kernel_mmu((uint32_t)&_code, (uint32_t)&_end);
 
 	main_info("%s VIRTUAL MEMORY LAYOUT [DONE] %s", SEPERATOR, SEPERATOR);
 
@@ -196,7 +201,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	main_debug("Allowing nonsecure access to all devices via CSU");
 
-	csu_base = map_io_mem((uintptr_t) 0x63F9C000, 0x80);
+	csu_base = (uintptr_t)map_io_mem((uintptr_t) 0x63F9C000, 0x80);
 
 	csu = csu_base;
 
@@ -207,7 +212,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 		csu++;
 	}
 
-	uintptr_t base_tzic = map_io_mem((uintptr_t) 0x0FFFC080, 0x80);
+	uintptr_t base_tzic = (uintptr_t)map_io_mem((uintptr_t) 0x0FFFC080, 0x80);
 
 	main_debug("TZIC @ 0x%x p (0x%x)", base_tzic, v_to_p(base_tzic));
 

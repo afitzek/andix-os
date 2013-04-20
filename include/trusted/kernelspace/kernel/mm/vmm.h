@@ -160,6 +160,7 @@ void prepareBestBlock(k_mem_block_t* best, uint32_t size);
 void clean_user();
 uint32_t map_atags(uintptr_t phys);
 uint32_t needed_pages(uint8_t* ptr, uint32_t size);
+uint32_t check_align(uint32_t align);
 
 /**
  * The start address of the kernel code memory space

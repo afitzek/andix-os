@@ -12,8 +12,8 @@
 
 uint32_t uart_base = UART_BASE;
 
-extern uint32_t __symbol_table;
-extern uint32_t __symbol_table_end;
+//extern uint32_t __symbol_table;
+//extern uint32_t __symbol_table_end;
 extern uint32_t svc_stack;
 
 platform_device_t* serial_dev = NULL;
@@ -139,7 +139,7 @@ void kdumpMem32(void* mem, uint32_t size) {
 	uint32_t i = 0;
 	uint32_t j = 0;
 	uint32_t* buffer = (uint32_t*) mem;
-	for (i = 0; i < size / 4; i = i++) {
+	for (i = 0; i < size / 4; i++) {
 
 		kprintf_ex("0x%x: ", buffer + i);
 		kprintf_ex("0x%x |", buffer[i]);
@@ -158,7 +158,7 @@ void kdumpMem32(void* mem, uint32_t size) {
 
 void dump_bt(backtrace_t* bt, uint32_t idx) {
 	//uint32_t* lv = bt->linkvalue;
-	char* func_name = get_function_name(bt->codeptr);
+	char* func_name = get_function_name((void*)bt->codeptr);
 	if (func_name) {
 		main_error(
 				"%d   | %s | 0x%x | 0x%x | 0x%x | 0x%x", idx, func_name, bt->codeptr, bt->linkvalue, bt->stackptr, bt->frameptr);

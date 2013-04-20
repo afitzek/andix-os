@@ -51,6 +51,8 @@ void kprintHex(uint8_t* buffer, uint32_t size);
 
 void getinput(char *buffer, uint32_t size);
 
+void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
+
 #define non_print_handler(subsys,...) \
 	do{}while(0)
 

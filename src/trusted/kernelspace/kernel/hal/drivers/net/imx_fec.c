@@ -7,11 +7,12 @@
  */
 
 #include <drivers/net/imx_fec.h>
+#include <mm/mm.h>
 
 int imx_fec_probe(platform_device_t *dev) {
 	hal_map_io_mem(dev);
 
-	fec_priv_t* fec = kmalloc(sizeof(fec_priv_t));
+	fec_priv_t* fec = (fec_priv_t*)kmalloc(sizeof(fec_priv_t));
 	fec->dev = (fec_regs_t*) dev->vbase;
 	dev->device_data = (uintptr_t) fec;
 	return (__imx_fec_init(fec));
@@ -92,7 +93,8 @@ int __imx_fec_init(fec_priv_t* fec) {
 
 	// add transmit descriptor
 	size = roundup(2*sizeof(fec_bd_t), 64);
-	fec->tx_bd = kmalloc_align(size, 64);
+
+	fec->tx_bd = (fec_bd_t*)kmalloc_align(size, 64);
 	memset(fec->tx_bd, 0, size);
 	__raw_writew(0x0000, &fec->tx_bd[0].status);
 	__raw_writew(0x2000, &fec->tx_bd[1].status);
@@ -100,13 +102,13 @@ int __imx_fec_init(fec_priv_t* fec) {
 
 	// add receive descriptor
 	size = roundup(64*sizeof(fec_bd_t), 64);
-	fec->rx_bd = kmalloc_align(size, 64);
+	fec->rx_bd = (fec_bd_t*) kmalloc_align(size, 64);
 	memset(fec->rx_bd, 0, size);
 	size = roundup(FEC_MAX_FRAME_LEN, 64);
 	for (i = 0; i < 64; i++) {
 		uint32_t data_ptr = __raw_readl(&fec->rx_bd[i].data_pointer);
 		if (data_ptr == 0) {
-			uint8_t *data = kmalloc_align(size, 64);
+			uint8_t *data = (uint8_t *)kmalloc_align(size, 64);
 			__raw_writel((uint32_t) data, &fec->rx_bd[i].data_pointer);
 		} /* needs allocation */
 		__raw_writew(0x8000, &fec->rx_bd[i].status);

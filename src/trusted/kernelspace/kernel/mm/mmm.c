@@ -220,7 +220,7 @@ uint8_t mmm_is_mem_addr(uintptr_t vaddr) {
 		int offset = (nvaddr - mmm_get_start_addr()) / 4096;
 		int i = offset / 32;
 		int j = offset - (i * 32);
-		if(secure_map_mem[i] & (1 << j) == 1) {
+		if((secure_map_mem[i] & (1 << j)) == 1) {
 			// vaddr is available
 			return (-1);
 		}

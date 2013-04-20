@@ -195,7 +195,7 @@ task_t* create_user_task(uint8_t* usr, uint32_t size) {
 
 	loader_debug("Stack setup OK");
 
-	task->context.pc = setup_elf(usr, size, vptd, &(task->vheap));
+	task->context.pc = setup_elf(usr, size, vptd, (uintptr_t)&(task->vheap));
 
 	if (task->context.pc == 0xFFFFFFFF) {
 		// Invalid ELF Image

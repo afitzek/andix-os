@@ -204,7 +204,7 @@ int32_t swi_open(char *name, int flags, int mode) {
 
 	swi_info("Open %s [Flags 0x%x]", name, flags);
 
-	if (fs_open(&task->uuid, sizeof(TASK_UUID), name, strlen(name), flags, mode,
+	if (fs_open((uint8_t*)&task->uuid, sizeof(TASK_UUID), (uint8_t*)name, strlen(name), flags, mode,
 			hdl->data) != 0) {
 		goto error;
 	}
@@ -219,7 +219,7 @@ int32_t swi_open(char *name, int flags, int mode) {
 		if (hdl->data != NULL ) {
 			kfree(hdl->data);
 		}
-		kfree(hdl);
+		kfree((uintptr_t)hdl);
 	}
 
 	return (-1);
@@ -232,7 +232,7 @@ int32_t swi_sbrk(int32_t incr) {
 		kpanic();
 	}
 
-	uint32_t heap = task->vheap;
+	uint32_t heap = (uint32_t)task->vheap;
 	int32_t tmp_incr = incr;
 	uint32_t left_on_page = 0xFFF - (heap & 0xFFF);
 	kernel_mem_info_t mem_info;
@@ -267,7 +267,7 @@ int32_t swi_sbrk(int32_t incr) {
 		heap += 0x1000;
 	}
 
-	task->vheap = (uint32_t) task->vheap + incr;
+	task->vheap = (uintptr_t)((uint32_t) task->vheap + incr);
 
 	dump_mmu(0x0, 0x20000, task->vuserPD);
 

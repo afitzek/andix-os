@@ -8,6 +8,8 @@
 
 #include <kprintf.h>
 #include <tee/tee_context.h>
+#include <mm/mm.h>
+#include <devices/random/random.h>
 
 list* tee_context_list = NULL;
 
@@ -39,7 +41,7 @@ tee_context* tee_context_create() {
 
 	if (list_add(tee_context_list, (uintptr_t) context) != 0) {
 		tee_error("Failed to create context (out of memory)");
-		kfree(context);
+		kfree((uintptr_t)context);
 		return (NULL );
 	}
 	return (context);

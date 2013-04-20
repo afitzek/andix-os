@@ -41,6 +41,7 @@
 
 //#include <stdlib.h>
 //#include <stdio.h>
+#include <devices/random/random.h>
 
 /*
  * Initialize an RSA context

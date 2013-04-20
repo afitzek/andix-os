@@ -7,6 +7,7 @@
  */
 
 #include <drivers/random/simplerng.h>
+#include <mm/mm.h>
 
 void srng_seed(srng_data_t* srng) {
 	if (srng != NULL ) {
@@ -66,7 +67,7 @@ int srng_probe(platform_device_t *dev) {
 
 	srng_seed(srng);
 
-	dev->device_data = srng;
+	dev->device_data = (uintptr_t)srng;
 
 	return HAL_SUCCESS;
 }

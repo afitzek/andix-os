@@ -27,12 +27,12 @@ struct device_info {
 typedef struct device_info device_info_t;
 
 struct platform_device {
-	device_info_t*		info;
-	uint32_t			id;
-	uintptr_t			vbase;
-	uint32_t			size;
-	platform_driver_t*	driver;
-	uintptr_t			device_data;
+	const device_info_t*		info;
+	uint32_t					id;
+	uintptr_t					vbase;
+	uint32_t					size;
+	const platform_driver_t*	driver;
+	uintptr_t					device_data;
 };
 
 #define FLAG_DO_INIT		(1 << 0)

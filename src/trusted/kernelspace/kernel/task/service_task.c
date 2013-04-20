@@ -9,6 +9,7 @@
 #include <common.h>
 #include <task/service.h>
 #include <task/task.h>
+#include <scheduler.h>
 
 queue* service_queue;
 task_t* service_task;

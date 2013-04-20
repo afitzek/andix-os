@@ -15,7 +15,7 @@ uintptr_t kmalloc(uint32_t size) {
 	best = (k_mem_block_t*) NULL;
 
 	if (size == 0) {
-		return (best);
+		return ((uintptr_t)best);
 	}
 
 	//vmm_debug("Allocating %d Bytes", size);
@@ -46,16 +46,16 @@ uintptr_t kmalloc(uint32_t size) {
 	if (best == 0) {
 		// OUT OF MEMORY!
 		vmm_debug("OUT OF MEMORY!!!");
-		return (best);
+		return ((uintptr_t)best);
 	}
 
 	prepareBestBlock(best, size);
 	//vmm_debug("Allocating MEM @ 0x%x", (uint8_t*) best + sizeof(k_mem_block_t));
-	return ((void*) ((uint8_t*) best + sizeof(k_mem_block_t)));
+	return ((uintptr_t)((void*) ((uint8_t*) best + sizeof(k_mem_block_t))));
 }
 
 void kfree(uintptr_t blk) {
-	if (blk >= (void*) heap_start && blk < heap_end) {
+	if (blk >= (uintptr_t) heap_start && blk < (uintptr_t)heap_end) {
 		//vmm_debug("Freeing MEM @ 0x%x", blk);
 		k_mem_block_t* current = (k_mem_block_t*) ((uint8_t*) blk
 				- sizeof(k_mem_block_t));
@@ -97,12 +97,12 @@ uintptr_t kmalloc_align(uint32_t size, uint32_t align) {
 	best = (k_mem_block_t*) NULL;
 
 	// TODO: find better way to check!
-	align = check_align(align);
+	align = (uint32_t)check_align(align);
 
 	//vmm_debug("Allocating %d Bytes aligned %d", size, align);
 
 	if (size == 0) {
-		return (best);
+		return ((uintptr_t)best);
 	}
 
 	current = heap_start;
@@ -133,7 +133,7 @@ uintptr_t kmalloc_align(uint32_t size, uint32_t align) {
 	if (best == 0) {
 		// OUT OF MEMORY!
 		vmm_debug("OUT OF MEMORY!!!");
-		return (best);
+		return ((uintptr_t)best);
 	}
 
 	// best block fits block alignment!
@@ -156,12 +156,12 @@ uintptr_t kmalloc_align(uint32_t size, uint32_t align) {
 
 	//vmm_debug(
 	//		"Allocating MEM @ 0x%x (%d)", (uint8_t*) best + sizeof(k_mem_block_t), best->size);
-	return ((uint8_t*) best + sizeof(k_mem_block_t));
+	return ((uintptr_t)((uint8_t*) best + sizeof(k_mem_block_t)));
 }
 
 uintptr_t virt_to_phys(uintptr_t vaddr) {
 	void* ptr = v_to_p((void*) vaddr);
-	if (ptr < 0xFF) {
+	if (ptr < (void*)0xFF) {
 		return (NULL );
 	}
 	return ((uintptr_t) ptr);
@@ -176,11 +176,11 @@ uintptr_t map_phys_mem(uintptr_t paddr, uint32_t size, uint8_t access,
 
 	//vmm_debug("Needing %d pages", pgcount);
 
-	uint32_t vstart = mmm_allocate_pages(pgcount);
+	uint32_t vstart = (uint32_t)mmm_allocate_pages(pgcount);
 
 	if (vstart == 0) {
 		vmm_debug("Failed to allocate mapable memory");
-		return (NULL );
+		return (NULL);
 	}
 
 	kernel_mem_info_t info;
@@ -196,12 +196,14 @@ uintptr_t map_phys_mem(uintptr_t paddr, uint32_t size, uint8_t access,
 
 	if (map_kernel_sections(pstart, pend, vstart, &info) != 0) {
 		vmm_debug("Failed to map kernel sections");
-		return (NULL );
+		return (NULL);
 	}
 
 	//vmm_debug("Mapping p 0x%x to v 0x%x", pstart, vstart);
 
-	return mapped_p_to_v(vstart, pstart);
+	uint32_t mapped = mapped_p_to_v(vstart, pstart);
+
+	return ((uintptr_t)mapped);
 }
 
 mem_space mem_get_type(uintptr_t addr) {

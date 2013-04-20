@@ -7,6 +7,7 @@
  */
 
 #include <mm/pmm.h>
+#include <mm/mm.h>
 
 /**
  * This bitmap manages the physical RAM available
@@ -41,7 +42,7 @@ void pmm_init(uint32_t phys_start, uint32_t phys_end) {
 	// (total / PAGE_SIZE * 8)
 	pmm_bitmap_size = (phys_end - phys_start) / (4096 * 8);
 
-	secure_phy_mem = kmalloc(pmm_bitmap_size);
+	secure_phy_mem = (uint32_t*)kmalloc(pmm_bitmap_size);
 
 	pmm_debug("Physical bitmap located @ 0x%x (%d B %d KB %d MB)",
 			secure_phy_mem, pmm_bitmap_size, pmm_bitmap_size / 1024, pmm_bitmap_size / (1024 * 1024));
@@ -64,9 +65,9 @@ void pmm_add_phys_mem_area(uint32_t pstart, uint32_t pend, uint32_t type) {
 	area->pend = pend;
 	area->type = type;
 
-	if(list_add(physical_mem_list, area) < 0) {
+	if(list_add(physical_mem_list, (void*)area) < 0) {
 		pmm_error("Failed to allocate memory for physical mem area!");
-		kfree(area);
+		kfree((uintptr_t)area);
 	}
 }
 

@@ -122,9 +122,9 @@ void init_vmm(struct atag* startTag) {
 
 				phys_pmm_start = phys_heap_end;
 				if (mem->u.mem.size > SECURE_MEMORY_SIZE) {
-					end = (uintptr_t) (start + SECURE_MEMORY_SIZE);
+					end = (uint32_t) (start + SECURE_MEMORY_SIZE);
 				} // otherwise we hope it is enough
-				phys_pmm_end = end;
+				phys_pmm_end = (uintptr_t)end;
 
 				vmm_debug("PMM ... ");
 				pmm_init((uint32_t) phys_pmm_start, (uint32_t) phys_pmm_end);
@@ -143,8 +143,8 @@ void init_vmm(struct atag* startTag) {
 
 			if (ptr > start && ptr < end) {
 				if (mem->u.mem.size > SECURE_MEMORY_SIZE) {
-					uint32_t lsize = mem->u.mem.size - SECURE_MEMORY_SIZE;
-					end = (uintptr_t) (start + SECURE_MEMORY_SIZE - 1);
+					//uint32_t lsize = mem->u.mem.size - SECURE_MEMORY_SIZE;
+					end = (uint32_t) (start + SECURE_MEMORY_SIZE - 1);
 					pmm_add_phys_mem_area(start + SECURE_MEMORY_SIZE,
 							start + mem->u.mem.size, MEM_TYPE_UNSECURE);
 					pmm_add_phys_mem_area(start, end, MEM_TYPE_SECURE);
@@ -160,7 +160,7 @@ void init_vmm(struct atag* startTag) {
 	vmm_debug("MMM ... ");
 	mmm_init((uint32_t) virt_mmm_start, (uint32_t) virt_mmm_end);
 
-	smm_init(virt_smm_start, virt_smm_end);
+	smm_init((uint32_t)virt_smm_start, (uint32_t)virt_smm_end);
 
 	vmm_debug("=========================================");
 	vmm_debug("Memory overview:");

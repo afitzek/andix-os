@@ -19,7 +19,7 @@
 /**
  * Translates physical to virtual address
  */
-#define mapped_p_to_v(vaddr,paddr) (((uint32_t) vaddr & 0xFFFFF000) | (paddr & 0xFFF));
+#define mapped_p_to_v(vaddr,paddr) (((uint32_t) vaddr & 0xFFFFF000) | (paddr & 0xFFF))
 
 /**
  * Type of memory space

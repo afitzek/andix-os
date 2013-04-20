@@ -52,11 +52,11 @@ static inline void __raw_writel(uint32_t v, volatile void *addr)
  * Platform Structure
  */
 struct hal_platform {
-	uint32_t 			sys_id;		/**< The system id */
-	uint32_t			device_count;	/**< The count of the dev_map */
-	device_info_t* 		dev_map;	/**< The device map */
-	uint32_t			platform_device_count;
-	platform_device_t* 	platform_device_map;
+	uint32_t	 				sys_id;		/**< The system id */
+	uint32_t					device_count;	/**< The count of the dev_map */
+	const device_info_t* 		dev_map;	/**< The device map */
+	uint32_t					platform_device_count;
+	const platform_device_t* 	platform_device_map;
 };
 
 /**

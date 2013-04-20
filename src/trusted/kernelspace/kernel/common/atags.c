@@ -35,7 +35,7 @@ struct atag* atag_copy(struct atag* startTag) {
 		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
 	} while (atag->hdr.tag != ATAG_NONE);
 	size += (2 * 4);
-	struct atag* newTag = kmalloc(size);
+	struct atag* newTag = (struct atag*)kmalloc(size);
 	memcpy(newTag, startTag, size);
 	cur_atags = newTag;
 	return (newTag);

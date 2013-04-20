@@ -8,6 +8,8 @@
 
 #include <tee/tee_memregion.h>
 #include <kprintf.h>
+#include <mm/mm.h>
+#include <devices/random/random.h>
 
 list* tee_memory_list = NULL;
 
@@ -33,7 +35,7 @@ tee_memory* tee_memory_create(tee_context* context) {
 
 	memory->mappedtasks = (list*) kmalloc(sizeof(list));
 	if (memory->mappedtasks == NULL ) {
-		kfree(memory);
+		kfree((uintptr_t)memory);
 		tee_error("Failed to create memory (out of memory)");
 		return (NULL );
 	}
@@ -57,7 +59,7 @@ tee_memory* tee_memory_create(tee_context* context) {
 
 	if (list_add(tee_memory_list, (uintptr_t) memory) != 0) {
 		tee_error("Failed to create memory (out of memory)");
-		kfree(memory);
+		kfree((uintptr_t)memory);
 		return (NULL );
 	}
 
@@ -80,12 +82,12 @@ void tee_memory_destroy(tee_memory* memory) {
 			mapped = (tee_mapped_mem*) pos->data;
 			unmap_mem_from_task((uint8_t*) mapped->vaddr, memory->size,
 					mapped->task);
-			kfree(mapped);
+			kfree((uintptr_t)mapped);
 			list_remove(pos);
 		}
 	}
 
-	kfree(memory->mappedtasks);
+	kfree((uintptr_t)(memory->mappedtasks));
 
 	list* entry = list_find_data(tee_memory_list, (uintptr_t) memory);
 	if (entry != NULL ) {
@@ -180,13 +182,13 @@ uint32_t tee_memory_map_to_task(task_t *task, tee_memory* memory) {
 
 	if (mapped->vaddr == 0) {
 		tee_error("Failed to map memory to task (map to task failed!)");
-		kfree(mapped);
+		kfree((uintptr_t)mapped);
 		return (0);
 	}
 
 	if (list_add(memory->mappedtasks, (uintptr_t) mapped) != 0) {
 		tee_error("Failed to map memory to task (out of memory)");
-		kfree(mapped);
+		kfree((uintptr_t)mapped);
 		return (0);
 	}
 

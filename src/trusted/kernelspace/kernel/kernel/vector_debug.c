@@ -11,6 +11,7 @@
 #include <platform/vector_debug.h>
 #include <platform/platform.h>
 #include <vectors.h>
+#include <mm/mm.h>
 
 void provokeDA() {
 	volatile uint32_t* d = NULL;

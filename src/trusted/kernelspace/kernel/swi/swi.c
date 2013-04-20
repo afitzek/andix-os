@@ -42,7 +42,7 @@ void dispatch_swi(uint32_t swi, cpu_state_t* cpu) {
 		cpu->r[0] = swi_heapend();
 		break;
 	case SWI_OPEN:
-		cpu->r[0] = swi_open((const char*) cpu->r[0], (int) cpu->r[1],
+		cpu->r[0] = swi_open((char*) cpu->r[0], (int) cpu->r[1],
 				(int) cpu->r[2]);
 		break;
 	case SWI_CLOSE:

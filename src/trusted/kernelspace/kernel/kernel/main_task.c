@@ -17,13 +17,14 @@
 #include <mm/mm.h>
 #include <fs/fs.h>
 #include <polarssl/sha1.h>
+#include <tee/tee.h>
 
 extern uint32_t payload;
-extern uint32_t payload_os;
+//extern uint32_t payload_os;
 extern uint32_t payload_end;
-extern uint32_t dtb;
-extern uint32_t dtb_end;
-extern uint32_t payload_dtb;
+//extern uint32_t dtb;
+//extern uint32_t dtb_end;
+//extern uint32_t payload_dtb;
 extern uint8_t _userpayload;
 extern uint8_t _userpayload_end;
 
@@ -34,7 +35,7 @@ void entry_main_task() {
 	uint8_t pwd_hash[20];
 	uint32_t udid;
 	sha1_context sha1ctx;
-	cfs_blk_t blk;
+	//cfs_blk_t blk;
 	uint32_t crc;
 	uint32_t i;
 	char passwordbuffer[100];
@@ -96,7 +97,7 @@ void entry_main_task() {
 	kprintf("\nGot password, if this is incorrect you will have to reboot!\n");
 
 	// Currently using password as secret
-	fs_set_secret(passwordbuffer, strlen(passwordbuffer));
+	fs_set_secret((uint8_t*)passwordbuffer, strlen(passwordbuffer));
 
 	kprintf("%s\n", LINE_SEPERATOR);
 
@@ -156,8 +157,8 @@ void entry_main_task() {
 
 	main_info("%s PREPARING SECURE USERSPACE TASKS %s", SEPERATOR, SEPERATOR);
 
-	task_t* user = prepare_static_userspace_task((intptr_t) &_userpayload,
-			(intptr_t) &_userpayload_end);
+	task_t* user = prepare_static_userspace_task((uintptr_t) &_userpayload,
+			(uintptr_t) &_userpayload_end);
 	init_userspace_task(user);
 
 	main_info("%s PREPARING SECURE USERSPACE TASKS [DONE] %s", SEPERATOR,

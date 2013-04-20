@@ -20,16 +20,16 @@ extern uint32_t __symbol_table_end;
 
 char* get_function_name(void* vaddr) {
 	//return "DUMMY";
-	uint8_t* ptr = &__symbol_table;
+	uint8_t* ptr = (uint8_t*)&__symbol_table;
 	ptr++;
 	//main_debug("Checking Table @ 0x%x - 0x%x", ptr, &__symbol_table_end);
 
-	char* current_string = ptr + 8 + 3;
+	char* current_string = (char*)(ptr + 8 + 3);
 	char* last_string = 0;
 	do {
 		//
 		uint32_t current_addr = get_hex_word(ptr);
-		current_string = ptr + 8 + 3;
+		current_string = (char*)(ptr + 8 + 3);
 		//main_debug("Checking Entry 0x%x (%s) vaddr 0x%x current 0x%x",
 		//		ptr, ptr, (uint32_t)vaddr, current_addr);
 		if(((uint32_t)vaddr) < current_addr) {
@@ -41,7 +41,7 @@ char* get_function_name(void* vaddr) {
 			ptr++;
 		}
 		ptr++;
-	} while (ptr < &__symbol_table_end);
+	} while ((uint32_t*)ptr < &__symbol_table_end);
 
 	return ("UNKNOWN");
 }

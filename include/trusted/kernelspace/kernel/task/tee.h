@@ -6,9 +6,9 @@
  *       Email: andreas.fitzek@gmail.com
  */
 
-#ifndef TEE_H_
-#define TEE_H_
+#ifndef TASK_TEE_H_
+#define TASK_TEE_H_
 
 void tee_task_entry();
 
-#endif /* TEE_H_ */
+#endif /* TASK_TEE_H_ */

@@ -32,7 +32,7 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 LIBGCC_FILE = $(ARM_TOOLCHAIN_LIB_DIR)libgcc.a
 
-OPT_FLAGS = -Wall -pedantic -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -mapcs-frame -mapcs-stack-check
+OPT_FLAGS = -Wall -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -mapcs-frame -mapcs-stack-check
 
 ASFLAGS = $(OPT_FLAGS) -g -mcpu=cortex-a8
 CFLAGS = $(OPT_FLAGS) -DVERSION=\"$(VERSION)\" -DUSER=\"$(USER)\" -DINFO -DDEBUG -DGITHASH=\"$(GITHASH)\" -DIMX53_LOCO -DAKERNEL -g -mcpu=cortex-a8 -nostdlib -nostdinc
@@ -73,7 +73,7 @@ $(OUTDIR)symbol_table.o : $(OUTDIR)andix.mys
 	$(arm-sym-command)
 
 $(OUTDIR)andix.elf:  $(OBJS)
-	$(ARMLD) $(LDFLAGS) -o $@  $^ $(LIBGCC_FILE)
+	@$(ARMLD) $(LDFLAGS) -o $@  $^ $(LIBGCC_FILE)
 
 
 .PHONY: doc

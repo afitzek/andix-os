@@ -8,6 +8,7 @@
 
 #include <hal.h>
 #include <kprintf.h>
+#include <mm/mm.h>
 
 /**
  * \defgroup hal HAL - Hardware Abstraction Layer
@@ -59,14 +60,14 @@ void hal_init(uint32_t sysid, atag_t* atags) {
 	hal_devices->data = NULL;
 
 	for (devidx = 0; devidx < platform->device_count; devidx++) {
-		device_info_t* dev_info = &(platform->dev_map[devidx]);
+		const device_info_t* dev_info = &(platform->dev_map[devidx]);
 		platform_driver_t* driver = hal_find_driver(dev_info->driver);
 		hal_debug(
 				"Device %s.%d [%s:0x%x] @ 0x%x", dev_info->name, dev_info->id, dev_info->driver, driver, dev_info->base);
 		if (driver == NULL ) {
 			hal_debug("Driver %s not found ...", dev_info->driver);
 		} else {
-			platform_device_t* device = kmalloc(sizeof(platform_device_t));
+			platform_device_t* device = (platform_device_t*)kmalloc(sizeof(platform_device_t));
 			device->driver = driver;
 			device->id = dev_info->id;
 			device->info = dev_info;
@@ -74,7 +75,7 @@ void hal_init(uint32_t sysid, atag_t* atags) {
 
 			if (device->driver->probe) {
 				if (device->driver->probe(device) != HAL_SUCCESS) {
-					kfree(device);
+					kfree((void*)device);
 					hal_debug("Failed to add hal device!");
 				} else {
 					hal_add_device(device);
@@ -82,7 +83,7 @@ void hal_init(uint32_t sysid, atag_t* atags) {
 							"## REGISTERED Device %s.%d [%s:0x%x] @ 0x%x ##", dev_info->name, dev_info->id, dev_info->driver, driver, device);
 				}
 			} else {
-				kfree(device);
+				kfree((void*)device);
 				hal_debug("Failed to add hal device!");
 			}
 		}
@@ -115,7 +116,7 @@ void hal_rem_device(platform_device_t *dev) {
 
 void hal_map_io_mem(platform_device_t *dev) {
 
-	dev->vbase = map_io_mem(dev->info->base, dev->size);
+	dev->vbase = (uintptr_t)map_io_mem(dev->info->base, dev->size);
 	/*
 	 kernel_mem_info_t section_description;
 

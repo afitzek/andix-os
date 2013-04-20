@@ -117,5 +117,9 @@ void process_entry();
 
 void task_add_fhandle(task_t* task, task_file_handle_t* hdl);
 task_file_handle_t* task_get_fhandle(task_t* task, int32_t fd);
+int32_t task_get_next_fd(task_t* task);
+void task_rem_fhandle(task_t* task, task_file_handle_t* hdl);
+void set_sysd_task(task_t* task);
+task_t* get_sysd_task();
 
 #endif /* TASK_H_ */

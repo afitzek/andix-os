@@ -8,6 +8,8 @@
 
 #include <drivers/block/ns_block.h>
 #include <communication_types.h>
+#include <mm/mm.h>
+#include <task/service.h>
 
 int andix_ns_block_probe(platform_device_t *dev) {
 
@@ -22,7 +24,7 @@ int andix_ns_block_probe(platform_device_t *dev) {
 
 	dev_data->nsfd = 0;
 
-	dev->device_data = dev_data;
+	dev->device_data = (uintptr_t)dev_data;
 
 	return (HAL_SUCCESS);
 }

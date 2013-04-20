@@ -282,7 +282,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		break;
 	case SMC_PROCESS_CMEM:
 		mon_info("Process com memory! @ v 0x%x p 0x%x", com_mem,
-				virt_to_phys(com_mem));
+				virt_to_phys((uintptr_t)com_mem));
 		if (com_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
@@ -306,7 +306,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		break;
 	case SMC_PROCESS_TMEM:
 		mon_info("Process tee memory! @ v 0x%x p 0x%x", tee_mem,
-				virt_to_phys(tee_mem));
+				virt_to_phys((uintptr_t)tee_mem));
 		if (tee_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
