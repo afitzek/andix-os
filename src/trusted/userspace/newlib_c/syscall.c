@@ -8,6 +8,7 @@
 
 #include <sys/stat.h>
 #include <swi.h>
+#include <string.h>
 
 int _isatty(int file) {
 	if(file == 0 || file == 1 || file == 2) {
@@ -46,8 +47,9 @@ int _fstat(int file, struct stat *st) {
 caddr_t _sbrk(int incr) {
 	char * prev_heap_end;
 
-	prev_heap_end = __swi_1(SWI_HEND, 0);
-	if (prev_heap_end + incr > &prev_heap_end) {
+	prev_heap_end = (char*)__swi_1(SWI_HEND, 0);
+	if (((void*)prev_heap_end + incr) >
+		((void*) &prev_heap_end)) {
 		return ((caddr_t) -1);
 	}
 
