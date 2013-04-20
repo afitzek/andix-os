@@ -83,6 +83,8 @@ bool __checkTypeSize(uint32_t type, uint32_t size) {
 }
 
 TEE_Result __copy_attr(TEE_Attribute* to, TEE_Attribute* from) {
+	// TODO:
+	return (TEE_ERROR_NOT_IMPLEMENTED);
 }
 
 TEE_Result TEE_AllocateTransientObject(uint32_t objectType,
@@ -90,6 +92,7 @@ TEE_Result TEE_AllocateTransientObject(uint32_t objectType,
 	if (!__checkTypeSize(objectType, maxObjectSize)) {
 		return (TEE_ERROR_NOT_SUPPORTED);
 	}
+	return (TEE_ERROR_NOT_IMPLEMENTED);
 }
 
 void TEE_FreeTransientObject(TEE_ObjectHandle object) {
@@ -119,4 +122,5 @@ TEE_Result TEE_PopulateTransientObject(TEE_ObjectHandle object,
 	}
 
 	// TODO:
+	return (TEE_ERROR_NOT_IMPLEMENTED);
 }
