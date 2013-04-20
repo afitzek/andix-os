@@ -105,6 +105,5 @@ $(A_OBJS):$(OUTDIR)%.o:%.S
 	
 .PHONY: clean
 clean:
-	@echo 
 	@echo Removing directory $(OUTDIR)
 	@rm -rf $(OUTDIR)

@@ -81,7 +81,9 @@ pdfdoc: doc
 	@make -C $(OUTDIR_DOC)/latex/
 	@cp $(OUTDIR_DOC)/latex/refman.pdf $(ANDIX_DOC_GEN_DIR)/$(PROGRAM)
 	                                                   
-clean:
-	rm -rf $(OBJS) andixRuntime.a $(USERSPACE_LIB_DIR)andixRuntime.a
+.PHONY: clean
+clean: 
+	@echo Removing directory $(OUTDIR)
+	@rm -rf $(OUTDIR)
                   
                                                                                

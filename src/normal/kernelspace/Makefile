@@ -49,4 +49,4 @@ all:
 	@make -C $(LINUX_KERNEL_DIR) EXTRA_CFLAGS=$(EXTRACFLAGS) ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- M=`pwd` clean
 	
 clean:
-	make -C $(LINUX_KERNEL_DIR) EXTRA_CFLAGS=$(EXTRACFLAGS) ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- M=`pwd` clean
+	@make -C $(LINUX_KERNEL_DIR) EXTRA_CFLAGS=$(EXTRACFLAGS) ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- M=`pwd` clean

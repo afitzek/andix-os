@@ -67,7 +67,6 @@ $(A_OBJS):$(OUTDIR)%.o:%.S
 	$(arm-as-command)
 	
 .PHONY: clean
-clean:
-	@echo 
+clean: 
 	@echo Removing directory $(OUTDIR)
-	rm -rf $(OUTDIR)
+	@rm -rf $(OUTDIR)
