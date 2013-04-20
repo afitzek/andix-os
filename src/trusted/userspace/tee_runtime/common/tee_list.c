@@ -7,6 +7,7 @@
  */
 
 #include <tee_internal_api.h>
+#include <stdlib.h>
 
 /**
  * \defgroup list Common list
@@ -59,7 +60,7 @@ void list_remove(list *node)
   prev->next = next;
   node->next = node;
   node->prev = node;
-  free((uintptr_t)node);
+  free((void*)node);
 }
 
 int list_is_empty(list *head)
