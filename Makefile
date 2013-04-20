@@ -2,9 +2,6 @@ include script/config.mk
 include script/vars.mk
 include script/rules.mk
 
-SRCS = $(shell find -name '*.[cS]')
-OBJS = $(addprefix $(ANDIX_BUILD_DIR),$(addsuffix .o,$(basename $(SRCS))))
-
 .PHONY: all
 all: mkdirs tz_kernel_build tz_newlib_c_build
 
