@@ -1,9 +1,12 @@
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 
-include config.mk
-include vars.mk
-include rules.mk
-include arm_rules.mk
+include common.mk
+
+###############################################################################
+
+####
+# Configure sources
+####
 
 PROGRAM = tz/andix/kernel/
 OUTDIR = $(ANDIX_BUILD_DIR)/$(PROGRAM)
@@ -24,6 +27,8 @@ A_DIRS = $(sort $(dir $(A_OBJS)))
 OBJS = $(C_OBJS) $(A_OBJS)
 
 DIRS = $(sort $(C_DIRS) $(A_DIRS))
+
+###############################################################################
 
 LIBGCC_FILE = $(ARM_TOOLCHAIN_LIB_DIR)libgcc.a
 
