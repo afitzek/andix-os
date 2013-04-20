@@ -16,3 +16,4 @@ doc/generated/**/*
 # Ignore eclipse files
 .project
 .cproject
+.settings
