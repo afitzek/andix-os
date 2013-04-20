@@ -44,8 +44,9 @@ MKIMAGEARGS = -A arm -O linux -T kernel -a 0xB0000000 -e 0xB0008000 -n "ANDIX" -
 all:	mkbuilddirs $(OUTDIR)uImage.bin
 
 $(OUTDIR)uImage.bin: $(OUTDIR)andix.elfagain $(OUTDIR)andix.symagain
-	echo "GITHASH: $(GITHASH)"
-	$(MKIMAGE) $(MKIMAGEARGS) $(OUTDIR)uImage.bin
+	@echo "GITHASH: $(GITHASH)"
+	@$(MKIMAGE) $(MKIMAGEARGS) $(OUTDIR)uImage.bin
+	@cp $(OUTDIR)uImage.bin $(ANDIX_DEPLOY_DIR)/andix.img
 
 $(OUTDIR)%.symagain: $(OUTDIR)%.elfagain
 	$(arm-sym-command)
