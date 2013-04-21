@@ -23,6 +23,7 @@
 #include <linux/mm_types.h>
 #include <linux/mm.h>
 #include <linux/gfp.h>
+#include <linux/mutex.h>
 #include <communication_types.h>
 #include <tz_application_mod/types.h>
 #include <tz_application_mod/smc.h>
@@ -43,6 +44,10 @@
 #define PAGE_SIZE (0x1000)
 #endif
 
+#define CTRL_IDLE				(0)
+#define CTRL_PENDING_FROM_S		(1)
+#define CTRL_PENDING_IN_NS		(2)
+#define CTRL_RESPONSE_FROM_NS	(3)
 
 #define DRIVER_AUTHOR	"Andreas Fitzek <afitzek@student.tugraz.at>"
 #define DRIVER_DESC		"Andix TZ TEE Driver"
@@ -74,7 +79,8 @@ extern uint32_t tz_device;
 extern uint8_t initialized;
 extern struct file_operations tz_fops;
 extern struct cdev cdev;
-extern TZ_TEE_SPACE* tee_mem;
+extern TZ_MAIN_COM* com_mem;
+extern mutex ctlr_mutex;
 
 // =============================================================
 

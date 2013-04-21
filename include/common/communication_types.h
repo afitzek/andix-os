@@ -129,6 +129,7 @@ typedef struct {
 // NON SECURE CONTROL OPS:
 #define TZ_CTRL_OP_IDLE			0x01
 #define TZ_CTRL_OP_DEXIT		0x02
+#define TZ_CTRL_OP_FORK			0x03
 
 #define TZ_CTRL_OP_BOPEN		0x11
 #define TZ_CTRL_OP_BWRITE		0x12
