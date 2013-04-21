@@ -263,7 +263,7 @@ linux_app_daemon_clean:
 ####
 
 ####
-# Andix linux application daemon
+# Andix linux application library
 ####
 
 LINUX_APP_LIB = ANDIX LINUX APPLICATION LIBRARY
@@ -278,6 +278,18 @@ linux_app_lib_clean:
 	$(start-clean-command) $(LINUX_APP_LIB)
 	$(sep-command)
 	@$(make-command) $(NORM_US_APP_LIB_SRC) clean
+	$(sep-command)
+	
+linux_app_lib_doc:
+	$(start-build-doc-command) $(LINUX_APP_LIB)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_LIB_SRC) doc
+	$(sep-command)
+	
+linux_app_lib_pdfdoc:
+	$(start-build-pdfdoc-command) $(LINUX_APP_LIB)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_LIB_SRC) pdfdoc
 	$(sep-command)
 
 ####
