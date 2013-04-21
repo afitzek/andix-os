@@ -32,13 +32,16 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 		return (-ENOTTY);
 
 	switch (cmd) {
+	// TODO remove userspace maping of com memory!
+	// Use copy_(to/from)_user to process TEE and CTRL Requests
+	// Process TEE Request
 	case ANDIX_IOCTEEZ:
 		CP15DMB;
 		CP15DSB;
 		CP15ISB;
-		if (tee_mem) {
+		if (com_mem) {
 			printk(KERN_INFO "Calling SMC with %08X @ 0x%08X",
-					tee_mem->op, (unsigned int)tee_mem);
+					com_mem->op, (unsigned int)tee_mem);
 
 			if(tee_mem->op == (0x03)) {
 				tee_mem->params.regMem.paddr =
@@ -47,8 +50,11 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 
 			// Pending service call for TrustZone
 			__smc_1(SMC_PROCESS_TMEM, 0);
+
+
 		}
 		break;
+	// Get page offset for memory mapping
 	case ANDIX_IOGMOFF:
 		return (((uint32_t) tee_mem) & 0xFFF);
 	default: /* redundant, as cmd was checked against MAXNR */

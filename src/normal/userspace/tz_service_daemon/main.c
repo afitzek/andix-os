@@ -95,8 +95,10 @@ void dispatch_ctrl(TZ_CTLR_SPACE* space) {
 
 void dispatcher_loop(int fd, TZ_CTLR_SPACE *comm) {
 
-	comm->op = TZ_CTRL_OP_IDLE;
+	comm->op = TZ_CTRL_OP_FORK;
 	int8_t running = 1;
+	ioctl(fd, ANDIX_IOCTZ);
+	comm->op = TZ_CTRL_OP_IDLE;
 	while (running) {
 		ioctl(fd, ANDIX_IOCTZ);
 		printf("Got OP 0x%x\n", comm->op);

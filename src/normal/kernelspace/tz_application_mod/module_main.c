@@ -53,7 +53,7 @@ int _init_tz_driver(void) {
 	}
 	initialized = 2;
 
-	pgcount = sizeof(TZ_TEE_SPACE) / PAGE_SIZE;
+	pgcount = sizeof(TZ_MAIN_COM) / PAGE_SIZE;
 	log_alloc = 0;
 	pgcount_alloc = ipow(2, log_alloc);  // 2 ^ 0
 
@@ -64,22 +64,24 @@ int _init_tz_driver(void) {
 
 	//com_mem = kmalloc(sizeof(TZ_MAIN_COM), GFP_KERNEL);
 
-	tee_mem = (TZ_TEE_SPACE*)__get_free_pages(GFP_KERNEL, log_alloc);
+	com_mem = (TZ_MAIN_COM*)__get_free_pages(GFP_KERNEL, log_alloc);
 
-	if(tee_mem == NULL) {
-		printk(KERN_ERR "Failed to allocate tee memory\n");
+	if(com_mem == NULL) {
+		printk(KERN_ERR "Failed to allocate com memory\n");
 		return (1);
 	}
 
 	tee_mem->op = 0xDEADBEEF;
 
-	printk(KERN_INFO "TEE memory @ 0x%x p (0x%x)\n",
-			(unsigned int)tee_mem, virt_to_phys(tee_mem));
+	printk(KERN_INFO "COM memory @ 0x%x p (0x%x)\n",
+			(unsigned int)com_mem, virt_to_phys(com_mem));
 
-	if(register_tee_mem_in_tz(tee_mem) != 0) {
-		free_pages((unsigned long)tee_mem, (unsigned int)log_alloc);
-		printk(KERN_ERR "Failed to register tee memory\n");
+	if(register_tee_mem_in_tz(com_mem) != 0) {
+		free_pages((unsigned long)com_mem, (unsigned int)log_alloc);
+		printk(KERN_ERR "Failed to register com memory\n");
 	}
+
+	mutex_init(&ctlr_mutex);
 
 	return (SUCCESS);
 }
@@ -87,11 +89,11 @@ int _init_tz_driver(void) {
 void _exit_tz_driver(void) {
 	printk(KERN_INFO "Exiting TrustZone driver for andix OS\n");
 
-	if(tee_mem != NULL) {
-		printk(KERN_INFO "Freeing tee memory TrustZone character device for andix OS (<%d>:<%d>)\n",
+	if(com_mem != NULL) {
+		printk(KERN_INFO "Freeing com memory TrustZone character device for andix OS (<%d>:<%d>)\n",
 				MAJOR(tz_device), MINOR(tz_device));
 		unregister_tee_mem_from_tz();
-		free_pages((unsigned long)tee_mem, (unsigned int)log_alloc);
+		free_pages((unsigned long)com_mem, (unsigned int)log_alloc);
 	}
 
 	if(initialized > 1) {
