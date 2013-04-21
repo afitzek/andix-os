@@ -433,6 +433,7 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		}
 		*/
 		// Return to non secure world
+		get_nonsecure_task()->context.r[0] = cont->r[0];
 		mon_secure_switch_context(cont, get_nonsecure_task());
 		break;
 	default:

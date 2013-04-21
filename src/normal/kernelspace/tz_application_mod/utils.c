@@ -42,7 +42,7 @@ int ipow(int base, int exp)
 }
 
 // helper function, mmap's the kmalloc'd area which is physically contiguous
-int mmap_comm_mem(struct file *filp, struct vm_area_struct *vma, TZ_TEE_SPACE* com)
+/*int mmap_comm_mem(struct file *filp, struct vm_area_struct *vma, TZ_TEE_SPACE* com)
 {
         int ret;
         long length = vma->vm_end - vma->vm_start;
@@ -57,8 +57,8 @@ int mmap_comm_mem(struct file *filp, struct vm_area_struct *vma, TZ_TEE_SPACE* c
         }
 
 
-        /* check length - do not allow larger mappings than the number of
-           pages allocated */
+        // check length - do not allow larger mappings than the number of
+        //   pages allocated
         if (length > (pgcount * pgsize)) {
         	printk(KERN_WARNING "Failed to map comm memory len is %d should be max %d",
         			(int)length, (int)(pgcount * pgsize));
@@ -71,7 +71,7 @@ int mmap_comm_mem(struct file *filp, struct vm_area_struct *vma, TZ_TEE_SPACE* c
 
         vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 
-        /* map the whole physically contiguous area in one piece */
+        // map the whole physically contiguous area in one piece
         if ((ret = remap_pfn_range(vma,
                                    vma->vm_start,
                                    virt_to_phys((void *)com) >> PAGE_SHIFT,
@@ -84,4 +84,4 @@ int mmap_comm_mem(struct file *filp, struct vm_area_struct *vma, TZ_TEE_SPACE* c
         printk(KERN_INFO "Simple VMA open, virt %lx, phys %lx\n",
         		vma->vm_start, vma->vm_pgoff << PAGE_SHIFT);
         return (0);
-}
+}*/

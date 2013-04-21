@@ -28,6 +28,8 @@
 #include <tz_application_mod/types.h>
 #include <tz_application_mod/smc.h>
 #include <tz_application_mod/utils.h>
+#include <tz_application_mod/ctrl_mem.h>
+#include <tz_application_mod/tee_mem.h>
 
 #ifndef KERN_ERR
 #define KERN_EMERG  "<0>"   /* system is unusable               */
@@ -49,19 +51,12 @@
 #define CTRL_PENDING_IN_NS		(2)
 #define CTRL_RESPONSE_FROM_NS	(3)
 
-#define DRIVER_AUTHOR	"Andreas Fitzek <afitzek@student.tugraz.at>"
+#define DRIVER_AUTHOR	"Andreas Fitzek <andreas.fitzek@iaik.tugraz.at>"
 #define DRIVER_DESC		"Andix TZ TEE Driver"
 #define DEVICE_NAME		"andixtee"
 #define BUF_LEN			80
 
 #define SUCCESS			0
-
-#define ANDIXTZ_IOC_MAGIC  'T'
-#define ANDIX_IOCTZ 		_IOW(ANDIXTZ_IOC_MAGIC,  1, int)
-#define ANDIX_IOGMOFF		_IOW(ANDIXTZ_IOC_MAGIC,  2, int)
-#define ANDIX_IOCTEEZ 		_IOW(ANDIXTZ_IOC_MAGIC,  3, int)
-
-#define ANDIX_IOC_MAXNR 	3
 
 #define SMC_REGISTER_CMEM	0x01
 #define SMC_UNREGISTER_CMEM	0x02
@@ -79,8 +74,6 @@ extern uint32_t tz_device;
 extern uint8_t initialized;
 extern struct file_operations tz_fops;
 extern struct cdev cdev;
-extern TZ_MAIN_COM* com_mem;
-extern mutex ctlr_mutex;
 
 // =============================================================
 
@@ -97,15 +90,17 @@ void _exit_tz_driver( void );
 int tz_driver_open(struct inode *, struct file *);
 int tz_driver_release(struct inode *, struct file *);
 long tz_driver_ioctl(struct file *, unsigned int, unsigned long);
-int tz_driver_mmap(struct file *, struct vm_area_struct *);
+//int tz_driver_mmap(struct file *, struct vm_area_struct *);
 // =============================================================
 
+int tz_process_ctrl_mem(void);
+int tz_process_tee_mem(TZ_TEE_SPACE* userspace);
 
 // =============================================================
 // TrustZone Service
 // =============================================================
-int register_tee_mem_in_tz(TZ_TEE_SPACE *com);
-int unregister_tee_mem_from_tz(void);
+//int register_tee_mem_in_tz(TZ_TEE_SPACE *com);
+//int unregister_tee_mem_from_tz(void);
 // =============================================================
 
 

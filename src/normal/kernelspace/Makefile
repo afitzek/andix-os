@@ -34,7 +34,7 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 obj-m := andixtz.o andixtee.o
 andixtz-objs := tz_service_mod/utils.o tz_service_mod/module_main.o tz_service_mod/andixservice.o tz_service_mod/tz_file_ops.o
-andixtee-objs := tz_application_mod/utils.o tz_application_mod/module_main.o tz_application_mod/andixservice.o tz_application_mod/tz_file_ops.o
+andixtee-objs := tz_application_mod/utils.o tz_application_mod/module_main.o tz_application_mod/ctrl_mem.o tz_application_mod/tz_file_ops.o tz_application_mod/tee_mem.o
 ccflags-y := -mcpu=cortex-a8 -I $(NORM_K_INC) -I $(ANDIX_INC_COMMON)
 
 KBUILD_OUTPUT := $(OUTDIR)

@@ -7,6 +7,7 @@
 
 #include <andixtz.h>
 #include <k_comm.h>
+#include <andix_tz_mod.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -21,23 +22,23 @@ int tee_fd = 0;
 TZ_TEE_SPACE *comm = NULL;
 
 int processComm() {
+	int res = -1;
 	if (comm != NULL ) {
 		if (tee_fd != 0) {
 			printf("CALLING TZ TEE\n");
-			ioctl(tee_fd, ANDIX_IOCTEEZ);
+			res = ioctl(tee_fd, ANDIX_TEE_PUSH, comm);
 			printf("RETURN FROM TZ TEE\n");
-			return 0;
 		}
 	}
-	return -1;
+	return (res);
 }
 
-TZ_TEE_SPACE * getCommSpace() {
+TZ_TEE_SPACE* getCommSpace() {
 	if (comm == NULL ) {
 		if (tee_fd == 0) {
 			openTEEDevice();
 		}
-		mapCommMem();
+		allocCommMem();
 		atexit(doexit);
 	}
 	return comm;
@@ -51,10 +52,10 @@ void closeTEEDevice() {
 	}
 }
 
-void unmapCommMem() {
+void freeCommMem() {
 	if (comm != NULL ) {
-		printf("unmapping communication memory\n");
-		munmap(comm, sizeof(TZ_TEE_SPACE));
+		printf("freeing communication memory\n");
+		free(comm);
 		comm = NULL;
 	}
 }
@@ -68,29 +69,9 @@ void openTEEDevice() {
 	}
 }
 
-void mapCommMem() {
-	uint32_t poff;
-	uint32_t orig;
-
-	printf("mapping comm memory!\n");
-
-	comm = (TZ_TEE_SPACE *) mmap(NULL, sizeof(TZ_TEE_SPACE) + 0x1000,
-			PROT_READ | PROT_WRITE, MAP_SHARED, tee_fd, 0);
-	orig = (uint32_t)comm;
-	if (comm == NULL || comm == MAP_FAILED ) {
-		printf("FAILED TO map tee memory: %s\n", (char*) strerror(errno));
-		doexit();
-	}
-
-	printf("TEE memory is mapped @ 0x%08x\n", (uint32_t)comm);
-
-	poff = ioctl(tee_fd, ANDIX_IOGMOFF);
-
-	printf("TEE memory page offset 0x%08x\n", poff);
-
-	comm = (TZ_TEE_SPACE*) (((uint32_t) comm) | poff);
-
-	printf("TEE memory is located @ 0x%08x\n", (uint32_t)comm);
+void allocCommMem() {
+	freeCommMem();
+	comm = (TZ_TEE_SPACE*)malloc(sizeof(TZ_TEE_SPACE));
 }
 
 pthread_mutex_t commMutex = PTHREAD_MUTEX_INITIALIZER;

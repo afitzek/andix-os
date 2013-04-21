@@ -11,11 +11,7 @@
 
 #include <communication_types.h>
 
-#define ANDIXTZ_IOC_MAGIC  'Y'
-#define ANDIX_IOCTZ 		_IOW(ANDIXTZ_IOC_MAGIC,  1, int)
-#define ANDIX_IOGMOFF		_IOW(ANDIXTZ_IOC_MAGIC,  2, int)
-
-#define DEVICE_NAME			"/dev/andixtz0"
+#define DEVICE_NAME			"/dev/andixtee0"
 
 #define TZ_ROOT				"/tz/"
 #define TZ_FEND				".tz"

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <andixtz.h>
+#include <andix_tz_mod.h>
 #include <sys/ioctl.h>
 #include <signal.h>
 #include <sys/mman.h>
@@ -93,20 +94,19 @@ void dispatch_ctrl(TZ_CTLR_SPACE* space) {
 	}
 }
 
-void dispatcher_loop(int fd, TZ_CTLR_SPACE *comm) {
-
-	comm->op = TZ_CTRL_OP_FORK;
-	int8_t running = 1;
-	ioctl(fd, ANDIX_IOCTZ);
-	comm->op = TZ_CTRL_OP_IDLE;
+void dispatcher_loop(int fd) {
+	TZ_CTLR_SPACE comm;
+	int running = 1;
+	int result = 0;
 	while (running) {
-		ioctl(fd, ANDIX_IOCTZ);
-		printf("Got OP 0x%x\n", comm->op);
-		if (comm->op == TZ_CTRL_OP_DEXIT) {
-			running = 0;
-			continue;
-		} else {
-			dispatch_ctrl(comm);
+		result = ioctl(fd, ANDIX_CTRL_POLL, &comm);
+		if (result == 1) {
+			if (comm.op == TZ_CTRL_OP_DEXIT) {
+				running = 0;
+				continue;
+			} else {
+				dispatch_ctrl(&comm);
+			}
 		}
 	}
 }
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 	fd_tz = openTZ();
 
 	if (fd_tz < 0) {
-		printf("FAILED TO open device: %s\n", (char*)strerror(errno));
+		printf("FAILED TO open device: %s\n", (char*) strerror(errno));
 		goto cleanup;
 	}
 
@@ -131,33 +131,34 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 	fflush(stderr);
 
-	comm = (TZ_CTLR_SPACE *) mmap(NULL, sizeof(TZ_CTLR_SPACE) + 0x1000,
-			PROT_READ | PROT_WRITE, MAP_SHARED, fd_tz, 0);
-	uint32_t orig = (uint32_t)comm;
-	if (comm == NULL || comm == MAP_FAILED ) {
-		printf("FAILED TO map communication memory: %s\n", (char*)strerror(errno));
-		goto cleanup;
-	}
+	/*
+	 comm = (TZ_CTLR_SPACE *) mmap(NULL, sizeof(TZ_CTLR_SPACE) + 0x1000,
+	 PROT_READ | PROT_WRITE, MAP_SHARED, fd_tz, 0);
+	 uint32_t orig = (uint32_t)comm;
+	 if (comm == NULL || comm == MAP_FAILED ) {
+	 printf("FAILED TO map communication memory: %s\n", (char*)strerror(errno));
+	 goto cleanup;
+	 }
 
-	printf("Communication memory is mapped @ 0x%08x\n", (uint32_t)comm);
+	 printf("Communication memory is mapped @ 0x%08x\n", (uint32_t)comm);
 
-	uint32_t poff = ioctl(fd_tz, ANDIX_IOGMOFF);
+	 uint32_t poff = ioctl(fd_tz, ANDIX_IOGMOFF);
 
-	printf("Communication memory page offset 0x%08x\n", poff);
+	 printf("Communication memory page offset 0x%08x\n", poff);
 
-	comm = (TZ_CTLR_SPACE*) (((uint32_t) comm) | poff);
+	 comm = (TZ_CTLR_SPACE*) (((uint32_t) comm) | poff);
 
-	printf("Communication memory is located @ 0x%08x\n", (uint32_t)comm);
-
-	dispatcher_loop(fd_tz, comm);
+	 printf("Communication memory is located @ 0x%08x\n", (uint32_t)comm);
+	 */
+	dispatcher_loop(fd_tz);
 
 	printf("################## TZ SERVICE DAEMON ##################\n");
 
 	cleanup:
-
-	if (comm != NULL && comm != MAP_FAILED ) {
-		munmap(comm, sizeof(TZ_CTLR_SPACE));
-	}
+	/*
+	 if (comm != NULL && comm != MAP_FAILED ) {
+	 munmap(comm, sizeof(TZ_CTLR_SPACE));
+	 }*/
 
 	if (fd_tz > 0) {
 		printf("closing TZ device\n");
