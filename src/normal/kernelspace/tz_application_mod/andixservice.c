@@ -8,6 +8,13 @@
 
 #include <tz_application_mod/andixtee.h>
 
+TZ_CTLR_SPACE ctrlspace;
+int pending;
+
+int poll_ctrl_task() {
+
+}
+
 int register_tee_mem_in_tz(TZ_TEE_SPACE *com) {
 	uint32_t paddr = virt_to_phys((void*) com);
 	uint32_t res = 0;
