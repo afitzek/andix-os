@@ -1,6 +1,6 @@
 #!/bin/sh
 
 echo "Unloading Kernel modules...\n"
-sh tz_tee.kuld
-sh tz_ctrl.kuld
+sh scripts/tz_tee.kuld
+sh scripts/tz_ctrl.kuld
 echo "Kernel modules unloaded\n"
