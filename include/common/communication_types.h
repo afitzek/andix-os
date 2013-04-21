@@ -72,7 +72,7 @@ typedef int64_t* int64ptr_t;
 #define TZ_CTRL_REE_FS_FSTAT_RET	0x185
 #define TZ_CTRL_REE_FS_LSEEK_RET	0x186
 
-#define TEEC_CONFIG_SHAREDMEM_MAX_SIZE (0x1000000) // 16MB
+//#define TEEC_CONFIG_SHAREDMEM_MAX_SIZE (0x1000000) // 16MB
 
 #define TZ_FS_HASH_SIZE			(32)
 #define TZ_BLOCK_SIZE	(1024)
@@ -151,7 +151,7 @@ typedef struct {
 	uint16_t timeMid;
 	uint16_t timeHiAndVersion;
 	uint8_t clockSeqAndNode[8];
-} TEEC_UUID;
+} TEECOM_UUID;
 
 typedef struct {
 	uint32_t	memid;
@@ -172,7 +172,7 @@ typedef struct
 	uint32_t		started;
 	uint32_t		paramTypes;
 	TEEC_Paramter	params[4];
-} TEEC_Operation;
+} TEECOM_Operation;
 
 // DEVICE FLAGS
 
@@ -246,10 +246,10 @@ typedef struct {
 typedef struct {
 	uint32_t	context;
 	uint32_t	session;
-	TEEC_UUID	uuid;
+	TEECOM_UUID	uuid;
 	uint32_t	connectionMethod;
 	uint32_t	connectionData;
-	TEEC_Operation	operation;
+	TEECOM_Operation	operation;
 	uint32_t	returnOrigin;
 } TZ_TEE_OPEN_SESSION;
 
@@ -260,7 +260,7 @@ typedef struct {
 typedef struct {
 	uint32_t	session;
 	uint32_t	command;
-	TEEC_Operation	operation;
+	TEECOM_Operation	operation;
 	uint32_t	returnOrigin;
 } TZ_TEE_INVOKE_CMD;
 
