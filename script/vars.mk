@@ -84,6 +84,7 @@ NORM_KS_SERV_INC := $(NORM_K_INC)/tz_service_mod
 
 NORM_US_APP_DAEMON_INC := $(NORM_U_INC)/tz_application_daemon
 NORM_US_APP_LIB_INC := $(NORM_U_INC)/tz_application_library
+NORM_US_APP_INC := $(NORM_U_INC)/tz_application
 NORM_US_SERVICE_DAEMON_INC := $(NORM_U_INC)/tz_service_daemon
 
 ####
@@ -118,6 +119,7 @@ NORM_KS_SERV_SRC := $(NORM_K_SRC)/tz_service_mod
 
 NORM_US_APP_DAEMON_SRC := $(NORM_U_SRC)/tz_application_daemon
 NORM_US_APP_LIB_SRC := $(NORM_U_SRC)/tz_application_library
+NORM_US_APP_SRC := $(NORM_U_SRC)/tz_application
 NORM_US_SERVICE_DAEMON_SRC := $(NORM_U_SRC)/tz_service_daemon
 
 ####

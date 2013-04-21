@@ -50,6 +50,8 @@ void entry_main_task() {
 	// Reading User input for password
 	// ========================================================================
 
+	getSerial();
+
 	int decision = 'n';
 
 	kprintf("%s\n", LINE_SEPERATOR);

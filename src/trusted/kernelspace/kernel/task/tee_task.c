@@ -47,10 +47,10 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 		return (TEE_ERROR_BAD_PARAMETERS);
 	}
 
-	if (operation->size > TEEC_CONFIG_SHAREDMEM_MAX_SIZE) {
+	/*if (operation->size > TEEC_CONFIG_SHAREDMEM_MAX_SIZE) {
 		tee_error("Invalid memory size : 0x%x", operation->size);
 		return (TEE_ERROR_BAD_PARAMETERS);
-	}
+	}*/
 
 	tee_context* ctx = tee_context_find(operation->context);
 

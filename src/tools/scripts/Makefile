@@ -8,6 +8,7 @@ all:
 	@cp *.sh $(ANDIX_DEPLOY_DIR)/scripts
 	@cp *.kld $(ANDIX_DEPLOY_DIR)/scripts
 	@cp *.kuld $(ANDIX_DEPLOY_DIR)/scripts
+	@cp buildload.sh $(ANDIX_DEPLOY_DIR)
 
 .PHONY: clean	
 clean:
