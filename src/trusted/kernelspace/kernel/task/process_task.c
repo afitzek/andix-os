@@ -14,13 +14,17 @@
 
 void process_entry() {
 	//task_t* nonsec = get_nonsecure_task();
-
+	TZ_TEE_SPACE tee_space;
 	while (1) {
-		TZ_CTLR_SPACE* ctrl = mon_get_control_space();
+		TZ_MAIN_COM* ctrl = mon_get_control_space();
 
 		if (ctrl != NULL ) {
-			mon_info("Control Structur OP: %d", ctrl->op);
-			if (ctrl->op == TZ_CTRL_OP_IDLE) {
+			ctrl->p.tee
+			//mon_info("Control Structur OP: %d", ctrl->op);
+			/*if (ctrl->op == TZ_CTRL_OP_IDLE) {
+				get_current_task()->state = BLOCKED;
+			}*/
+			/*if (ctrl->op == TZ_CTRL_OP_IDLE) {
 				cfs_t file;
 				uint8_t sample_buf[100];
 				uint8_t sample_buf2[100];
@@ -60,7 +64,7 @@ void process_entry() {
 				}
 
 				ctrl->op = TZ_CTRL_OP_DEXIT;
-			}
+			}*/
 		}
 		//print_tasks();
 

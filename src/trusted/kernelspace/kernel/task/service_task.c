@@ -24,20 +24,23 @@ void service_entry() {
 			// Nothing more to do ...
 			get_current_task()->state = BLOCKED;
 		} else {
-			TZ_CTLR_SPACE *ctrl = mon_get_control_space();
+			TZ_MAIN_COM *ctrl = mon_get_control_space();
 
 			if (ctrl == NULL ) {
 				service_error("No control structure available!");
 				yield();
 			}
 
-			memcpy(ctrl, request->ctrl_space, sizeof(TZ_CTLR_SPACE));
+			// Copy control com space
+			memcpy(ctrl->p.ctrl, request->ctrl_space, sizeof(TZ_CTLR_SPACE));
+			ctrl->req_type = CTRL_STRUCT;
 
 			//service_info("Calling service ctrl request");
 
 			mon_ctrl_request();
 
-			memcpy(request->ctrl_space, ctrl, sizeof(TZ_CTLR_SPACE));
+			// Copy control com space
+			memcpy(request->ctrl_space, ctrl->p.ctrl, sizeof(TZ_CTLR_SPACE));
 
 			//service_info("Returned service ctrl request");
 
