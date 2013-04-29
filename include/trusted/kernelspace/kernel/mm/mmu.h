@@ -22,6 +22,7 @@
 void vmm_get_virt_block_size(uintptr_t vtable, uint32_t addr, uintptr_t start, uintptr_t end);
 
 void unmap_kernel_memory(uint32_t vaddr);
+void unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd);
 int32_t map_kernel_memory(kernel_mem_info_t *section);
 int32_t map_kernel_sections(uint32_t start, uint32_t end, uint32_t vstart,
 		kernel_mem_info_t *section);
