@@ -14,6 +14,7 @@ int push_tee_to_userspace(TZ_TEE_SPACE *userspace);
 int push_tee_to_com(TZ_TEE_SPACE *userspace);
 int register_tee_mem_in_tz(TZ_TEE_SPACE *com);
 int unregister_tee_mem_from_tz(void);
+TZ_TEE_SPACE *get_shared_tee_mem();
 void cleanup_tee(void);
 int initialize_tee(void);
 

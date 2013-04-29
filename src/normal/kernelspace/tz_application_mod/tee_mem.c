@@ -70,6 +70,14 @@ int register_tee_mem_in_tz(TZ_TEE_SPACE *com) {
 	return ((int) res);
 }
 
+TZ_TEE_SPACE *get_shared_tee_mem() {
+	if (tee_init == 1 && shared_tee_mem != NULL) {
+		return (shared_tee_mem);
+	} else {
+		return (NULL);
+	}
+}
+
 int unregister_tee_mem_from_tz() {
 	uint32_t res = 0;
 	printk(KERN_INFO "Unregistering tee memory");

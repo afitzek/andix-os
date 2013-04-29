@@ -61,18 +61,18 @@ int tz_process_tee_mem(TZ_TEE_SPACE* userspace) {
 
 	int result = 0;
 
+	if(get_shared_tee_mem() == NULL) {
+		return (-1);
+	}
+
+	//TODO: get mutex
 	push_tee_to_com(userspace);
 
 	// CALL Monitor with TEE mem
-	CP15DMB;
-	CP15DSB;
-	CP15ISB;
-	result = __smc_1(SMC_PROCESS_TMEM, 0);
-	if (result == CTRL_STRUCT) {
-		result = tz_process_ctrl_mem();
-	}
+	result = tee_process(get_shared_tee_mem());
 
 	push_tee_to_userspace(userspace);
+	//TODO: release mutex
 
 	return (result);
 }
