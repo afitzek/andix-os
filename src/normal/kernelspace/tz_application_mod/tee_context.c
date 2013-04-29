@@ -5,12 +5,12 @@
  *      Author: andy
  */
 
-#include <linux/random.h>
+#include <tz_application_mod/tee_context.h>
 
 tee_list_t* tee_contexts;
 
 int tee_context_init() {
-	tee_contexts = (tee_list_t*) kmalloc(sizeof(tee_list_t));
+	tee_contexts = (tee_list_t*) kmalloc(sizeof(tee_list_t), GFP_KERNEL);
 
 	if (tee_contexts == NULL) {
 		printk(KERN_ERR "tee_context_init: Out of memory");
@@ -25,7 +25,7 @@ int tee_context_init() {
 tee_context* tee_context_add() {
 	uint32_t id = 0;
 
-	tee_context* ctx = (tee_context*) kmalloc(sizeof(tee_context));
+	tee_context* ctx = (tee_context*) kmalloc(sizeof(tee_context), GFP_KERNEL);
 
 	tee_context* ctx_with_id = NULL;
 
@@ -83,7 +83,7 @@ tee_context* tee_context_find_by_tzid(uint32_t tzid) {
 	{
 		if (pos->data != NULL) {
 			ctx = (tee_context*) pos->data;
-			if (ctx != NULL && ctx->tzid == tzid) {
+			if (ctx != NULL && ctx->tz_id == tzid) {
 				break;
 			}
 			ctx = NULL;

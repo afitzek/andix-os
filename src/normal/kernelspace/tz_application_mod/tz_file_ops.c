@@ -13,6 +13,7 @@
 #include <linux/cred.h>
 #include <linux/uaccess.h>
 #include <andix_tz_mod.h>
+#include <tz_application_mod/tee_logic.h>
 
 //static atomic_t tz_dev_available = ATOMIC_INIT(1);
 
@@ -27,34 +28,6 @@ int tz_driver_open(struct inode * inode, struct file * file) {
 int tz_driver_release(struct inode * inode, struct file * file) {
 	//atomic_inc(&tz_dev_available); // release the device
 	return (0);
-}
-
-int tz_process_ctrl_mem() {
-	int result = 0;
-
-	while (1) {
-
-		// Push ctrl struct to userspace daemon
-		push_ctrl_task_from_s();
-
-		while (poll_ctrl_task_to_s() == 0) {
-			// wait until ctrl task was proccessed
-			schedule();
-		}
-
-		// CALL Monitor with CTRL mem response
-		CP15DMB;
-		CP15DSB;
-		CP15ISB;
-		result = __smc_1(SMC_PROCESS_CMEM, 0);
-
-		if (result == TEE_STRUCT) {
-			// is response is TEE break
-			break;
-		}
-	}
-
-	return (result);
 }
 
 int tz_process_tee_mem(TZ_TEE_SPACE* userspace) {

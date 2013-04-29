@@ -8,6 +8,8 @@
 #ifndef TEE_LIST_H_
 #define TEE_LIST_H_
 
+#include <linux/slab.h>
+
 struct __tee_list {
 	void* 			 data; /**< Data for this list entry */
 	struct __tee_list* next; /**< next list entry */

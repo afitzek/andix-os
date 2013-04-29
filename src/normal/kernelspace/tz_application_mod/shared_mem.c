@@ -5,6 +5,8 @@
  *      Author: andy
  */
 
+#include <tz_application_mod/andixtee.h>
+
 int needed_log_pages(size_t memsize) {
 	int pgcount = memsize / PAGE_SIZE;
 	int log_alloc = 0;

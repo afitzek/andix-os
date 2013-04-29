@@ -8,10 +8,10 @@
 #include <tz_application_mod/tee_memory.h>
 #include <tz_application_mod/tee_list.h>
 
-tee_shared_memory* tee_memories;
+tee_list_t* tee_memories;
 
 int tee_memory_init() {
-	tee_memories = (tee_list_t*) kmalloc(sizeof(tee_list_t));
+	tee_memories = (tee_list_t*) kmalloc(sizeof(tee_list_t), GFP_KERNEL);
 
 	if (tee_memories == NULL) {
 		printk(KERN_ERR "tee_memory_init: Out of memory");
@@ -27,7 +27,7 @@ tee_shared_memory* tee_memory_add(tee_context* ctx) {
 	uint32_t id = 0;
 
 	tee_shared_memory* mem = (tee_shared_memory*) kmalloc(
-			sizeof(tee_shared_memory));
+			sizeof(tee_shared_memory), GFP_KERNEL);
 
 	tee_shared_memory* mem_with_id = NULL;
 
@@ -39,7 +39,7 @@ tee_shared_memory* tee_memory_add(tee_context* ctx) {
 	do {
 		get_random_bytes(&id, sizeof(id));
 		mem_with_id = tee_memory_find_by_id(id);
-	} while (session_with_id != NULL);
+	} while (mem_with_id != NULL);
 
 	mem->id = id;
 	mem->ctx = ctx;
@@ -68,7 +68,7 @@ tee_shared_memory* tee_memory_find_by_id(uint32_t id) {
 	{
 		if (pos->data != NULL) {
 			mem = (tee_shared_memory*) pos->data;
-			if (session != NULL && mem->id == id) {
+			if (mem != NULL && mem->id == id) {
 				break;
 			}
 			mem = NULL;
@@ -86,7 +86,7 @@ tee_shared_memory* tee_memory_find_by_tzid(uint32_t tzid) {
 	{
 		if (pos->data != NULL) {
 			mem = (tee_shared_memory*) pos->data;
-			if (session != NULL && mem->tzid == tzid) {
+			if (mem != NULL && mem->tz_id == tzid) {
 				break;
 			}
 			mem = NULL;
@@ -104,7 +104,7 @@ tee_shared_memory* tee_memory_find_by_ctx(tee_context* ctx) {
 	{
 		if (pos->data != NULL) {
 			mem = (tee_shared_memory*) pos->data;
-			if (session != NULL && mem->ctx == ctx) {
+			if (mem != NULL && mem->ctx == ctx) {
 				break;
 			}
 			mem = NULL;
@@ -122,7 +122,7 @@ tee_shared_memory* tee_memory_find_by_paddr(void* paddr) {
 	{
 		if (pos->data != NULL) {
 			mem = (tee_shared_memory*) pos->data;
-			if (session != NULL && mem->com_paddr == paddr) {
+			if (mem != NULL && mem->com_paddr == paddr) {
 				break;
 			}
 			mem = NULL;

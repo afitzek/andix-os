@@ -8,6 +8,9 @@
 #ifndef TEE_MEMORY_H_
 #define TEE_MEMORY_H_
 
+#include <tz_application_mod/tee_context.h>
+#include <tz_application_mod/types.h>
+
 #define TEE_MEM_STATE_UNMAPPED		(0)
 #define TEE_MEM_STATE_READY			(1)
 
@@ -23,7 +26,7 @@ typedef struct {
 	size_t size;
 } tee_shared_memory;
 
-int tee_memory_init();
+int tee_memory_init(void);
 tee_shared_memory* tee_memory_add(tee_context* ctx);
 void tee_memory_free(tee_shared_memory* session);
 tee_shared_memory* tee_memory_find_by_id(uint32_t id);

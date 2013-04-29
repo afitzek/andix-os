@@ -16,7 +16,7 @@ typedef struct {
 	uint32_t tz_id;
 } tee_session;
 
-int tee_session_init();
+int tee_session_init(void);
 tee_session* tee_session_add(tee_context* ctx);
 void tee_session_free(tee_session* session);
 tee_session* tee_session_find_by_id(uint32_t id);

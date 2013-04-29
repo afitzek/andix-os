@@ -20,16 +20,9 @@ void tee_list_link(tee_list_t* prev, tee_list_t* next, tee_list_t* node) {
 	prev->next = node;
 }
 
-void list_dump(tee_list_t* head) {
-	list_debug("List: 0x%x", head);
-	list_debug("Next: 0x%x", head->next);
-	list_debug("Prev: 0x%x", head->prev);
-	list_debug("Data: 0x%x", head->data);
-}
-
 int tee_list_add(tee_list_t* head, void* data) {
 	tee_list_t* node = NULL;
-	node = (tee_list_t*) kmalloc(sizeof(tee_list_t));
+	node = (tee_list_t*) kmalloc(sizeof(tee_list_t), GFP_KERNEL);
 	if (node == NULL) {
 		printk(KERN_ERR "Failed to allocate memory for list node!");
 		return (-1);

@@ -11,7 +11,7 @@
 tee_list_t* tee_sessions;
 
 int tee_session_init() {
-	tee_sessions = (tee_list_t*) kmalloc(sizeof(tee_list_t));
+	tee_sessions = (tee_list_t*) kmalloc(sizeof(tee_list_t), GFP_KERNEL);
 
 	if (tee_sessions == NULL) {
 		printk(KERN_ERR "tee_session_init: Out of memory");
@@ -26,7 +26,8 @@ int tee_session_init() {
 tee_session* tee_session_add(tee_context* ctx) {
 	uint32_t id = 0;
 
-	tee_session* session = (tee_session*) kmalloc(sizeof(tee_session));
+	tee_session* session = (tee_session*) kmalloc(sizeof(tee_session),
+			GFP_KERNEL);
 
 	tee_session* session_with_id = NULL;
 

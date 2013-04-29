@@ -9,6 +9,9 @@
 #include <communication_types.h>
 #include <tz_application_mod/tee_operations.h>
 #include <tee_client_api.h>
+#include <tz_application_mod/smc.h>
+#include <tz_application_mod/tee_mem.h>
+#include <linux/sched.h>
 
 int tee_init() {
 	if (tee_context_init() != 0) {
@@ -26,10 +29,39 @@ int tee_init() {
 	return (0);
 }
 
+int tz_process_ctrl_mem() {
+	int result = 0;
+
+	while (1) {
+
+		// Push ctrl struct to userspace daemon
+		push_ctrl_task_from_s();
+
+		while (poll_ctrl_task_to_s() == 0) {
+			// wait until ctrl task was proccessed
+			schedule();
+		}
+
+		// CALL Monitor with CTRL mem response
+		CP15DMB;
+		CP15DSB;
+		CP15ISB;
+		result = __smc_1(SMC_PROCESS_CMEM, 0);
+
+		if (result == TEE_STRUCT) {
+			// is response is TEE break
+			break;
+		}
+	}
+
+	return (result);
+}
+
+
 int tee_process(TZ_TEE_SPACE* com_mem) {
 	int result = 0;
 	int tz_result = 0;
-	op_event* event = NULL;
+	const op_event* event = NULL;
 
 	switch (com_mem->op) {
 	case TZ_TEE_OP_INIT_CTX:
@@ -39,10 +71,10 @@ int tee_process(TZ_TEE_SPACE* com_mem) {
 		event = &tee_ctx_finalize;
 		break;
 	case TZ_TEE_OP_REGISTER_MEM:
-		event = &tee_ctx_init;
+		event = &tee_mem_reg;
 		break;
 	case TZ_TEE_OP_RELEASE_MEM:
-		event = &tee_ctx_init;
+		event = &tee_mem_rel;
 		break;
 	}
 

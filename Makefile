@@ -4,7 +4,7 @@ include script/rules.mk
 
 .PHONY: all
 all: mkdirs tool_builds tz_builds linux_builds
-	@cd $(ANDIX_DEPLOY_DIR); ./buildload.sh
+	@cd $(ANDIX_DEPLOY_DIR); chmod +x buildload.sh; ./buildload.sh
 	@cat src/instruction.txt
 	@tree -h deploy
 
