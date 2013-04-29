@@ -16,10 +16,10 @@ void process_entry() {
 	//task_t* nonsec = get_nonsecure_task();
 	TZ_TEE_SPACE tee_space;
 	while (1) {
-		TZ_MAIN_COM* ctrl = mon_get_control_space();
+		TZ_TEE_SPACE* tee_com = mon_get_tee_space();
 
-		if (ctrl != NULL ) {
-			ctrl->p.tee
+		if (tee_com != NULL ) {
+
 			//mon_info("Control Structur OP: %d", ctrl->op);
 			/*if (ctrl->op == TZ_CTRL_OP_IDLE) {
 				get_current_task()->state = BLOCKED;
