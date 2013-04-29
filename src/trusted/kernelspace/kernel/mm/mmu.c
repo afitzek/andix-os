@@ -288,18 +288,16 @@ void dump_mmu(uint32_t vstart, uint32_t vend, uint32_t* l1_tt) {
 								|| (l2_tt[l2idx] & L2_TYPE_MASK)
 										== SMALL_PAGE_TYPE + 1) {
 							vmm_debug(
-									" -- [%d] 0x%x ... 0x%x -> 0x%x ... 0x%x [%d] @ "
-											"0x%x", l2idx, virt2,
-									virt2 + SMALL_PAGE_SIZE - 1, phys,
-									phys + SMALL_PAGE_SIZE - 1,
+									" -- [%d] 0x%x ... 0x%x -> 0x%x ... 0x%x [%d] @ " "0x%x",
+									l2idx, virt2, virt2 + SMALL_PAGE_SIZE - 1,
+									phys, phys + SMALL_PAGE_SIZE - 1,
 									l2_tt[l2idx] & L2_TYPE_MASK, &l2_tt[l2idx]);
 						} else if ((l2_tt[l2idx] & L2_TYPE_MASK)
 								== LARGE_PAGE_TYPE) {
 							vmm_debug(
-									" -- [%d] 0x%x ... 0x%x -> 0x%x ... 0x%x [%d] @ "
-											"0x%x", l2idx, virt2,
-									virt2 + LARGE_PAGE_SIZE - 1, phys,
-									phys + LARGE_PAGE_SIZE - 1,
+									" -- [%d] 0x%x ... 0x%x -> 0x%x ... 0x%x [%d] @ " "0x%x",
+									l2idx, virt2, virt2 + LARGE_PAGE_SIZE - 1,
+									phys, phys + LARGE_PAGE_SIZE - 1,
 									l2_tt[l2idx] & L2_TYPE_MASK, &l2_tt[l2idx]);
 						}
 					}
@@ -333,8 +331,8 @@ int32_t map_kernel_sections(uint32_t start, uint32_t end, uint32_t vstart,
 	uint32_t fvend = 0;
 	uint8_t failed = 0;
 
-	vmm_debug("Mapping Kernel Memory: 0x%x ... 0x%x -> 0x%x ... 0x%x",
-			start, end, vstart, vstart + (end - start));
+	vmm_debug("Mapping Kernel Memory: 0x%x ... 0x%x -> 0x%x ... 0x%x", start,
+			end, vstart, vstart + (end - start));
 
 	if (section->type == LARGE_PAGE) {
 		psize = LARGE_PAGE_SIZE;
@@ -427,8 +425,8 @@ void vmm_get_virt_block_size(uintptr_t vtable, uint32_t addr, uintptr_t start,
 
 // ============================================================================
 
-void unmap_kernel_memory(uint32_t vaddr) {
-	uint32_t* l1_tt = p_to_v(get_kernel_table());
+void unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd) {
+	uint32_t* l1_tt = vpd;
 	uint32_t* l2_tt = NULL;
 
 	uint32_t l1_index = vaddr >> 20; // Use upper 12 bits as index
@@ -451,6 +449,9 @@ void unmap_kernel_memory(uint32_t vaddr) {
 	} else {
 		(*l1_pte) = 0; // Unmap whole section ...
 	}
+}
 
+void unmap_kernel_memory(uint32_t vaddr) {
+	unmap_memory_from_pd(vaddr, p_to_v(get_kernel_table()));
 }
 

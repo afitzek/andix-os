@@ -130,7 +130,16 @@ uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task) {
 }
 
 void unmap_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task) {
-	// TODO
+	uint32_t freed = 0;
+	if(vaddr >= USER_START_MAPPED_MEM && (vaddr + size) <
+			(USER_START_MAPPED_MEM + sizeof(task->membitmap) * 32 *
+					SMALL_PAGE_SIZE)) {
+		for(freed = 0; freed < size; freed += SMALL_PAGE_SIZE) {
+			unmap_memory_from_pd(vaddr, task->vuserPD);
+		}
+	} else {
+		task_error("Trying to unmap not mapable memory 0x%x", vaddr);
+	}
 }
 
 void map_initial_user_stack(uintptr_t vptd) {
