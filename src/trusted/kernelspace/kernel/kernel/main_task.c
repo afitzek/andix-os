@@ -124,7 +124,7 @@ void entry_main_task() {
 	service_pre(service);
 
 	main_info("%s STARTING SERVICE TASKS [DONE] %s", SEPERATOR, SEPERATOR);
-
+/*
 	main_info("%s STARTING PROCESS TASKS %s", SEPERATOR, SEPERATOR);
 
 	task_t* process = create_kernel_task(SVC_MODE, SECURE);
@@ -139,7 +139,7 @@ void entry_main_task() {
 	add_task(process);
 
 	main_info("%s STARTING PROCESS TASKS [DONE] %s", SEPERATOR, SEPERATOR);
-
+*/
 	main_info("%s STARTING TEE TASKS %s", SEPERATOR, SEPERATOR);
 
 	task_t* tee = create_kernel_task(SVC_MODE, SECURE);

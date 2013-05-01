@@ -9,7 +9,19 @@
 #include <tee_client_api.h>
 #include <tz_application_mod/tee_memory.h>
 
+op_event tee_ctx_init;
+op_event tee_ctx_finalize;
+op_event tee_mem_reg;
+op_event tee_mem_rel;
+
 int tee_op_dummy(TZ_TEE_SPACE* com_mem) {
+	return (TEE_EVENT_RET_SUCCESS);
+}
+
+int tee_ctx_init_pre(TZ_TEE_SPACE* com_mem) {
+	printk(KERN_INFO "tee_ctx_init_pre: CTX Addr 0x%x",
+			&(com_mem->params.initCtx.context));
+	com_mem->params.initCtx.context = 0xDEADC;
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
@@ -25,13 +37,12 @@ int tee_ctx_init_post(TZ_TEE_SPACE* com_mem) {
 
 	// return kernel context id
 	com_mem->params.initCtx.context = new_context->id;
+
+	printk(KERN_INFO "tee_ctx_init_post: TZ CTX ID 0x%x -> NORM CTX ID 0x%x",
+			new_context->tz_id, new_context->id);
+
 	return (TEE_EVENT_RET_SUCCESS);
 }
-
-static const op_event tee_ctx_init = {
-	.pre = &tee_op_dummy,
-	.post = &tee_ctx_init_post
-};
 
 int tee_ctx_finalize_pre(TZ_TEE_SPACE* com_mem) {
 	tee_context* context = NULL;
@@ -46,6 +57,10 @@ int tee_ctx_finalize_pre(TZ_TEE_SPACE* com_mem) {
 
 	// translate context id
 	com_mem->params.finCtx.context = context->tz_id;
+
+	printk(KERN_INFO "tee_ctx_init_post: NORM CTX ID 0x%x -> TZ CTX ID 0x%x",
+			context->id, com_mem->params.finCtx.context);
+
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
@@ -81,11 +96,6 @@ int tee_ctx_finalize_post(TZ_TEE_SPACE* com_mem) {
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
-static const op_event tee_ctx_finalize = {
-	.pre = &tee_ctx_finalize_pre,
-	.post = &tee_ctx_finalize_post
-};
-
 int tee_mem_reg_pre(TZ_TEE_SPACE* com_mem) {
 	tee_context* context = NULL;
 	tee_shared_memory* mem = NULL;
@@ -112,7 +122,7 @@ int tee_mem_reg_pre(TZ_TEE_SPACE* com_mem) {
 		return (TEE_EVENT_RET_ERROR);
 	}
 
-	mem->user_addr = (void*)com_mem->params.regMem.paddr;
+	mem->user_addr = (void*) com_mem->params.regMem.paddr;
 	mem->size = com_mem->params.regMem.size;
 	mem->flags = com_mem->params.regMem.flags;
 	mem->state = TEE_MEM_STATE_UNMAPPED;
@@ -125,9 +135,9 @@ int tee_mem_reg_pre(TZ_TEE_SPACE* com_mem) {
 		return (TEE_EVENT_RET_ERROR);
 	}
 
-	mem->com_paddr = (void*)virt_to_phys(mem->com_vaddr);
+	mem->com_paddr = (void*) virt_to_phys(mem->com_vaddr);
 
-	com_mem->params.regMem.paddr = (uint32_t)mem->com_paddr;
+	com_mem->params.regMem.paddr = (uint32_t) mem->com_paddr;
 
 	// translate context id
 	com_mem->params.regMem.context = context->tz_id;
@@ -147,7 +157,7 @@ int tee_mem_reg_post(TZ_TEE_SPACE* com_mem) {
 		return (TEE_EVENT_RET_ERROR);
 	}
 
-	mem = tee_memory_find_by_paddr((void*)com_mem->params.regMem.paddr);
+	mem = tee_memory_find_by_paddr((void*) com_mem->params.regMem.paddr);
 
 	if (mem == NULL) {
 		printk(KERN_ERR "tee_mem_reg_post: failed to find shared memory!");
@@ -160,22 +170,18 @@ int tee_mem_reg_post(TZ_TEE_SPACE* com_mem) {
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
-static const op_event tee_mem_reg = {
-	.pre = &tee_mem_reg_pre,
-	.post = &tee_mem_reg_post
-};
-
 int tee_mem_rel_pre(TZ_TEE_SPACE* com_mem) {
-	tee_context* context = NULL;
+	//tee_context* context = NULL;
 	tee_shared_memory* mem = NULL;
 
-	context = tee_context_find_by_id(com_mem->params.regMem.context);
+	// Context is not available!!
+	/*context = tee_context_find_by_id(com_mem->params.regMem.context);
 
-	if (context == NULL) {
-		printk(KERN_ERR "tee_mem_reg_post: no such context!");
-		com_mem->ret = TEEC_ERROR_BAD_PARAMETERS;
-		return (TEE_EVENT_RET_ERROR);
-	}
+	 if (context == NULL) {
+	 printk(KERN_ERR "tee_mem_reg_post: no such context!");
+	 com_mem->ret = TEEC_ERROR_BAD_PARAMETERS;
+	 return (TEE_EVENT_RET_ERROR);
+	 }*/
 
 	mem = tee_memory_find_by_id(com_mem->params.regMem.memid);
 
@@ -185,23 +191,33 @@ int tee_mem_rel_pre(TZ_TEE_SPACE* com_mem) {
 		return (TEE_EVENT_RET_ERROR);
 	}
 
+	if (mem->user_addr != com_mem->params.regMem.paddr
+			|| mem->size != com_mem->params.regMem.size
+			|| mem->flags != com_mem->params.regMem.flags) {
+		printk(KERN_ERR "tee_mem_rel_pre: Memory ID not matching "
+				"address or flags or size");
+		com_mem->ret = TEEC_ERROR_BAD_PARAMETERS;
+		return (TEE_EVENT_RET_ERROR);
+	}
+
 	// translate mem id and context id
 	com_mem->params.regMem.memid = mem->tz_id;
-	com_mem->params.regMem.context = context->tz_id;
+	//com_mem->params.regMem.context = context->tz_id;
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
 int tee_mem_rel_post(TZ_TEE_SPACE* com_mem) {
-	tee_context* context = NULL;
+	//tee_context* context = NULL;
 	tee_shared_memory* mem = NULL;
 
-	context = tee_context_find_by_tzid(com_mem->params.regMem.context);
+	// Context is not available!!
+	/*context = tee_context_find_by_tzid(com_mem->params.regMem.context);
 
-	if (context == NULL) {
-		printk(KERN_ERR "tee_mem_rel_post: no such context!");
-		com_mem->ret = TEEC_ERROR_BAD_PARAMETERS;
-		return (TEE_EVENT_RET_ERROR);
-	}
+	 if (context == NULL) {
+	 printk(KERN_ERR "tee_mem_rel_post: no such context!");
+	 com_mem->ret = TEEC_ERROR_BAD_PARAMETERS;
+	 return (TEE_EVENT_RET_ERROR);
+	 }*/
 
 	mem = tee_memory_find_by_tzid(com_mem->params.regMem.memid);
 
@@ -217,14 +233,10 @@ int tee_mem_rel_post(TZ_TEE_SPACE* com_mem) {
 
 	// translate mem id and context id
 	com_mem->params.regMem.memid = mem->id;
-	com_mem->params.regMem.context = context->id;
+	//com_mem->params.regMem.context = context->id;
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
-static const op_event tee_mem_rel = {
-	.pre = &tee_mem_rel_pre,
-	.post = &tee_mem_rel_post
-};
 
 int tee_session_open_pre(TZ_TEE_SPACE* com_mem) {
 	return 0;

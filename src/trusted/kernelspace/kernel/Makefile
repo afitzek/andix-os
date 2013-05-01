@@ -35,8 +35,8 @@ LIBGCC_FILE = $(ARM_TOOLCHAIN_LIB_DIR)libgcc.a
 OPT_FLAGS = -Wall -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -mapcs-frame -mapcs-stack-check
 
 ASFLAGS = $(OPT_FLAGS) -g -mcpu=cortex-a8
-CFLAGS = $(OPT_FLAGS) -DVERSION=\"$(VERSION)\" -DUSER=\"$(USER)\" -DINFO -DDEBUG -DGITHASH=\"$(GITHASH)\" -DIMX53_LOCO -DAKERNEL -g -mcpu=cortex-a8 -nostdlib -nostdinc
-LDFLAGS = -T link.ld -nostdlib
+CFLAGS = $(OPT_FLAGS) -DBUILD_DATE=\"$(BUILD_DATE)\" -DBUILD_NUM=\"$(BUILD_NUM)\" -DVERSION=\"$(VERSION)\" -DUSER=\"$(USER)\" -DINFO -DDEBUG -DGITHASH=\"$(GITHASH)\" -DIMX53_LOCO -DAKERNEL -g -mcpu=cortex-a8 -nostdlib -nostdinc
+LDFLAGS = -T link.ld -nostdlib $(BUILD_NUMBER_LDFLAGS)
 MKIMAGEARGS = -A arm -O linux -T kernel -a 0xB0000000 -e 0xB0008000 -n "ANDIX" -C none -d $(OUTDIR)andix.elfagain
 
 .PHONY: all
@@ -73,7 +73,7 @@ $(OUTDIR)symbol_table.o : $(OUTDIR)andix.mys
 %.sym: %.elf
 	$(arm-sym-command)
 
-$(OUTDIR)andix.elf:  $(OBJS)
+$(OUTDIR)andix.elf:  $(OBJS) $(BUILD_NUMBER_FILE)
 	@$(ARMLD) $(LDFLAGS) -o $@  $^ $(LIBGCC_FILE)
 
 
@@ -98,6 +98,7 @@ pdfdoc: doc
 getpayloads:
 	cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/manager.bin $(realpath $(TOP))/payload/manager.bin
 	touch $(realpath $(TOP))/payload/userpayload.S
+	touch $(realpath $(TOP))/kernel/main.c
 
 .PHONY: mkbuilddirs		
 mkbuilddirs:
@@ -112,4 +113,4 @@ $(A_OBJS):$(OUTDIR)%.o:%.S
 .PHONY: clean
 clean:
 	@echo Removing directory $(OUTDIR)
-	@rm -rf $(OUTDIR)
+	@rm -rf $(OUTDIR) $(ANDIX_DEPLOY_DIR)/tz/kernel/andix.img

@@ -9,14 +9,14 @@
 #include <tz_application_mod/andixtee.h>
 #include <linux/gfp.h>
 #include <linux/init.h>
+#include <tz_application_mod/tee_logic.h>
 
 uint32_t tz_device;
 uint8_t initialized;
 TZ_TEE_SPACE* tee_mem;
 
 struct file_operations tz_fops = { .owner = THIS_MODULE, .unlocked_ioctl =
-		tz_driver_ioctl, .open = tz_driver_open, .release = tz_driver_release,
-		};
+		tz_driver_ioctl, .open = tz_driver_open, .release = tz_driver_release, };
 
 struct cdev cdev;
 
@@ -56,6 +56,11 @@ int _init_tz_driver(void) {
 		return (-1);
 	}
 
+	if (tee_init() != 0) {
+		printk(KERN_ERR "Failed to initialize tee logic\n");
+		return (-1);
+	}
+
 	return (SUCCESS);
 }
 
@@ -83,8 +88,10 @@ void _exit_tz_driver(void) {
 /**
  * Module configurations
  */
-module_init(_init_tz_driver);
-module_exit(_exit_tz_driver);
+module_init(_init_tz_driver)
+;
+module_exit(_exit_tz_driver)
+;
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);

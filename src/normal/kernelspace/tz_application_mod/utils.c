@@ -7,6 +7,8 @@
  */
 
 #include <tz_application_mod/andixtee.h>
+#include <linux/init.h>
+#include <linux/uaccess.h>
 
 void* v_to_p(void* ptr) {
 	uint32_t addr;
@@ -17,7 +19,7 @@ void* v_to_p(void* ptr) {
 			"=r" (addr): "r" (ptr):"memory", "cc");
 
 	if (addr < 0xFF) {
-		return (NULL);
+		return (NULL );
 	}
 
 	addr = (addr & 0xFFFFF000) + ((uint32_t) ptr & 0xFFF);
@@ -25,63 +27,103 @@ void* v_to_p(void* ptr) {
 	return ((void*) addr);
 }
 
+void kprintHex(uint8_t* buffer, uint32_t size) {
+	uint32_t i = 0;
+	for (i = 0; (i + 8) < size; i = i + 8) {
+		printk(KERN_INFO "%X:%X:%X:%X:%X:%X:%X:%X\n", buffer[i], buffer[i + 1],
+				buffer[i + 2], buffer[i + 3], buffer[i + 4], buffer[i + 5],
+				buffer[i + 6], buffer[i + 7]);
+	}
+}
 
+int get_from_user(TZ_TEE_SPACE* kernelspace, TZ_TEE_SPACE *userspace) {
+	int result = 0;
 
-int ipow(int base, int exp)
-{
-    int result = 1;
-    while (exp)
-    {
-        if (exp & 1)
-            result *= base;
-        exp >>= 1;
-        base *= base;
-    }
+	if (access_ok(VERIFY_READ, userspace, sizeof(TZ_TEE_SPACE)) == 0) {
+		printk(KERN_INFO "Failed to get tee from userspace\n");
+		return (-EINVAL);
+	}
 
-    return (result);
+	result = 1;
+	if (copy_from_user(kernelspace, userspace, sizeof(TZ_TEE_SPACE))) {
+		// copy failed!
+		printk(KERN_INFO "Failed to copy tee request to kernel\n");
+		return (-1);
+	}
+
+	return (result);
+}
+
+int send_to_user(TZ_TEE_SPACE* kernelspace, TZ_TEE_SPACE *userspace) {
+	int result = 0;
+
+	if (access_ok(VERIFY_WRITE, userspace, sizeof(TZ_TEE_SPACE)) == 0) {
+		printk(KERN_INFO "Failed to copy tee to userspace\n");
+		return (-EINVAL);
+	}
+
+	if (copy_to_user(userspace, kernelspace, sizeof(TZ_TEE_SPACE))) {
+		// copy failed!
+		printk(KERN_INFO "Failed to copy tee request to kernel\n");
+		return (-1);
+	}
+
+	return (result);
+}
+
+int ipow(int base, int exp) {
+	int result = 1;
+	while (exp) {
+		if (exp & 1)
+			result *= base;
+		exp >>= 1;
+		base *= base;
+	}
+
+	return (result);
 }
 
 // helper function, mmap's the kmalloc'd area which is physically contiguous
 /*int mmap_comm_mem(struct file *filp, struct vm_area_struct *vma, TZ_TEE_SPACE* com)
-{
-        int ret;
-        long length = vma->vm_end - vma->vm_start;
+ {
+ int ret;
+ long length = vma->vm_end - vma->vm_start;
 
-        long max_len = sizeof(TZ_TEE_SPACE) + 0x1000;
-        long pgsize = 0x1000;
+ long max_len = sizeof(TZ_TEE_SPACE) + 0x1000;
+ long pgsize = 0x1000;
 
-        int pgcount = max_len / pgsize;
+ int pgcount = max_len / pgsize;
 
-        while(pgcount * pgsize < max_len) {
-        	pgcount++;
-        }
+ while(pgcount * pgsize < max_len) {
+ pgcount++;
+ }
 
 
-        // check length - do not allow larger mappings than the number of
-        //   pages allocated
-        if (length > (pgcount * pgsize)) {
-        	printk(KERN_WARNING "Failed to map comm memory len is %d should be max %d",
-        			(int)length, (int)(pgcount * pgsize));
-        	return -EIO;
-        }
+ // check length - do not allow larger mappings than the number of
+ //   pages allocated
+ if (length > (pgcount * pgsize)) {
+ printk(KERN_WARNING "Failed to map comm memory len is %d should be max %d",
+ (int)length, (int)(pgcount * pgsize));
+ return -EIO;
+ }
 
-        printk(KERN_INFO "Mapping: size %lx\n", (pgcount * pgsize));
+ printk(KERN_INFO "Mapping: size %lx\n", (pgcount * pgsize));
 
-        //vma->vm_flags |= VM_RESERVED;
+ //vma->vm_flags |= VM_RESERVED;
 
-        vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 
-        // map the whole physically contiguous area in one piece
-        if ((ret = remap_pfn_range(vma,
-                                   vma->vm_start,
-                                   virt_to_phys((void *)com) >> PAGE_SHIFT,
-                                   (pgcount * pgsize),
-                                   vma->vm_page_prot)) < 0) {
-        	printk(KERN_ERR "remap_pfn_range failed with: %d", ret);
-            return (ret);
-        }
+ // map the whole physically contiguous area in one piece
+ if ((ret = remap_pfn_range(vma,
+ vma->vm_start,
+ virt_to_phys((void *)com) >> PAGE_SHIFT,
+ (pgcount * pgsize),
+ vma->vm_page_prot)) < 0) {
+ printk(KERN_ERR "remap_pfn_range failed with: %d", ret);
+ return (ret);
+ }
 
-        printk(KERN_INFO "Simple VMA open, virt %lx, phys %lx\n",
-        		vma->vm_start, vma->vm_pgoff << PAGE_SHIFT);
-        return (0);
-}*/
+ printk(KERN_INFO "Simple VMA open, virt %lx, phys %lx\n",
+ vma->vm_start, vma->vm_pgoff << PAGE_SHIFT);
+ return (0);
+ }*/

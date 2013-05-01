@@ -11,12 +11,6 @@
 #include <scheduler.h>
 
 uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation) {
-	tee_context* ctx = tee_context_find(operation->context);
-
-	if (ctx == NULL ) {
-		return (TEE_ERROR_BAD_STATE);
-	}
-
 	tee_memory* mem = tee_memory_find(operation->memid);
 
 	if (mem == NULL ) {
@@ -24,11 +18,11 @@ uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation) {
 	}
 
 	if (mem->vaddr != 0) {
-		uint32_t mmm_pages = needed_pages((void*)(mem->paddr), mem->size);
+		uint32_t mmm_pages = needed_pages((void*) (mem->paddr), mem->size);
 		uint32_t i = 0;
 		for (i = 0; i < mmm_pages; i++) {
 			unmap_kernel_memory(mem->vaddr + (SMALL_PAGE_SIZE * i));
-			mmm_free_page((void*)(mem->vaddr + (SMALL_PAGE_SIZE * i)));
+			mmm_free_page((void*) (mem->vaddr + (SMALL_PAGE_SIZE * i)));
 		}
 	}
 
@@ -48,9 +42,9 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 	}
 
 	/*if (operation->size > TEEC_CONFIG_SHAREDMEM_MAX_SIZE) {
-		tee_error("Invalid memory size : 0x%x", operation->size);
-		return (TEE_ERROR_BAD_PARAMETERS);
-	}*/
+	 tee_error("Invalid memory size : 0x%x", operation->size);
+	 return (TEE_ERROR_BAD_PARAMETERS);
+	 }*/
 
 	tee_context* ctx = tee_context_find(operation->context);
 
@@ -71,13 +65,13 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 	mem->size = operation->size;
 	mem->vaddr = 0;
 
-	uint32_t pages = needed_pages((void*)operation->paddr, operation->size);
+	uint32_t pages = needed_pages((void*) operation->paddr, operation->size);
 
 	if (pages == 0) {
 		tee_error("Failed to calculate needed memory pages!");
 	}
 
-	mem->vaddr = (uint32_t)mmm_allocate_pages(pages);
+	mem->vaddr = (uint32_t) mmm_allocate_pages(pages);
 
 	if (mem->vaddr == 0) {
 		result = TEE_ERROR_OUT_OF_MEMORY;
@@ -110,11 +104,11 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 
 	if (mem != NULL ) {
 		if (mem->vaddr != 0) {
-			uint32_t mmm_pages = needed_pages((void*)operation->paddr,
+			uint32_t mmm_pages = needed_pages((void*) operation->paddr,
 					operation->size);
 			uint32_t i = 0;
 			for (i = 0; i < mmm_pages; i++) {
-				mmm_free_page((void*)(mem->vaddr + (SMALL_PAGE_SIZE * i)));
+				mmm_free_page((void*) (mem->vaddr + (SMALL_PAGE_SIZE * i)));
 			}
 		}
 
@@ -126,9 +120,15 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 uint32_t tee_init_context(TZ_TEE_INIT_CTX* operation) {
 	tee_context* ctx = tee_context_create();
 
+	tee_debug("MAGIC ctx value: 0x%x", operation->context);
+
+	if(operation->context != 0xDEADC) {
+		return (TEE_ERROR_COMMUNICATION);
+	}
+
 	if (ctx != NULL ) {
-		tee_info("Created context with id: 0x%x", ctx->_id);
 		operation->context = ctx->_id;
+		tee_info("Created context with id: 0x%x", operation->context);
 		return (TEE_SUCCESS);
 	}
 
@@ -154,6 +154,7 @@ uint32_t tee_finalize_context(TZ_TEE_FIN_CTX* operation) {
 void tee_task_entry() {
 	TZ_TEE_SPACE space;
 	TZ_TEE_SPACE* tee;
+	void* ptee;
 	while (1) {
 		tee = mon_get_tee_space();
 		if (tee == NULL ) {
@@ -162,31 +163,54 @@ void tee_task_entry() {
 			continue;
 		}
 
+		//ptee = v_to_p(tee);
+
+		//tee_info("physical tee @ 0x%x", ptee);
+
 		// Copy memory to trusted only memory
 		memcpy(&space, tee, sizeof(TZ_TEE_SPACE));
+		tee_info("LOCAL TEE SPACE");
+		kprintHex(&space, sizeof(TZ_TEE_SPACE));
 
-		uint32_t result = 0;
+		uint32_t result = TEEC_ERROR_COMMUNICATION;
 
 		tee_info("TEE Request 0x%x", space.op);
 
 		switch (space.op) {
 		case TZ_TEE_OP_REGISTER_MEM:
+			tee_info("TZ_TEE_OP_REGISTER_MEM OPERATION");
 			result = tee_register_mem(&(space.params.regMem));
 			break;
 		case TZ_TEE_OP_RELEASE_MEM:
+			tee_info("TZ_TEE_OP_RELEASE_MEM OPERATION");
 			result = tee_release_mem(&(space.params.regMem));
 			break;
 		case TZ_TEE_OP_INIT_CTX:
+			tee_info("TZ_TEE_OP_INIT_CTX OPERATION");
 			result = tee_init_context(&(space.params.initCtx));
 			break;
 		case TZ_TEE_OP_FIN_CTX:
+			tee_info("TZ_TEE_OP_FIN_CTX OPERATION");
 			result = tee_finalize_context(&(space.params.finCtx));
+			break;
+		default:
+			tee_info("UNKOWN TEE OPERATION (0x%x)", space.op);
 			break;
 		}
 		space.ret = result;
-
+		/*tee_info("space.params.initCtx.context: 0x%x",
+				space.params.initCtx.context);
+		tee_info("tee->params.initCtx.context: 0x%x",
+				tee->params.initCtx.context);
+		tee_info("memcpy");*/
+		tee_info("LOCAL TEE SPACE");
+		kprintHex(&space, sizeof(TZ_TEE_SPACE));
 		memcpy(tee, &space, sizeof(TZ_TEE_SPACE));
+		/*tee_info("space.params.initCtx.context: 0x%x",
+				space.params.initCtx.context);
+		tee_info("tee->params.initCtx.context: 0x%x",
+				tee->params.initCtx.context);*/
 		get_current_task()->state = BLOCKED;
-		yield();
+		return_to_ns();
 	}
 }

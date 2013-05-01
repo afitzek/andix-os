@@ -57,6 +57,9 @@ __mon_no_handler:
 .endm
 
 .macro mon_restore_context
+	ISB
+	DSB
+	DMB
 	LDMFD	sp!, {r0}
 	TST 	r0, #1
 	MCRNE	p15, 0, r0, c1, c1, 0

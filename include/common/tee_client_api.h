@@ -70,6 +70,7 @@ typedef struct
 	void* buffer;
 	size_t size;
 	uint32_t flags;
+	uint32_t memid;
 } TEEC_SharedMemory;
 
 /**

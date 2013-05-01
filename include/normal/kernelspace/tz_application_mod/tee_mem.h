@@ -17,5 +17,9 @@ int unregister_tee_mem_from_tz(void);
 TZ_TEE_SPACE *get_shared_tee_mem(void);
 void cleanup_tee(void);
 int initialize_tee(void);
+int push_tee(TZ_TEE_SPACE* kspace);
+int poll_tee(TZ_TEE_SPACE* kspace);
+void tee_flush_cache(void);
+void tee_invalidate(void);
 
 #endif /* TEE_MEM_H_ */

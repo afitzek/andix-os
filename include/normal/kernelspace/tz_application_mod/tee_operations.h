@@ -26,6 +26,7 @@ typedef struct {
 
 int tee_op_dummy(TZ_TEE_SPACE* com_mem);
 
+int tee_ctx_init_pre(TZ_TEE_SPACE* com_mem);
 int tee_ctx_init_post(TZ_TEE_SPACE* com_mem);
 
 int tee_ctx_finalize_pre(TZ_TEE_SPACE* com_mem);
@@ -39,9 +40,9 @@ int tee_mem_rel_post(TZ_TEE_SPACE* com_mem);
 int tee_session_open(TZ_TEE_SPACE* com_mem);
 int tee_session_close(TZ_TEE_SPACE* com_mem);
 
-static const op_event tee_ctx_init;
-static const op_event tee_ctx_finalize;
-static const op_event tee_mem_reg;
-static const op_event tee_mem_rel;
+extern op_event tee_ctx_init;
+extern op_event tee_ctx_finalize;
+extern op_event tee_mem_reg;
+extern op_event tee_mem_rel;
 
 #endif /* TEE_OPERATIONS_H_ */

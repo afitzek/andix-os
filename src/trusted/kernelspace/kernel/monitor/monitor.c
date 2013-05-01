@@ -9,6 +9,7 @@
 #include <monitor/monitor.h>
 #include <mm/mm.h>
 #include <task/task.h>
+#include <cache.h>
 
 task_t* returningTask;
 task_t* returningTaskTEE;
@@ -138,11 +139,29 @@ void free_tz_communication_memory() {
 	}
 }
 
+uint32_t cl_size;
+
 void free_tz_tee_memory() {
 	if (tee_mem != NULL ) {
 		mon_info("Unmapping old tee memory");
 		unmap_kernel_memory((uint32_t) tee_mem);
 		tee_mem = NULL;
+	}
+}
+
+void inv_tz_tee_memory() {
+	if (tee_mem != NULL ) {
+		uint32_t start = (uint32_t) tee_mem;
+		uint32_t end = start + sizeof(TZ_TEE_SPACE);
+		start = round_down(start, cl_size);
+		end = round_up(end, cl_size);
+		while (start < end) {
+			asm ("mcr p15, 0, %0, c7, c6, 1" : : "r" (start)
+					: "memory");
+			start += cl_size;
+		}
+		CP15DSB;
+		CP15ISB;
 	}
 }
 
@@ -194,7 +213,10 @@ int set_tz_tee_memory(void* ptr) {
 		return (-1);
 	}
 
-	vaddr = (intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) | (uipaddr & 0xFFF));
+	vaddr =
+			(intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) /*| (uipaddr & 0xFFF)*/);
+
+	dump_kernel_mmu(vaddr, vaddr + SMALL_PAGE);
 
 	mon_info("Mapping tee memory virtual addr: 0x%x", vaddr);
 
@@ -261,9 +283,9 @@ int set_tz_communication_memory(void* ptr) {
 }
 
 void mon_smc_non_secure_handler(mon_context_t* cont) {
-	/*for (int i = 0; i < 60; i++) {
-	 mon_debug("CLEANING BUFFER FROM NON SECURE!!");
-	 }*/
+	//for (int i = 0; i < 60; i++) {
+	//	mon_debug("CLEANING BUFFER FROM NON SECURE!!");
+	//}
 	task_t* target_task = NULL;
 	mon_debug("FROM NON SECURE");
 	dump_mon_context(cont);
@@ -274,12 +296,12 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 	case SMC_UNREGISTER_CMEM:
 		free_tz_communication_memory();
 		break;
-		/*case SMC_REGISTER_TMEM:
-		 cont->r[0] = (uint32_t) set_tz_tee_memory((void*) cont->r[0]);
-		 break;
-		 case SMC_UNREGISTER_TMEM:
-		 free_tz_tee_memory();
-		 break;*/
+	case SMC_REGISTER_TMEM:
+		cont->r[0] = (uint32_t) set_tz_tee_memory((void*) cont->r[0]);
+		break;
+	case SMC_UNREGISTER_TMEM:
+		free_tz_tee_memory();
+		break;
 	case SMC_PROCESS_CMEM:
 		// THIS REQUEST IS A RESPONSE => DISPATCH TO SERVICE TASK!
 		mon_info("Process com memory! @ v 0x%x p 0x%x", com_mem,
@@ -301,10 +323,13 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		// THIS REQUEST IS A REQUEST => DISPATCH TO PROCESS TASK!
 		mon_info("Process tee memory! @ v 0x%x p 0x%x", tee_mem,
 				virt_to_phys((uintptr_t)tee_mem));
+		inv_tz_tee_memory();
+		kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
+
 		if (tee_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
-			target_task = get_task_by_name(PROCESS_TASK);
+			target_task = get_task_by_name(TEE_TASK);
 			if (target_task == NULL ) {
 				cont->r[0] = -1;
 				break;
@@ -419,7 +444,12 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		 }
 		 */
 		// Return to non secure world
+		//mon_info("Initialize ctx id : 0x%x", tee_mem->params.initCtx.context);
+		kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
 		get_nonsecure_task()->context.r[0] = cont->r[0];
+		//v7_flush_dcache_all();
+		//mon_info("waiting ...");
+		//getchar();
 		mon_secure_switch_context(cont, get_nonsecure_task());
 		break;
 	default:
@@ -454,6 +484,11 @@ void setup_mon_stacks() {
 
 	com_mem = NULL;
 	tee_mem = NULL;
+
+	uint32_t ctr;
+
+	asm volatile("mrc p15, 0, %0, c0, c0, 1" : "=r" (ctr));
+	cl_size = 4 << ((ctr >> 16) & 0xf);
 
 	returningTask = NULL;
 	returningTaskTEE = NULL;

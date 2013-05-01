@@ -28,18 +28,20 @@ OBJS = $(C_OBJS) $(A_OBJS)
 
 DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
+PROGRAM_NAME = teeapp.bin
+
 ###############################################################################
 
 ASFLAGS = -g -mcpu=cortex-a8
 CFLAGS = -g -I$(NORM_US_APP_INC) -I$(ANDIX_INC_COMMON) -mcpu=cortex-a8 
-LDFLAGS = -L$(ARM_TOOLCHAIN_LIB_DIR) -L$(ANDIX_DEPLOY_DIR)/norm/lib -lgcc -landixtee
+LDFLAGS = -L$(ARM_TOOLCHAIN_LIB_DIR) -L$(ANDIX_DEPLOY_DIR)/norm/lib -lgcc 
 
-all: mkbuilddirs $(OUTDIR)teeapp
+all: mkbuilddirs $(OUTDIR)$(PROGRAM_NAME)
 
-$(OUTDIR)teeapp: $(OBJS)
-	@$(ARMNORMCC) $(LDFLAGS) -o $@ $^
+$(OUTDIR)$(PROGRAM_NAME): $(OBJS)
+	@$(ARMNORMCC) $(LDFLAGS) -o $@ $^ -landixtee
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/norm/app
-	@cp $(OUTDIR)teeapp $(ANDIX_DEPLOY_DIR)/norm/app
+	@cp $(OUTDIR)$(PROGRAM_NAME) $(ANDIX_DEPLOY_DIR)/norm/app
                 
 .PHONY: mkbuilddirs		
 mkbuilddirs:
@@ -54,4 +56,4 @@ $(A_OBJS):$(OUTDIR)%.o:%.S
 .PHONY: clean
 clean:
 	@echo Removing directory $(OUTDIR)
-	@rm -rf $(OUTDIR)
+	@rm -rf $(OUTDIR) $(ANDIX_DEPLOY_DIR)/norm/app/$(PROGRAM_NAME)

@@ -16,6 +16,10 @@ void switch_to_task(task_t *task) {
 	__smc_1(SSC_TASK_SWITCH, (uint32_t)task);
 }
 
+void return_to_ns() {
+	__smc_1(SSC_NONS_SERVICE, 0);
+}
+
 void yield() {
 	__smc_1(SSC_TASK_SCHEDULE, 0);
 }

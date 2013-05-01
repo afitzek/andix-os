@@ -20,6 +20,7 @@
 void init_scheduler();
 void switch_to_task(task_t *task);
 void yield();
+void return_to_ns();
 
 
 #endif /* SCHEDULER_H_ */

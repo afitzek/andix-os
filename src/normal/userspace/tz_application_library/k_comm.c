@@ -25,7 +25,7 @@ int processComm() {
 	int res = -1;
 	if (comm != NULL ) {
 		if (tee_fd != 0) {
-			printf("CALLING TZ TEE\n");
+			printf("CALLING TZ TEE comm (0x%x)\n", (unsigned int)comm);
 			res = ioctl(tee_fd, ANDIX_TEE_PUSH, comm);
 			printf("RETURN FROM TZ TEE\n");
 		}
@@ -91,6 +91,6 @@ void doexit() {
 
 void cleanup() {
 	printf("cleanup\n");
-	unmapCommMem();
+	freeCommMem();
 	closeTEEDevice();
 }

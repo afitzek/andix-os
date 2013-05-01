@@ -67,13 +67,19 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 #ifdef VERSION
 	main_info("      ANDIX (%s)", VERSION);
 #ifdef USER
+#ifdef BUILD_DATE
+	main_info("      compiled by %s @ %s ", USER, BUILD_DATE);
+#else
 	main_info("      compiled by %s", USER);
+#endif
 #endif
 #ifdef GITHASH
 	main_info("      GIT Commit %s", GITHASH);
 #endif
+#ifdef BUILD_NUM
+	main_info("      build number: %s", BUILD_NUM);
 #endif
-
+#endif
 	main_info("");
 	main_info("============================================================================");
 

@@ -35,16 +35,17 @@ int tz_process_tee_mem(TZ_TEE_SPACE* userspace) {
 	int result = 0;
 
 	if(get_shared_tee_mem() == NULL) {
+		printk(KERN_ERR "Failed to get TEE memory\n");
 		return (-1);
 	}
 
 	//TODO: get mutex
-	push_tee_to_com(userspace);
+	//push_tee_to_com(userspace);
 
 	// CALL Monitor with TEE mem
-	result = tee_process(get_shared_tee_mem());
+	result = tee_process(userspace);
 
-	push_tee_to_userspace(userspace);
+	//push_tee_to_userspace(userspace);
 	//TODO: release mutex
 
 	return (result);
@@ -60,24 +61,29 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 	if (_IOC_NR(cmd) > ANDIX_IOC_MAXNR)
 		return (-ENOTTY);
 
+	printk(KERN_INFO "TZ IOCTL CALL\n");
+
 	switch (cmd) {
 	// TODO remove userspace maping of com memory!
 	// Use copy_(to/from)_user to process TEE and CTRL Requests
 	// Process TEE Request
 	case ANDIX_CTRL_POLL:
+		printk(KERN_INFO "TZ CTRL POLL\n");
 		if (!check_process_is_root()) {
 			// Only root process can poll ctrl
 			return (-EACCES);
 		}
 
 		verify_arg = access_ok(VERIFY_WRITE, arg, sizeof(TZ_CTLR_SPACE));
-		if (verify_arg != 0) {
+		if (verify_arg == 0) {
 			return (-EINVAL);
 		}
 
 		return (poll_ctrl_task_to_ns((TZ_CTLR_SPACE*) arg));
 		break;
 	case ANDIX_CTRL_PUSH:
+
+		printk(KERN_INFO "TZ CTRL PUSH\n");
 
 		if (!check_process_is_root()) {
 			// Only root process can push ctrl
@@ -86,7 +92,7 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 
 		verify_arg = access_ok(VERIFY_READ, arg, sizeof(TZ_CTLR_SPACE));
 
-		if (verify_arg != 0) {
+		if (verify_arg == 0) {
 			return (-EINVAL);
 		}
 
@@ -94,15 +100,13 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 		break;
 	case ANDIX_TEE_PUSH:
 
-		verify_arg = access_ok(VERIFY_READ, arg, sizeof(TZ_TEE_SPACE));
-
-		if (verify_arg != 0) {
-			return (-EINVAL);
-		}
+		printk(KERN_INFO "TZ TEE PUSH\n");
 
 		verify_arg = access_ok(VERIFY_WRITE, arg, sizeof(TZ_TEE_SPACE));
 
-		if (verify_arg != 0) {
+		if (verify_arg == 0) {
+			printk(KERN_ERR "TZ_TEE_SPACE not valid "
+					"memory for writing! (0x%x)\n", arg);
 			return (-EINVAL);
 		}
 

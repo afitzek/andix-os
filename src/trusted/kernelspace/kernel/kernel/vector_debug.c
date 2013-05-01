@@ -26,24 +26,30 @@ void dump_regs(core_reg* regs) {
 	uint32_t mode = regs->cpsr & 0x1F;
 	uint32_t fp;
 	uint32_t sp;
-	ex_debug(
-			"CPSR: 0x%x   SCR: 0x%x    PC: 0x%x", regs->cpsr, regs->scr, regs->pc);
+	ex_debug("CPSR: 0x%x   SCR: 0x%x    PC: 0x%x", regs->cpsr, regs->scr,
+			regs->pc);
 	if (vmm_is_kernel_code_mem_addr((uintptr_t) regs->pc)) {
 		ex_debug("FUNC: %s", get_function_name((void*)regs->pc));
 	}
-	ex_debug(
-			"  R0: 0x%x    R1: 0x%x    R2: 0x%x", regs->r[0], regs->r[1], regs->r[2]);
-	ex_debug(
-			"  R3: 0x%x    R4: 0x%x    R5: 0x%x", regs->r[3], regs->r[4], regs->r[5]);
-	ex_debug(
-			"  R6: 0x%x    R7: 0x%x    R8: 0x%x", regs->r[6], regs->r[7], regs->r[8]);
-	ex_debug(
-			"  R9: 0x%x   R10: 0x%x   R11: 0x%x", regs->r[9], regs->r[10], regs->r[11]);
+	ex_debug("  R0: 0x%x    R1: 0x%x    R2: 0x%x", regs->r[0], regs->r[1],
+			regs->r[2]);
+	ex_debug("  R3: 0x%x    R4: 0x%x    R5: 0x%x", regs->r[3], regs->r[4],
+			regs->r[5]);
+	ex_debug("  R6: 0x%x    R7: 0x%x    R8: 0x%x", regs->r[6], regs->r[7],
+			regs->r[8]);
+	ex_debug("  R9: 0x%x   R10: 0x%x   R11: 0x%x", regs->r[9], regs->r[10],
+			regs->r[11]);
 	ex_debug(" R12: 0x%x", regs->r[12]);
 
 	if (mode == SVC_MODE) {
 		fp = getSVCFPIntoAbt();
 		sp = getSVCSP();
+		gotoABTMode();
+
+		dump_stack_trace_stack(sp, fp);
+	} else if (mode == MON_MODE) {
+		fp = getMONFPIntoAbt();
+		sp = getMONSP();
 		gotoABTMode();
 
 		dump_stack_trace_stack(sp, fp);
@@ -120,13 +126,15 @@ void pDA(core_reg* regs) {
 
 	dab_debug("STATUS: %s [%x]", get_da_status(status), status);
 
-	dab_debug(
-			"Failed to %s 0x%x @ INSTR: 0x%x", ((dfsr & DFSR_RW) >> 11) ? "write to" : "read from", dfar, regs->pc - 8);
+	dab_debug("Failed to %s 0x%x @ INSTR: 0x%x",
+			((dfsr & DFSR_RW) >> 11) ? "write to" : "read from", dfar,
+			regs->pc - 8);
 
 	dab_debug("DFSR: 0x%x  STAT: 0x%x  DFAR: 0x%x", dfsr, status, dfar);
 
-	dab_debug(
-			"  RW: %x (%c)  SD (AXI): %x  DOMAIN: 0x%x", ((dfsr & DFSR_RW) >> 11), ((dfsr & DFSR_RW) >> 11) ? 'W' : 'R', ((dfsr & DFSR_SD) >> 12), ((dfsr & DFSR_DOMAIN) >> 4));
+	dab_debug("  RW: %x (%c)  SD (AXI): %x  DOMAIN: 0x%x",
+			((dfsr & DFSR_RW) >> 11), ((dfsr & DFSR_RW) >> 11) ? 'W' : 'R',
+			((dfsr & DFSR_SD) >> 12), ((dfsr & DFSR_DOMAIN) >> 4));
 
 	dab_debug("Register dump:");
 
@@ -153,13 +161,15 @@ void pPA(core_reg* regs) {
 
 	dab_debug("STATUS: %s [%x]", get_da_status(status), status);
 
-	dab_debug(
-			"Failed to %s 0x%x @ INSTR: 0x%x", ((ifsr & DFSR_RW) >> 11) ? "write to" : "read from", ifar, regs->pc - 8);
+	dab_debug("Failed to %s 0x%x @ INSTR: 0x%x",
+			((ifsr & DFSR_RW) >> 11) ? "write to" : "read from", ifar,
+			regs->pc - 8);
 
 	dab_debug("IFSR: 0x%x  STAT: 0x%x  IFAR: 0x%x", ifsr, status, ifar);
 
-	dab_debug(
-			"  RW: %x (%c)  SD (AXI): %x  DOMAIN: 0x%x", ((ifsr & DFSR_RW) >> 11), ((ifsr & DFSR_RW) >> 11) ? 'W' : 'R', ((ifsr & DFSR_SD) >> 12), ((ifsr & DFSR_DOMAIN) >> 4));
+	dab_debug("  RW: %x (%c)  SD (AXI): %x  DOMAIN: 0x%x",
+			((ifsr & DFSR_RW) >> 11), ((ifsr & DFSR_RW) >> 11) ? 'W' : 'R',
+			((ifsr & DFSR_SD) >> 12), ((ifsr & DFSR_DOMAIN) >> 4));
 
 	dab_debug("Register dump:");
 
@@ -186,13 +196,15 @@ void pUA(core_reg* regs) {
 
 	dab_debug("STATUS: %s [%x]", get_da_status(status), status);
 
-	dab_debug(
-			"Failed to %s 0x%x @ INSTR: 0x%x", ((dfsr & DFSR_RW) >> 11) ? "write to" : "read from", dfar, regs->pc - 8);
+	dab_debug("Failed to %s 0x%x @ INSTR: 0x%x",
+			((dfsr & DFSR_RW) >> 11) ? "write to" : "read from", dfar,
+			regs->pc - 8);
 
 	dab_debug("DFSR: 0x%x  STAT: 0x%x  DFAR: 0x%x", dfsr, status, dfar);
 
-	dab_debug(
-			"  RW: %x (%c)  SD (AXI): %x  DOMAIN: 0x%x", ((dfsr & DFSR_RW) >> 11), ((dfsr & DFSR_RW) >> 11) ? 'W' : 'R', ((dfsr & DFSR_SD) >> 12), ((dfsr & DFSR_DOMAIN) >> 4));
+	dab_debug("  RW: %x (%c)  SD (AXI): %x  DOMAIN: 0x%x",
+			((dfsr & DFSR_RW) >> 11), ((dfsr & DFSR_RW) >> 11) ? 'W' : 'R',
+			((dfsr & DFSR_SD) >> 12), ((dfsr & DFSR_DOMAIN) >> 4));
 
 	dab_debug("Register dump:");
 

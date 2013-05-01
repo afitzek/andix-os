@@ -46,6 +46,7 @@ static uint32_t inline getSVCSP() {
 			"=r" (sp)::"memory", "cc");
 	return (sp);
 }
+
 static void inline setABTSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x17 \n"
@@ -92,6 +93,16 @@ static void inline setMONSP(uintptr_t sp) {
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
 
+static uint32_t inline getMONSP() {
+	uint32_t sp;
+	asm volatile(
+			"CPSID aif, #0x16 \n"
+			"MOV %0, sp \n"
+			"CPS #0x13":
+			"=r" (sp)::"memory", "cc");
+	return (sp);
+}
+
 static void inline gotoSVCMode() {
 	asm volatile("CPSID aif, #0x13");
 }
@@ -112,6 +123,15 @@ static uint32_t inline getSVCFPIntoAbt() {
 	uint32_t fp;
 	__asm__ __volatile__(
 			"CPSID aif, #0x13 \n"
+			"MOV %0, fp\n"
+			"CPS #0x17":"=r" (fp)::"memory");
+	return (fp);
+}
+
+static uint32_t inline getMONFPIntoAbt() {
+	uint32_t fp;
+	__asm__ __volatile__(
+			"CPSID aif, #0x16 \n"
 			"MOV %0, fp\n"
 			"CPS #0x17":"=r" (fp)::"memory");
 	return (fp);

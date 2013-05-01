@@ -18,6 +18,7 @@ void flush_dcache_range(uint32_t start, uint32_t stop);
 void flush_cache(uint32_t start, uint32_t size);
 void invalidate_tlb(void);
 void invalidate_icache_all(void);
+void v7_flush_dcache_all(void);
 
 uint32_t getUDID();
 
