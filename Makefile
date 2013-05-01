@@ -3,7 +3,7 @@ include script/vars.mk
 include script/rules.mk
 
 .PHONY: all
-all: mkdirs tool_builds tz_builds linux_builds
+all: mkdirs tool_builds tz_builds linux_builds 
 	@cd $(ANDIX_DEPLOY_DIR); chmod +x buildload.sh; ./buildload.sh
 	@cat src/instruction.txt
 	@tree -h deploy
@@ -54,6 +54,7 @@ tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_manager_clean tz_kernel_clea
 TZ_KERNEL = ANDIX TZ KERNEL
 
 tz_kernel_build:
+	$(build-num)
 	$(start-build-command) $(TZ_KERNEL)
 	$(sep-command)
 	@$(make-command) $(TZ_KERNEL_SRC)
@@ -86,6 +87,7 @@ tz_kernel_pdfdoc:
 TZ_TEE_RUNTIME = ANDIX TZ TEE RUNTIME
 
 tz_tee_runtime_build:
+	$(build-num)
 	$(start-build-command) $(TZ_TEE_RUNTIME)
 	$(sep-command)
 	@$(make-command) $(TZ_USER_TEE_SRC)
@@ -118,6 +120,7 @@ tz_tee_runtime_pdfdoc:
 TZ_TEE_MANAGER = ANDIX TZ MANAGER
 
 tz_manager_build:
+	$(build-num)
 	$(start-build-command) $(TZ_TEE_MANAGER)
 	$(sep-command)
 	@$(make-command) $(TZ_USER_MANAGER_SRC)
@@ -150,6 +153,7 @@ tz_manager_pdfdoc:
 TZ_NEWLIB_C = ANDIX TZ NEWLIB C
 
 tz_newlib_c_build:
+	$(build-num)
 	$(start-build-command) $(TZ_NEWLIB_C)
 	$(sep-command)
 	@$(make-command) $(TZ_USER_C_SRC)
@@ -170,6 +174,7 @@ tz_newlib_c_clean:
 PACKER_TOOLS = ANDIX PACKER TOOL
 
 tool_packer_build:
+	$(build-num)
 	$(start-build-command) $(PACKER_TOOLS)
 	$(sep-command)
 	@$(make-command) $(TOOL_PACKER_SRC)
@@ -190,6 +195,7 @@ tool_packer_clean:
 TOOL_SCRIPTS = ANDIX LINUX SCRIPTS
 
 tool_scripts_build:
+	$(build-num)
 	$(start-build-command) $(TOOL_SCRIPTS)
 	$(sep-command)
 	@$(make-command) $(TOOL_SCRIPTS_SRC)
@@ -210,6 +216,7 @@ tool_scripts_clean:
 LINUX_MOD = ANDIX LINUX MODULES
 
 linux_modules_build:
+	$(build-num)
 	$(start-build-command) $(LINUX_MOD)
 	$(sep-command)
 	@$(make-command) $(NORM_K_SRC)
@@ -230,6 +237,7 @@ linux_modules_clean:
 LINUX_SERV_DAEMON = ANDIX LINUX SERVICE DAEMON
 
 linux_serv_daemon_build:
+	$(build-num)
 	$(start-build-command) $(LINUX_SERV_DAEMON)
 	$(sep-command)
 	@$(make-command) $(NORM_US_SERVICE_DAEMON_SRC)
@@ -250,6 +258,7 @@ linux_serv_daemon_clean:
 LINUX_APP_DAEMON = ANDIX LINUX APPLICATION DAEMON
 
 linux_app_daemon_build:
+	$(build-num)
 	$(start-build-command) $(LINUX_APP_DAEMON)
 	$(sep-command)
 	@$(make-command) $(NORM_US_APP_DAEMON_SRC)
@@ -270,6 +279,7 @@ linux_app_daemon_clean:
 LINUX_APP = ANDIX LINUX APPLICATION
 
 linux_app_build: linux_app_lib_build
+	$(build-num)
 	$(start-build-command) $(LINUX_APP)
 	$(sep-command)
 	@$(make-command) $(NORM_US_APP_SRC)
@@ -290,6 +300,7 @@ linux_app_clean:
 LINUX_APP_LIB = ANDIX LINUX APPLICATION LIBRARY
 
 linux_app_lib_build:
+	$(build-num)
 	$(start-build-command) $(LINUX_APP_LIB)
 	$(sep-command)
 	@$(make-command) $(NORM_US_APP_LIB_SRC)

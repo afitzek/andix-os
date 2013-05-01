@@ -111,3 +111,9 @@ define mys-command
 @echo Rewriting symbol table: $@
 @$(PERL) -p -e 's/\x0a/\x00/g' $^ > $@
 endef
+
+define build-num
+@echo Incrementing build number
+@if ! test -f $(PROG_BUILD_NUM); then echo 0 > $(PROG_BUILD_NUM); fi
+@echo $$(($$(cat $(PROG_BUILD_NUM)) + 1)) > $(PROG_BUILD_NUM)
+endef
