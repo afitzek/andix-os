@@ -156,6 +156,8 @@ typedef struct {
 
 typedef struct {
 	uint32_t	memid;
+	uint32_t	size;
+	uint32_t	offset;
 } TEEC_MemRefParameter;
 
 typedef struct {
@@ -173,6 +175,7 @@ typedef struct
 	uint32_t		started;
 	uint32_t		paramTypes;
 	TEEC_Paramter	params[4];
+	uint32_t		valid;
 } TEECOM_Operation;
 
 // DEVICE FLAGS
@@ -252,6 +255,7 @@ typedef struct {
 	uint32_t	connectionData;
 	TEECOM_Operation	operation;
 	uint32_t	returnOrigin;
+	uint32_t	tmpid;
 } TZ_TEE_OPEN_SESSION;
 
 typedef struct {
@@ -285,5 +289,7 @@ typedef struct {
 		TZ_TEE_SPACE tee;
 	} p;
 } TZ_MAIN_COM;
+
+#define TEE_PARAM_TYPE_GET(t, i) (((t) >> (i*4)) & 0xF)
 
 #endif /* COMMUNICATION_TYPES_H_ */
