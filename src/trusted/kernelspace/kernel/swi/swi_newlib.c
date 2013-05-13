@@ -33,7 +33,7 @@ int32_t swi_fstat(int file) {
 		return (-1);
 	}
 
-	if(fs_fstat(hdl->data, &stat) != 0) {
+	if (fs_fstat(hdl->data, &stat) != 0) {
 		return (-1);
 	}
 	return (stat.st_size);
@@ -71,6 +71,7 @@ int32_t swi_lseek(int32_t file, uint32_t ptr, int32_t dir) {
 }
 
 int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
+	uint8_t* tmp;
 	if (!is_valid_user_addr(buffer)) {
 		return (-1);
 	}
@@ -86,12 +87,20 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 	}
 
 	if (socket == 1) {
-		user_info("STDOUT [%d]: %s", task->tid, buffer);
+		tmp = kmalloc(size + 1);
+		memset(tmp, 0, size + 1);
+		memcpy(tmp, buffer, size);
+		user_info("STDOUT [%d]: %s", task->tid, tmp);
+		kfree(tmp);
 		return (size);
 	}
 
 	if (socket == 2) {
+		tmp = kmalloc(size + 1);
+		memset(tmp, 0, size + 1);
+		memcpy(tmp, buffer, size);
 		user_info("STDERR [%d]: %s", task->tid, buffer);
+		kfree(tmp);
 		return (size);
 	}
 
@@ -125,7 +134,7 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 
 	if (socket == 0) {
 		user_info("STDIN [%d]:", task->tid);
-		getinput((char*)buffer, size);
+		getinput((char*) buffer, size);
 		return (size);
 	}
 
@@ -173,7 +182,7 @@ int32_t swi_close(int file) {
 
 	task_rem_fhandle(task, hdl);
 
-	kfree((void*)hdl);
+	kfree((void*) hdl);
 
 	return (0);
 }
@@ -204,8 +213,8 @@ int32_t swi_open(char *name, int flags, int mode) {
 
 	swi_info("Open %s [Flags 0x%x]", name, flags);
 
-	if (fs_open((uint8_t*)&task->uuid, sizeof(TASK_UUID), (uint8_t*)name, strlen(name), flags, mode,
-			hdl->data) != 0) {
+	if (fs_open((uint8_t*) &task->uuid, sizeof(TASK_UUID), (uint8_t*) name,
+			strlen(name), flags, mode, hdl->data) != 0) {
 		goto error;
 	}
 
@@ -219,7 +228,7 @@ int32_t swi_open(char *name, int flags, int mode) {
 		if (hdl->data != NULL ) {
 			kfree(hdl->data);
 		}
-		kfree((uintptr_t)hdl);
+		kfree((uintptr_t) hdl);
 	}
 
 	return (-1);
@@ -232,7 +241,7 @@ int32_t swi_sbrk(int32_t incr) {
 		kpanic();
 	}
 
-	uint32_t heap = (uint32_t)task->vheap;
+	uint32_t heap = (uint32_t) task->vheap;
 	int32_t tmp_incr = incr;
 	uint32_t left_on_page = 0xFFF - (heap & 0xFFF);
 	kernel_mem_info_t mem_info;
@@ -267,7 +276,7 @@ int32_t swi_sbrk(int32_t incr) {
 		heap += 0x1000;
 	}
 
-	task->vheap = (uintptr_t)((uint32_t) task->vheap + incr);
+	task->vheap = (uintptr_t) ((uint32_t) task->vheap + incr);
 
 	dump_mmu(0x0, 0x20000, task->vuserPD);
 

@@ -18,5 +18,7 @@ uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task);
 void free_task_mapped_page(void* page, task_t *task);
 void* allocate_task_mapped_page_frames(uint32_t numpages, task_t *task);
 void map_user_memory(uintptr_t vptd, kernel_mem_info_t *section);
+uint8_t* allocate_map_mem_to_task(uint32_t size, task_t* task);
+void free_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task);
 
 #endif /* UMM_H_ */

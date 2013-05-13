@@ -103,6 +103,28 @@ void free_task_mapped_page(void* page, task_t *task) {
 	task->membitmap[i] = task->membitmap[i] | (1 << j); // Mark as free!
 }
 
+uint8_t* allocate_map_mem_to_task(uint32_t size, task_t* task) {
+	uint8_t* physical_mem = (uint8_t*)
+			pmm_allocate_pages(needed_pages(0, size));
+	if(physical_mem == NULL) {
+		return (NULL);
+	}
+	return (map_mem_to_task(physical_mem, size, task));
+}
+
+void free_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task) {
+	uint32_t pages = needed_pages(0, size);
+	uint8_t* paddr = v_to_p(vaddr);
+	uint32_t freed = 0;
+
+	unmap_mem_from_task(vaddr, size, task);
+
+	while(freed < size) {
+		pmm_free_page(paddr);
+		paddr += SMALL_PAGE_SIZE;
+		freed += SMALL_PAGE_SIZE;
+	}
+}
 
 uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task) {
 	task_debug("Mapping mem 0x%x to task %d", paddr, task->tid);

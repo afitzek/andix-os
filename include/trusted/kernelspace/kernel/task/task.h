@@ -68,6 +68,7 @@ typedef struct {
 	uintptr_t			userPD;
 	uintptr_t			vuserPD;
 	uintptr_t			vheap;
+	uintptr_t			tee_rpc;
 } task_t;
 
 typedef struct {

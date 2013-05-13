@@ -134,7 +134,7 @@ TZ_TEE_SPACE* tee_mem = NULL;
 void free_tz_communication_memory() {
 	if (com_mem != NULL ) {
 		mon_info("Unmapping old communication memory");
-		unmap_kernel_memory((uint32_t) com_mem);
+		unmap_memory((uint32_t) com_mem, sizeof(TZ_CTLR_SPACE));
 		com_mem = NULL;
 	}
 }
@@ -144,85 +144,92 @@ uint32_t cl_size;
 void free_tz_tee_memory() {
 	if (tee_mem != NULL ) {
 		mon_info("Unmapping old tee memory");
-		unmap_kernel_memory((uint32_t) tee_mem);
+		unmap_memory((uint32ptr_t) tee_mem, sizeof(TZ_TEE_SPACE));
 		tee_mem = NULL;
 	}
 }
 
-void inv_tz_tee_memory() {
-	if (tee_mem != NULL ) {
-		uint32_t start = (uint32_t) tee_mem;
-		uint32_t end = start + sizeof(TZ_TEE_SPACE);
-		start = round_down(start, cl_size);
-		end = round_up(end, cl_size);
-		while (start < end) {
-			asm ("mcr p15, 0, %0, c7, c6, 1" : : "r" (start)
-					: "memory");
-			start += cl_size;
-		}
-		CP15DSB;
-		CP15ISB;
+void inv_tz_memory(void* memory, uint32_t size) {
+	uint32_t start = (uint32_t) memory;
+	start = (start & 0xFFFFFFE0);
+	uint32_t end = start + size;
+	start = round_down(start, cl_size);
+	end = round_up(end, cl_size);
+	while (start < end) {
+		asm ("mcr p15, 0, %0, c7, c14, 1" : : "r" (start)
+				: "memory");
+		start += cl_size;
 	}
+	CP15DSB;
+	CP15ISB;
 }
 
 int set_tz_tee_memory(void* ptr) {
 
 	free_tz_tee_memory();
+	/*
+	 mon_info("Mapping tee memory physical addr: 0x%x", ptr);
 
-	mon_info("Mapping tee memory physical addr: 0x%x", ptr);
+	 if (!is_valid_nonsecure_ram_addr(ptr)) {
+	 mon_error("tee memory has invalid address! 0x%x", ptr);
+	 DEBUG_STOP;
+	 return (-1);
+	 }
 
-	if (!is_valid_nonsecure_ram_addr(ptr)) {
-		mon_error("tee memory has invalid address! 0x%x", ptr);
-		DEBUG_STOP;
-		return (-1);
-	}
+	 uint32_t need_pages = needed_pages((uint8_t*) ptr, sizeof(TZ_TEE_SPACE));
 
-	uint32_t need_pages = needed_pages((uint8_t*) ptr, sizeof(TZ_TEE_SPACE));
+	 void* vaddr = mmm_allocate_pages(need_pages);
 
-	void* vaddr = mmm_allocate_pages(need_pages);
+	 if (vaddr == NULL ) {
+	 mon_error("Out of map able memory");
+	 DEBUG_STOP;
+	 return (-1);
+	 }
 
-	if (vaddr == NULL ) {
-		mon_error("Out of map able memory");
-		DEBUG_STOP;
-		return (-1);
-	}
+	 mon_info("Mapping tee memory virtual pages: 0x%x (%d)", (uint32_t)vaddr,
+	 need_pages);
 
-	mon_info("Mapping tee memory virtual pages: 0x%x (%d)", (uint32_t)vaddr,
-			need_pages);
+	 uint32_t uivaddr = (uint32_t) vaddr;
+	 uint32_t uipaddr = (uint32_t) ptr;
 
-	uint32_t uivaddr = (uint32_t) vaddr;
-	uint32_t uipaddr = (uint32_t) ptr;
+	 kernel_mem_info_t info;
+	 info.ap = AP_SVC_RW_USR_NO;
+	 info.bufferable = 1;
+	 info.cacheable = 1;
+	 info.domain = 0;
+	 info.execute = EXEC_NON;
+	 info.nonsecure = 1;
+	 info.shareable = 1;
+	 info.tex = 0;
+	 info.type = SMALL_PAGE;
+	 info.vaddr = uivaddr;
+	 info.paddr = uipaddr;
 
-	kernel_mem_info_t info;
-	info.ap = AP_SVC_RW_USR_NO;
-	info.bufferable = 0;
-	info.cacheable = 0;
-	info.domain = 0;
-	info.execute = EXEC_NON;
-	info.nonsecure = 1;
-	info.shareable = 1;
-	info.tex = 0;
-	info.type = SMALL_PAGE;
-	info.vaddr = uivaddr;
-	info.paddr = uipaddr;
+	 if (map_kernel_sections(uipaddr, uipaddr - 1 + SMALL_PAGE_SIZE * need_pages,
+	 uivaddr, (&info)) != 0) {
+	 mon_error("Failed to map tee memory!");
+	 DEBUG_STOP;
+	 return (-1);
+	 }
 
-	if (map_kernel_sections(uipaddr, uipaddr - 1 + SMALL_PAGE_SIZE * need_pages,
-			uivaddr, (&info)) != 0) {
+	 vaddr =
+	 (intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) );
+
+	 dump_kernel_mmu(vaddr, vaddr + SMALL_PAGE);
+
+	 mon_info("Mapping tee memory virtual addr: 0x%x", vaddr);
+	 tee_mem = (TZ_TEE_SPACE*) vaddr;
+
+	 mon_info("Mapping tee memory OK");
+	 */
+
+	tee_mem = (TZ_TEE_SPACE*) map_phys_mem((uintptr_t) ptr,
+			sizeof(TZ_TEE_SPACE), AP_SVC_RW_USR_NO, 1, 1);
+
+	if (tee_mem == NULL ) {
 		mon_error("Failed to map tee memory!");
-		DEBUG_STOP;
 		return (-1);
 	}
-
-	vaddr =
-			(intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) /*| (uipaddr & 0xFFF)*/);
-
-	dump_kernel_mmu(vaddr, vaddr + SMALL_PAGE);
-
-	mon_info("Mapping tee memory virtual addr: 0x%x", vaddr);
-
-	tee_mem = (TZ_TEE_SPACE*) vaddr;
-
-	mon_info("Mapping tee memory OK");
 
 	return (0);
 }
@@ -230,54 +237,63 @@ int set_tz_tee_memory(void* ptr) {
 int set_tz_communication_memory(void* ptr) {
 
 	free_tz_communication_memory();
+	/*
+	 mon_info("Mapping communication memory physical addr: 0x%x", ptr);
 
-	mon_info("Mapping communication memory physical addr: 0x%x", ptr);
+	 if (!is_valid_nonsecure_ram_addr(ptr)) {
+	 mon_error("communication memory has invalid address! 0x%x", ptr);
+	 return (-1);
+	 }
 
-	if (!is_valid_nonsecure_ram_addr(ptr)) {
-		mon_error("communication memory has invalid address! 0x%x", ptr);
+	 uint32_t need_pages = needed_pages((uint8_t*) ptr, sizeof(TZ_MAIN_COM));
+
+	 void* vaddr = mmm_allocate_pages(need_pages);
+
+	 if (vaddr == NULL ) {
+	 mon_error("Out of map able memory");
+	 return (-1);
+	 }
+
+	 mon_info("Mapping communication memory virtual pages: 0x%x (%d)",
+	 (uint32_t)vaddr, need_pages);
+
+	 uint32_t uivaddr = (uint32_t) vaddr;
+	 uint32_t uipaddr = (uint32_t) ptr;
+
+	 kernel_mem_info_t info;
+	 info.ap = AP_SVC_RW_USR_NO;
+	 info.bufferable = 0;
+	 info.cacheable = 0;
+	 info.domain = 0;
+	 info.execute = EXEC_NON;
+	 info.nonsecure = 1;
+	 info.shareable = 1;
+	 info.tex = 0;
+	 info.type = SMALL_PAGE;
+	 info.vaddr = uivaddr;
+	 info.paddr = uipaddr;
+
+	 if (map_kernel_sections(uipaddr, uipaddr - 1 + SMALL_PAGE_SIZE * need_pages,
+	 uivaddr, (&info)) != 0) {
+	 mon_error("Failed to map communication memory!");
+	 return (-1);
+	 }
+	 vaddr = (intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) | (uipaddr & 0xFFF));
+
+	 mon_info("Mapping communication memory virtual addr: 0x%x", vaddr);
+
+	 com_mem = (TZ_CTLR_SPACE*) vaddr;
+
+	 mon_info("Mapping communication memory OK");
+	 */
+
+	com_mem = (TZ_CTLR_SPACE*) map_phys_mem((uintptr_t) ptr,
+			sizeof(TZ_CTLR_SPACE), AP_SVC_RW_USR_NO, 1, 1);
+
+	if (com_mem == NULL ) {
+		mon_error("Failed to map com memory!");
 		return (-1);
 	}
-
-	uint32_t need_pages = needed_pages((uint8_t*) ptr, sizeof(TZ_MAIN_COM));
-
-	void* vaddr = mmm_allocate_pages(need_pages);
-
-	if (vaddr == NULL ) {
-		mon_error("Out of map able memory");
-		return (-1);
-	}
-
-	mon_info("Mapping communication memory virtual pages: 0x%x (%d)",
-			(uint32_t)vaddr, need_pages);
-
-	uint32_t uivaddr = (uint32_t) vaddr;
-	uint32_t uipaddr = (uint32_t) ptr;
-
-	kernel_mem_info_t info;
-	info.ap = AP_SVC_RW_USR_NO;
-	info.bufferable = 0;
-	info.cacheable = 0;
-	info.domain = 0;
-	info.execute = EXEC_NON;
-	info.nonsecure = 1;
-	info.shareable = 1;
-	info.tex = 0;
-	info.type = SMALL_PAGE;
-	info.vaddr = uivaddr;
-	info.paddr = uipaddr;
-
-	if (map_kernel_sections(uipaddr, uipaddr - 1 + SMALL_PAGE_SIZE * need_pages,
-			uivaddr, (&info)) != 0) {
-		mon_error("Failed to map communication memory!");
-		return (-1);
-	}
-	vaddr = (intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) | (uipaddr & 0xFFF));
-
-	mon_info("Mapping communication memory virtual addr: 0x%x", vaddr);
-
-	com_mem = (TZ_CTLR_SPACE*) vaddr;
-
-	mon_info("Mapping communication memory OK");
 
 	return (0);
 }
@@ -287,8 +303,10 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 	//	mon_debug("CLEANING BUFFER FROM NON SECURE!!");
 	//}
 	task_t* target_task = NULL;
-	mon_debug("FROM NON SECURE");
-	dump_mon_context(cont);
+	uint32_t physical_tee;
+	uint32_t physical_ctrl;
+	//mon_debug("FROM NON SECURE");
+	//dump_mon_context(cont);
 	switch (cont->r[12]) {
 	case SMC_REGISTER_CMEM:
 		cont->r[0] = (uint32_t) set_tz_communication_memory((void*) cont->r[0]);
@@ -320,15 +338,23 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		}
 		break;
 	case SMC_PROCESS_TMEM:
+		physical_tee = cont->r[0];
+		physical_ctrl = cont->r[1];
+		set_tz_tee_memory((void*) physical_tee);
+		set_tz_communication_memory((void*) physical_ctrl);
+
+		tee_mem = mon_get_tee_space();
+
 		// THIS REQUEST IS A REQUEST => DISPATCH TO PROCESS TASK!
 		mon_info("Process tee memory! @ v 0x%x p 0x%x", tee_mem,
 				virt_to_phys((uintptr_t)tee_mem));
-		inv_tz_tee_memory();
-		kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
 
 		if (tee_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
+			inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
+			//kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
+			//DEBUG_STOP;
 			target_task = get_task_by_name(TEE_TASK);
 			if (target_task == NULL ) {
 				cont->r[0] = -1;
@@ -445,11 +471,16 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		 */
 		// Return to non secure world
 		//mon_info("Initialize ctx id : 0x%x", tee_mem->params.initCtx.context);
-		kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
+		//kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
 		get_nonsecure_task()->context.r[0] = cont->r[0];
 		//v7_flush_dcache_all();
 		//mon_info("waiting ...");
 		//getchar();
+		inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
+		if (get_nonsecure_task()->context.r[0] != CTRL_STRUCT) {
+			free_tz_tee_memory();
+			free_tz_communication_memory();
+		}
 		mon_secure_switch_context(cont, get_nonsecure_task());
 		break;
 	default:
@@ -487,8 +518,12 @@ void setup_mon_stacks() {
 
 	uint32_t ctr;
 
-	asm volatile("mrc p15, 0, %0, c0, c0, 1" : "=r" (ctr));
-	cl_size = 4 << ((ctr >> 16) & 0xf);
+	//asm volatile("mrc p15, 0, %0, c0, c0, 1" : "=r" (ctr));
+	//cl_size = 4 << ((ctr >> 16) & 0xf);
+
+	cl_size = 0x20;
+
+	mon_info("Cacheline size: %d", cl_size);
 
 	returningTask = NULL;
 	returningTaskTEE = NULL;

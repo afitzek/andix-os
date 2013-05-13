@@ -217,6 +217,7 @@ task_t* create_kernel_task(uint32_t mode, EXEC_CONTEXT_t context) {
 	task->files->next = task->files;
 	task->files->prev = task->files;
 	task->files->data = NULL;
+	task->tee_rpc = NULL;
 
 	task->sys_context.svc_spsr = mode | PSR_F | PSR_I | PSR_A;
 	task->sys_context.abt_spsr = mode | PSR_F | PSR_I | PSR_A;

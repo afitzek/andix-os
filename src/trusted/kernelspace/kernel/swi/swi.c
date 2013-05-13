@@ -22,11 +22,11 @@ void dump_cpu_state(uint32_t swi, cpu_state_t* cpu) {
 }
 
 void dispatch_swi(uint32_t swi, cpu_state_t* cpu) {
-	swi_debug("====================================");
-	swi_debug("SWI CALL");
-	dump_cpu_state(swi, cpu);
-	swi_debug(
-			"SWI %x R0: %x R1: %x R2: %x R12: %x", swi, cpu->r[0], cpu->r[1], cpu->r[2], cpu->r[12]);
+	//swi_debug("====================================");
+	//swi_debug("SWI CALL");
+	//dump_cpu_state(swi, cpu);
+	//swi_debug(
+	//		"SWI %x R0: %x R1: %x R2: %x R12: %x", swi, cpu->r[0], cpu->r[1], cpu->r[2], cpu->r[12]);
 
 	switch (cpu->r[12]) {
 	// ====================================================================
@@ -75,6 +75,6 @@ void dispatch_swi(uint32_t swi, cpu_state_t* cpu) {
 		break;
 	}
 
-	swi_debug("SWI RETURN");
-	swi_debug("====================================");
+	//swi_debug("SWI RETURN");
+	//swi_debug("====================================");
 }
