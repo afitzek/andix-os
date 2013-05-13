@@ -10,6 +10,7 @@
 #include <linux/gfp.h>
 #include <linux/init.h>
 #include <tz_application_mod/tee_logic.h>
+#include <tz_application_mod/shared_mem.h>
 
 uint32_t tz_device;
 uint8_t initialized;
@@ -46,7 +47,9 @@ int _init_tz_driver(void) {
 	}
 	initialized = 2;
 
-	if (initialize_ctrl() != 0) {
+	init_shared_mem();
+
+	/*if (initialize_ctrl() != 0) {
 		printk(KERN_ERR "Failed to initialize ctrl module\n");
 		return (-1);
 	}
@@ -54,7 +57,7 @@ int _init_tz_driver(void) {
 	if (initialize_tee() != 0) {
 		printk(KERN_ERR "Failed to initialize tee module\n");
 		return (-1);
-	}
+	}*/
 
 	if (tee_init() != 0) {
 		printk(KERN_ERR "Failed to initialize tee logic\n");

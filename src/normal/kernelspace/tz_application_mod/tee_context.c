@@ -6,6 +6,7 @@
  */
 
 #include <tz_application_mod/tee_context.h>
+#include <asm-generic/current.h>
 
 tee_list_t* tee_contexts;
 
@@ -40,6 +41,7 @@ tee_context* tee_context_add() {
 	} while (ctx_with_id != NULL);
 
 	ctx->id = id;
+	ctx->id = current->pid;
 
 	tee_list_add(tee_contexts, (void*) ctx);
 
@@ -55,6 +57,24 @@ void tee_context_free(tee_context* ctx) {
 		}
 		kfree((void*) ctx);
 	}
+}
+
+tee_context* tee_context_find_by_pid(pid_t pid) {
+	tee_list_t* pos;
+	tee_list_t* next;
+	tee_context* ctx;
+	list_for_each_safe(pos, next, tee_contexts)
+	{
+		if (pos->data != NULL) {
+			ctx = (tee_context*) pos->data;
+			if (ctx != NULL && ctx->pid == pid) {
+				break;
+			}
+			ctx = NULL;
+		}
+	}
+
+	return (ctx);
 }
 
 tee_context* tee_context_find_by_id(uint32_t id) {

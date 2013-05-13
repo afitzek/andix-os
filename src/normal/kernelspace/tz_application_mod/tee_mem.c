@@ -137,6 +137,7 @@ void cleanup_tee() {
 	}
 }
 
+/*
 void tee_flush_cache() {
 	if (tee_init_state == 1) {
 		flush_dcache_page(shared_pages);
@@ -145,9 +146,9 @@ void tee_flush_cache() {
 
 uint32_t cl_size;
 
-void tee_invalidate() {
-	uint32_t start = (uint32_t) shared_tee_mem;
-	uint32_t end = start + sizeof(TZ_TEE_SPACE);
+void tee_invalidate(void* memory, uint32_t size) {
+	uint32_t start = (uint32_t) memory;
+	uint32_t end = start + size;
 	start = round_down(start, cl_size);
 	end = round_up(end, cl_size);
 	while (start < end) {
@@ -158,16 +159,17 @@ void tee_invalidate() {
 	CP15DSB;
 	CP15ISB;
 }
+*/
 
 int initialize_tee() {
 	// Allocate memory
 	//shared_tee_mem = (TZ_TEE_SPACE*) kmalloc(sizeof(TZ_TEE_SPACE),
 	//		GFP_KERNEL);
 
-	uint32_t ctr;
+	//uint32_t ctr;
 
-	asm volatile("mrc p15, 0, %0, c0, c0, 1" : "=r" (ctr));
-	cl_size = 4 << ((ctr >> 16) & 0xf);
+	//asm volatile("mrc p15, 0, %0, c0, c0, 1" : "=r" (ctr));
+	//cl_size = 4 << ((ctr >> 16) & 0xf);
 
 	int pages = needed_log_pages(sizeof(TZ_TEE_SPACE));
 

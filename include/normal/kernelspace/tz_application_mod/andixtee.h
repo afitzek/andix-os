@@ -95,7 +95,7 @@ long tz_driver_ioctl(struct file *, unsigned int, unsigned long);
 //int tz_driver_mmap(struct file *, struct vm_area_struct *);
 // =============================================================
 
-int tz_process_ctrl_mem(void);
+int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace);
 int tz_process_tee_mem(TZ_TEE_SPACE* userspace);
 
 // =============================================================

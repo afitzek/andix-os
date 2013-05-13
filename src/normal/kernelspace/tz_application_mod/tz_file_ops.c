@@ -27,6 +27,13 @@ int tz_driver_open(struct inode * inode, struct file * file) {
 
 int tz_driver_release(struct inode * inode, struct file * file) {
 	//atomic_inc(&tz_dev_available); // release the device
+	// release all contexts with
+	tee_context* ctx = tee_context_find_by_pid(current->pid);
+	while(ctx != NULL) {
+		// TODO: CALL TZ to release ctx
+		tee_context_free(ctx);
+		ctx = tee_context_find_by_pid(current->pid);
+	}
 	return (0);
 }
 
@@ -34,10 +41,10 @@ int tz_process_tee_mem(TZ_TEE_SPACE* userspace) {
 
 	int result = 0;
 
-	if(get_shared_tee_mem() == NULL) {
-		printk(KERN_ERR "Failed to get TEE memory\n");
-		return (-1);
-	}
+	//if(get_shared_tee_mem() == NULL) {
+	//	printk(KERN_ERR "Failed to get TEE memory\n");
+	//	return (-1);
+	//}
 
 	//TODO: get mutex
 	//push_tee_to_com(userspace);

@@ -20,6 +20,6 @@ int initialize_tee(void);
 int push_tee(TZ_TEE_SPACE* kspace);
 int poll_tee(TZ_TEE_SPACE* kspace);
 void tee_flush_cache(void);
-void tee_invalidate(void);
+void tee_invalidate(void* memory, uint32_t size);
 
 #endif /* TEE_MEM_H_ */
