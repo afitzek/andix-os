@@ -9,6 +9,7 @@
 #define TEE_CLIENT_API_H_
 
 #include <client_constants.h>
+#include <client_error_constants.h>
 
 // Data types
 

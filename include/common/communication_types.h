@@ -218,6 +218,12 @@ typedef struct {
 	} params;
 } TZ_CTLR_SPACE;
 
+typedef struct {
+	uint32_t result;
+	void*	 physical_tee;
+	void*	 physical_ctrl;
+} TZ_PACKAGE;
+
 #define TZ_TEE_OP_INIT_CTX		(0x01)
 #define TZ_TEE_OP_FIN_CTX		(0x02)
 #define TZ_TEE_OP_REGISTER_MEM	(0x03)
