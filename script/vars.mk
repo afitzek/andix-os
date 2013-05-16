@@ -82,6 +82,7 @@ TZ_KERNEL_INC := $(TZ_K_INC)/kernel
 TZ_USER_C_INC := $(TZ_U_INC)/newlib_c
 TZ_USER_TEE_INC := $(TZ_U_INC)/tee_runtime
 TZ_USER_MANAGER_INC := $(TZ_U_INC)/andix_manager
+TZ_USER_SAMPLE_INC := $(TZ_U_INC)/sample_trustlet
 
 ####
 # Normal World includes
@@ -93,6 +94,7 @@ NORM_KS_SERV_INC := $(NORM_K_INC)/tz_service_mod
 NORM_US_APP_DAEMON_INC := $(NORM_U_INC)/tz_application_daemon
 NORM_US_APP_LIB_INC := $(NORM_U_INC)/tz_application_library
 NORM_US_APP_INC := $(NORM_U_INC)/tz_application
+NORM_US_APP_ENC_INC := $(NORM_U_INC)/tz_encrypter
 NORM_US_SERVICE_DAEMON_INC := $(NORM_U_INC)/tz_service_daemon
 
 ####
@@ -117,6 +119,7 @@ TZ_KERNEL_SRC := $(TZ_K_SRC)/kernel
 TZ_USER_C_SRC := $(TZ_U_SRC)/newlib_c
 TZ_USER_TEE_SRC := $(TZ_U_SRC)/tee_runtime
 TZ_USER_MANAGER_SRC := $(TZ_U_SRC)/andix_manager
+TZ_USER_SAMPLE_SRC := $(TZ_U_SRC)/sample_trustlet
 
 ####
 # Normal World sources
@@ -128,6 +131,7 @@ NORM_KS_SERV_SRC := $(NORM_K_SRC)/tz_service_mod
 NORM_US_APP_DAEMON_SRC := $(NORM_U_SRC)/tz_application_daemon
 NORM_US_APP_LIB_SRC := $(NORM_U_SRC)/tz_application_library
 NORM_US_APP_SRC := $(NORM_U_SRC)/tz_application
+NORM_US_APP_ENC_SRC := $(NORM_U_SRC)/tz_encrypter
 NORM_US_SERVICE_DAEMON_SRC := $(NORM_U_SRC)/tz_service_daemon
 
 ####

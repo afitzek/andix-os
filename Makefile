@@ -31,9 +31,9 @@ tool_clean: tool_packer_clean tool_scripts_clean
 # Linux Build targets
 ####
 
-linux_builds: linux_modules_build linux_serv_daemon_build linux_app_lib_build linux_app_daemon_build linux_app_build
+linux_builds: linux_modules_build linux_serv_daemon_build linux_app_lib_build linux_app_daemon_build linux_app_build linux_enc_app_build
 
-linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean linux_app_daemon_clean linux_app_clean
+linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean linux_app_daemon_clean linux_app_clean linux_enc_app_clean
 
 ####
 
@@ -41,9 +41,9 @@ linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean lin
 # TZ Build targets
 ####
 
-tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_manager_build tz_kernel_build
+tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_sample_build tz_manager_build tz_kernel_build
 	
-tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_manager_clean tz_kernel_clean	
+tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_sample_clean tz_manager_clean tz_kernel_clean	
 	
 ####	
 	
@@ -143,6 +143,38 @@ tz_manager_pdfdoc:
 	$(sep-command)
 	@$(make-command) $(TZ_USER_MANAGER_SRC) pdfdoc
 	$(sep-command)
+
+####
+# Andix TZ Sample Trustlet
+####
+
+TZ_TEE_SAMPLE = ANDIX TZ SAMPLE
+
+tz_sample_build:
+	$(build-num)
+	$(start-build-command) $(TZ_TEE_SAMPLE)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_SAMPLE_SRC)
+	$(sep-command)
+
+tz_sample_clean:
+	$(start-clean-command) $(TZ_TEE_SAMPLE)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_SAMPLE_SRC) clean
+	$(sep-command)
+
+tz_sample_doc:
+	$(start-build-doc-command) $(TZ_TEE_SAMPLE)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_SAMPLE_SRC) doc
+	$(sep-command)
+	
+tz_sample_pdfdoc:
+	$(start-build-pdfdoc-command) $(TZ_TEE_SAMPLE)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_SAMPLE_SRC) pdfdoc
+	$(sep-command)
+
 
 ####
 
@@ -289,6 +321,25 @@ linux_app_clean:
 	$(start-clean-command) $(LINUX_APP)
 	$(sep-command)
 	@$(make-command) $(NORM_US_APP_SRC) clean
+	$(sep-command)
+	
+####
+# Andix linux application
+####
+
+LINUX_ENC_APP = ANDIX LINUX ENCRPYTION APPLICATION
+
+linux_enc_app_build: linux_app_lib_build
+	$(build-num)
+	$(start-build-command) $(LINUX_ENC_APP)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_ENC_SRC)
+	$(sep-command)
+
+linux_enc_app_clean:
+	$(start-clean-command) $(LINUX_ENC_APP)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_ENC_SRC) clean
 	$(sep-command)
 
 ####

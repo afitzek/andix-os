@@ -97,7 +97,9 @@ pdfdoc: doc
 .PHONY: getpayloads
 getpayloads:
 	cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/manager.bin $(realpath $(TOP))/payload/manager.bin
+	cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/sample.bin $(realpath $(TOP))/payload/sample.bin
 	touch $(realpath $(TOP))/payload/userpayload.S
+	touch $(realpath $(TOP))/payload/samplepayload.S
 	touch $(realpath $(TOP))/kernel/main.c
 
 .PHONY: mkbuilddirs		
