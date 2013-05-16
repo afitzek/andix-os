@@ -82,25 +82,52 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 		TZ_PACKAGE *package) {
 	int result = 0;
 
-	uint32_t ctrl_physical = virt_to_phys((void*) ctrlspace);
+	struct page* ctrl_pages_1 = NULL;
+	struct page* ctrl_pages_2 = NULL;
+	TZ_CTLR_SPACE *ctrlspace_1 = ctrlspace;
+	TZ_CTLR_SPACE *ctrlspace_2 = NULL;
+
+	uint32_t ctrl_physical_1 = virt_to_phys((void*) ctrlspace);
+	uint32_t ctrl_physical_2 = virt_to_phys((void*) ctrlspace);
 	uint32_t tee_physical = virt_to_phys((void*) teespace);
 	uint32_t package_physical = virt_to_phys((void*) package);
 	while (1) {
 
 		printk(KERN_INFO "Push CTRL space from secure!");
 
-		invalidate(ctrlspace, sizeof(TZ_CTLR_SPACE));
-		invalidate_clean(ctrlspace, sizeof(TZ_CTLR_SPACE));
+		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
+		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
 		// Push ctrl struct to userspace daemon
-		push_ctrl_task_from_s(ctrlspace);
+		push_ctrl_task_from_s(ctrlspace_1);
 
 		while (poll_ctrl_task_to_s() == 0) {
 			// wait until ctrl task was proccessed
 			schedule();
 		}
 
-		invalidate(ctrlspace, sizeof(TZ_CTLR_SPACE));
-		invalidate_clean(ctrlspace, sizeof(TZ_CTLR_SPACE));
+		printk(KERN_INFO "FD RESULT: 0x%x", ctrlspace_1->ret);
+
+		// TODO: reallocate ctrlspace
+
+		ctrl_pages_2 = allocate_mapable_memory(sizeof(TZ_CTLR_SPACE),
+				(void**)&ctrl_physical_2, (void**)&ctrlspace_2);
+
+		memcpy(ctrlspace_2, ctrlspace_1, sizeof(TZ_CTLR_SPACE));
+
+		if (ctrl_pages_1 != NULL ) {
+			free_mapable_memory(ctrl_pages_1, sizeof(TZ_CTLR_SPACE));
+		}
+
+		ctrl_pages_1 = ctrl_pages_2;
+		ctrlspace_1 = ctrlspace_2;
+		ctrl_physical_1 = ctrl_physical_2;
+
+		package->physical_ctrl = (void*)ctrl_physical_1;
+
+		invalidate(package, sizeof(TZ_PACKAGE));
+		invalidate(teespace, sizeof(TZ_TEE_SPACE));
+		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
+		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
 		flush_cache_all();
 		// CALL Monitor with CTRL mem response
 		CP15DMB;
@@ -109,8 +136,8 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 		result = __smc_1(SMC_PROCESS_CMEM, package_physical);
 		invalidate(package, sizeof(TZ_PACKAGE));
 		invalidate(teespace, sizeof(TZ_TEE_SPACE));
-		invalidate(ctrlspace, sizeof(TZ_CTLR_SPACE));
-		invalidate_clean(ctrlspace, sizeof(TZ_CTLR_SPACE));
+		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
+		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
 		flush_cache_all();
 		printk(KERN_INFO "PROCESS_CMEM result: %x", result);
 
@@ -119,6 +146,10 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 			break;
 		}
 
+	}
+
+	if (ctrl_pages_1 != NULL ) {
+		free_mapable_memory(ctrl_pages_1, sizeof(TZ_CTLR_SPACE));
 	}
 
 	return (result);
@@ -221,10 +252,6 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 		teemem->ret = TEEC_ERROR_COMMUNICATION;
 		goto err_ret;
 	}
-//printk(KERN_INFO "LOCALCOPY\n");
-//kprintHex(teemem, sizeof(TZ_TEE_SPACE));
-
-//push_tee(&localcopy);
 
 // call TZ
 	CP15DMB;

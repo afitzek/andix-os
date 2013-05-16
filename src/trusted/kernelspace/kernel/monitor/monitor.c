@@ -134,6 +134,7 @@ TZ_PACKAGE* package = NULL;
 
 void free_tz_communication_memory() {
 	if (com_mem != NULL ) {
+		inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
 		mon_info("Unmapping old communication memory");
 		unmap_memory((uint32_t) com_mem, sizeof(TZ_CTLR_SPACE));
 		com_mem = NULL;
@@ -144,6 +145,7 @@ uint32_t cl_size;
 
 void free_tz_tee_memory() {
 	if (tee_mem != NULL ) {
+		inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
 		mon_info("Unmapping old tee memory");
 		unmap_memory((uint32ptr_t) tee_mem, sizeof(TZ_TEE_SPACE));
 		tee_mem = NULL;
@@ -152,14 +154,14 @@ void free_tz_tee_memory() {
 
 void inv_tz_memory(void* memory, uint32_t size) {
 	uint32_t start = (uint32_t) memory;
-	start = (start & 0xFFFFFFE0);
+	//start = (start & 0xFFFFFFE0);
 	uint32_t end = start + size;
-	start = round_down(start, cl_size);
-	end = round_up(end, cl_size);
+	start = round_down(start, 0x1F);
+	end = round_up(end, 0x1F);
 	while (start < end) {
 		asm ("mcr p15, 0, %0, c7, c14, 1" : : "r" (start)
 				: "memory");
-		start += cl_size;
+		start += 0x1F;
 	}
 	CP15DSB;
 	CP15ISB;
@@ -167,6 +169,7 @@ void inv_tz_memory(void* memory, uint32_t size) {
 
 void free_tz_package() {
 	if (package != NULL ) {
+		inv_tz_memory(package, sizeof(TZ_PACKAGE));
 		mon_info("Unmapping old package memory");
 		unmap_memory((uint32ptr_t) package, sizeof(TZ_PACKAGE));
 		package = NULL;
@@ -186,6 +189,8 @@ int set_tz_package(void* ptr) {
 		return (-1);
 	}
 
+	inv_tz_memory(package, sizeof(TZ_PACKAGE));
+
 	if (set_tz_tee_memory(package->physical_tee) != 0) {
 		free_tz_package();
 		return (-1);
@@ -202,61 +207,6 @@ int set_tz_package(void* ptr) {
 int set_tz_tee_memory(void* ptr) {
 
 	free_tz_tee_memory();
-	/*
-	 mon_info("Mapping tee memory physical addr: 0x%x", ptr);
-
-	 if (!is_valid_nonsecure_ram_addr(ptr)) {
-	 mon_error("tee memory has invalid address! 0x%x", ptr);
-	 DEBUG_STOP;
-	 return (-1);
-	 }
-
-	 uint32_t need_pages = needed_pages((uint8_t*) ptr, sizeof(TZ_TEE_SPACE));
-
-	 void* vaddr = mmm_allocate_pages(need_pages);
-
-	 if (vaddr == NULL ) {
-	 mon_error("Out of map able memory");
-	 DEBUG_STOP;
-	 return (-1);
-	 }
-
-	 mon_info("Mapping tee memory virtual pages: 0x%x (%d)", (uint32_t)vaddr,
-	 need_pages);
-
-	 uint32_t uivaddr = (uint32_t) vaddr;
-	 uint32_t uipaddr = (uint32_t) ptr;
-
-	 kernel_mem_info_t info;
-	 info.ap = AP_SVC_RW_USR_NO;
-	 info.bufferable = 1;
-	 info.cacheable = 1;
-	 info.domain = 0;
-	 info.execute = EXEC_NON;
-	 info.nonsecure = 1;
-	 info.shareable = 1;
-	 info.tex = 0;
-	 info.type = SMALL_PAGE;
-	 info.vaddr = uivaddr;
-	 info.paddr = uipaddr;
-
-	 if (map_kernel_sections(uipaddr, uipaddr - 1 + SMALL_PAGE_SIZE * need_pages,
-	 uivaddr, (&info)) != 0) {
-	 mon_error("Failed to map tee memory!");
-	 DEBUG_STOP;
-	 return (-1);
-	 }
-
-	 vaddr =
-	 (intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) );
-
-	 dump_kernel_mmu(vaddr, vaddr + SMALL_PAGE);
-
-	 mon_info("Mapping tee memory virtual addr: 0x%x", vaddr);
-	 tee_mem = (TZ_TEE_SPACE*) vaddr;
-
-	 mon_info("Mapping tee memory OK");
-	 */
 
 	tee_mem = (TZ_TEE_SPACE*) map_phys_mem((uintptr_t) ptr,
 			sizeof(TZ_TEE_SPACE), AP_SVC_RW_USR_NO, 0, 0);
@@ -266,61 +216,14 @@ int set_tz_tee_memory(void* ptr) {
 		return (-1);
 	}
 
+	inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
+
 	return (0);
 }
 
 int set_tz_communication_memory(void* ptr) {
 
 	free_tz_communication_memory();
-	/*
-	 mon_info("Mapping communication memory physical addr: 0x%x", ptr);
-
-	 if (!is_valid_nonsecure_ram_addr(ptr)) {
-	 mon_error("communication memory has invalid address! 0x%x", ptr);
-	 return (-1);
-	 }
-
-	 uint32_t need_pages = needed_pages((uint8_t*) ptr, sizeof(TZ_MAIN_COM));
-
-	 void* vaddr = mmm_allocate_pages(need_pages);
-
-	 if (vaddr == NULL ) {
-	 mon_error("Out of map able memory");
-	 return (-1);
-	 }
-
-	 mon_info("Mapping communication memory virtual pages: 0x%x (%d)",
-	 (uint32_t)vaddr, need_pages);
-
-	 uint32_t uivaddr = (uint32_t) vaddr;
-	 uint32_t uipaddr = (uint32_t) ptr;
-
-	 kernel_mem_info_t info;
-	 info.ap = AP_SVC_RW_USR_NO;
-	 info.bufferable = 0;
-	 info.cacheable = 0;
-	 info.domain = 0;
-	 info.execute = EXEC_NON;
-	 info.nonsecure = 1;
-	 info.shareable = 1;
-	 info.tex = 0;
-	 info.type = SMALL_PAGE;
-	 info.vaddr = uivaddr;
-	 info.paddr = uipaddr;
-
-	 if (map_kernel_sections(uipaddr, uipaddr - 1 + SMALL_PAGE_SIZE * need_pages,
-	 uivaddr, (&info)) != 0) {
-	 mon_error("Failed to map communication memory!");
-	 return (-1);
-	 }
-	 vaddr = (intptr_t) (((uint32_t) uivaddr & 0xFFFFF000) | (uipaddr & 0xFFF));
-
-	 mon_info("Mapping communication memory virtual addr: 0x%x", vaddr);
-
-	 com_mem = (TZ_CTLR_SPACE*) vaddr;
-
-	 mon_info("Mapping communication memory OK");
-	 */
 
 	com_mem = (TZ_CTLR_SPACE*) map_phys_mem((uintptr_t) ptr,
 			sizeof(TZ_CTLR_SPACE), AP_SVC_RW_USR_NO, 0, 0);
@@ -329,6 +232,8 @@ int set_tz_communication_memory(void* ptr) {
 		mon_error("Failed to map com memory!");
 		return (-1);
 	}
+
+	inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
 
 	return (0);
 }
@@ -342,18 +247,6 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 	mon_debug("FROM NON SECURE");
 	dump_mon_context(cont);
 	switch (cont->r[12]) {
-	/*case SMC_REGISTER_CMEM:
-	 cont->r[0] = (uint32_t) set_tz_communication_memory((void*) cont->r[0]);
-	 break;
-	 case SMC_UNREGISTER_CMEM:
-	 free_tz_communication_memory();
-	 break;
-	 case SMC_REGISTER_TMEM:
-	 cont->r[0] = (uint32_t) set_tz_tee_memory((void*) cont->r[0]);
-	 break;
-	 case SMC_UNREGISTER_TMEM:
-	 free_tz_tee_memory();
-	 break;*/
 	case SMC_PROCESS_CMEM:
 		physical_package = cont->r[0];
 		set_tz_package((void*) physical_package);
@@ -363,12 +256,12 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		// THIS REQUEST IS A RESPONSE => DISPATCH TO SERVICE TASK!
 		mon_info("Process com memory! @ v 0x%x p 0x%x", com_mem,
 				virt_to_phys((uintptr_t)com_mem));
+
+		mon_info("CTRL RESULT: 0x%x", com_mem->ret);
+
 		if (com_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
-			inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
-			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
-			inv_tz_memory(package, sizeof(TZ_PACKAGE));
 			get_current_task()->state = BLOCKED;
 			target_task = get_task_by_name(SERVICE_TASK);
 			if (target_task == NULL ) {
@@ -392,11 +285,6 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		if (tee_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
-			inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
-			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
-			inv_tz_memory(package, sizeof(TZ_PACKAGE));
-			//kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
-			//DEBUG_STOP;
 			target_task = get_task_by_name(TEE_TASK);
 			if (target_task == NULL ) {
 				cont->r[0] = -1;
@@ -404,25 +292,6 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 			}
 			target_task->state = READY;
 			mon_secure_switch_context(cont, target_task);
-			/*
-			 if (returningTaskTEE != NULL ) {
-			 mon_info("returningTaskTEE set");
-			 // go back to returning task
-			 target_task = returningTaskTEE;
-			 returningTaskTEE = NULL;
-			 mon_secure_switch_context(cont, target_task);
-			 //switch_to_task(returningTask);
-			 } else {
-			 mon_info("returningTaskTEE notset");
-			 //get_current_task()->state = BLOCKED;
-			 target_task = get_task_by_name(TEE_TASK);
-			 if (target_task == NULL ) {
-			 cont->r[0] = -1;
-			 break;
-			 }
-			 target_task->state = READY;
-			 mon_secure_switch_context(cont, target_task);
-			 }*/
 		}
 		break;
 	}
@@ -488,42 +357,11 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		mon_secure_switch_context(cont, task);
 		break;
 	case SSC_NONS_SERVICE:
-		/*if (returningTask != NULL ) {
-		 mon_error(
-		 "Non Secure Service Task is waiting cannot call again: %s",
-		 returningTask->name);
-		 break;
-		 }
-		 task = get_current_task();
-		 if (task == NULL ) {
-		 mon_error("Non Secure Service is only available inside task!");
-		 break;
-		 }
-		 if (get_nonsecure_task() == NULL ) {
-		 mon_error("Non Secure Service is not available no nonsecure Task!");
-		 break;
-		 }
-
-		 returningTask = task;
-		 mon_info("Returning Task: %s", returningTask->name);
-
-		 if (get_nonsecure_task() == get_current_task()) {
-
-		 } else {
-		 mon_secure_switch_context(cont, get_nonsecure_task());
-		 }
-		 */
 		// Return to non secure world
-		//mon_info("Initialize ctx id : 0x%x", tee_mem->params.initCtx.context);
-		//kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
+
 		package->result = cont->r[0];
 		//v7_flush_dcache_all();
-		//mon_info("waiting ...");
-		//getchar();
-		inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
-		//if (get_nonsecure_task()->context.r[0] != CTRL_STRUCT) {
 		free_tz_package();
-		//}
 		mon_secure_switch_context(cont, get_nonsecure_task());
 		mon_info("SSC_NONS_SERVICE context switched!");
 		cont->r[0] = tmp1;
