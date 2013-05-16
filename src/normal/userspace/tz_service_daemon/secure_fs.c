@@ -224,7 +224,7 @@ void tz_fs_fstat(TZ_CTLR_SPACE* space) {
 
 	space->ret = fstat(space->params.ree_fstat.fd, &sstat);
 	space->params.ree_fstat.stat.st_size = sstat.st_size;
-
+	printf("tz_fs_fstat -> size %d\n", space->params.ree_fstat.stat.st_size);
 	printf("tz_fs_fstat -> result %d\n", space->ret);
 
 	if ((int) space->ret < 0) {

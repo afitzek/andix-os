@@ -34,12 +34,12 @@ ASFLAGS = -g -mcpu=cortex-a8
 CFLAGS = -g -I$(NORM_US_APP_DAEMON_INC) -I$(ANDIX_INC_COMMON) -mcpu=cortex-a8 
 LDFLAGS = -L$(ARM_TOOLCHAIN_LIB_DIR) -lgcc
 
-all: mkbuilddirs $(OUTDIR)teesd
+all: mkbuilddirs $(OUTDIR)teesd.bin
 
-$(OUTDIR)teesd: $(OBJS)
+$(OUTDIR)teesd.bin: $(OBJS)
 	@$(ARMNORMCC) $(LDFLAGS) -o $@ $^
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/norm/daemons
-	@cp $(OUTDIR)teesd $(ANDIX_DEPLOY_DIR)/norm/daemons
+	@cp $(OUTDIR)teesd.bin $(ANDIX_DEPLOY_DIR)/norm/daemons
                 
 .PHONY: mkbuilddirs		
 mkbuilddirs:

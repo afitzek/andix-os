@@ -62,6 +62,7 @@ void dump_mem(uint8_t* ptr, uint32_t len) {
 }
 
 void dispatch_ctrl(TZ_CTLR_SPACE* space) {
+	printf("CTRL Operation: 0x%x", space->op);
 	switch (space->op) {
 	case TZ_CTRL_REE_FS_REMOVE:
 		printf("TZ_CTRL_REE_REMOVE\n");
@@ -98,15 +99,19 @@ void dispatcher_loop(int fd) {
 	TZ_CTLR_SPACE comm;
 	int running = 1;
 	int result = 0;
+	memset(&comm, 0, sizeof(TZ_CTLR_SPACE));
 	while (running) {
 		result = ioctl(fd, ANDIX_CTRL_POLL, &comm);
 		if (result == 1) {
+			//printf("CTRL POLL SUCCESS: %d!\n", comm.op);
+			//dump_mem(&comm, sizeof(TZ_CTLR_SPACE));
 			if (comm.op == TZ_CTRL_OP_DEXIT) {
 				running = 0;
 				continue;
 			} else {
 				dispatch_ctrl(&comm);
 			}
+			ioctl(fd, ANDIX_CTRL_PUSH, &comm);
 		}
 	}
 }

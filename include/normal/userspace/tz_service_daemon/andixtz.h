@@ -13,7 +13,7 @@
 
 #define DEVICE_NAME			"/dev/andixtee0"
 
-#define TZ_ROOT				"/tz/"
+#define TZ_ROOT				"/mnt/sdcard/tz_store/"
 #define TZ_FEND				".tz"
 #define TZ_SEPERATOR		"/"
 
