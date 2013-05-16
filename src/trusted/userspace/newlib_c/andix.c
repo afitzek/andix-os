@@ -17,3 +17,7 @@ void __ta_get_secure_request(TA_RPC* rpc) {
 void set_uuid(const TEE_UUID* uuid) {
 	__swi_1(SWI_SECURE_SET_UUID,(int) uuid);
 }
+
+unsigned int get_os_rand() {
+	return __swi_1(SWI_GET_RAND, 0);
+}

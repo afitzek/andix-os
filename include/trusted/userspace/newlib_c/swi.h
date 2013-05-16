@@ -20,6 +20,7 @@
 
 #define SWI_SECURE_REQUEST 0x81
 #define SWI_SECURE_SET_UUID 0x82
+#define SWI_GET_RAND 0x83
 
 #define SWI_SYSD_INSTALL   0xA1
 

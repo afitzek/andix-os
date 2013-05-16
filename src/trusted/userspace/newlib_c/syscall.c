@@ -9,9 +9,10 @@
 #include <sys/stat.h>
 #include <swi.h>
 #include <string.h>
+#include <sys/time.h>
 
 int _isatty(int file) {
-	if(file == 0 || file == 1 || file == 2) {
+	if (file == 0 || file == 1 || file == 2) {
 		return (1);
 	}
 	return (0);
@@ -35,8 +36,8 @@ int _read(int file, char *ptr, int len) {
 }
 
 int _fstat(int file, struct stat *st) {
-	int ret  = __swi_1(SWI_FSTAT, file);
-	if(ret == -1) {
+	int ret = __swi_1(SWI_FSTAT, file);
+	if (ret == -1) {
 		return (-1);
 	}
 	memset(st, 0, sizeof(struct stat));
@@ -47,9 +48,8 @@ int _fstat(int file, struct stat *st) {
 caddr_t _sbrk(int incr) {
 	char * prev_heap_end;
 
-	prev_heap_end = (char*)__swi_1(SWI_HEND, 0);
-	if (((void*)prev_heap_end + incr) >
-		((void*) &prev_heap_end)) {
+	prev_heap_end = (char*) __swi_1(SWI_HEND, 0);
+	if (((void*) prev_heap_end + incr) > ((void*) &prev_heap_end)) {
 		return ((caddr_t) -1);
 	}
 
@@ -60,4 +60,16 @@ caddr_t _sbrk(int incr) {
 
 int _write(int file, char *ptr, int len) {
 	return (__swi_3(SWI_WRITE, file, (unsigned int) ptr, len));
+}
+
+int _kill(int pid, int sig) {
+	return -1;
+}
+
+int _gettimeofday(struct timeval *tv, struct timezone *tz) {
+	return -1;
+}
+
+int _getpid(void) {
+	return 1;
 }

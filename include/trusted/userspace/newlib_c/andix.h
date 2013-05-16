@@ -49,4 +49,6 @@ typedef __uint32_t_		TEE_Result;
 
 void set_uuid(const TEE_UUID* uuid);
 
+unsigned int get_os_rand();
+
 #endif /* ANDIX_H_ */
