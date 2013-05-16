@@ -15,7 +15,7 @@
 
 TZ_CTLR_SPACE* shared_ctrl_mem = NULL;
 int ctrl_init = 0;
-TZ_CTLR_SPACE ctrlspace;
+TZ_CTLR_SPACE* ctrlspace;
 int pending = CTRL_IDLE;
 struct mutex ctrl_mutex;
 
@@ -35,8 +35,9 @@ int poll_ctrl_task_to_ns(TZ_CTLR_SPACE* userspace) {
 		if (ctrl_init == 1) {
 
 			if (pending == CTRL_PENDING_FROM_S) {
+				printk(KERN_INFO "GOT CTRL SPACE to non secure daemon ....");
 				result = 1;
-				if (copy_to_user(userspace, &ctrlspace,
+				if (copy_to_user(userspace, ctrlspace,
 						sizeof(TZ_CTLR_SPACE))) {
 					printk(KERN_INFO "Failed to copy ctrl request to userspace\n");
 					return (-1);
@@ -66,8 +67,9 @@ int push_ctrl_task_from_ns(TZ_CTLR_SPACE* userspace) {
 		if (ctrl_init == 1) {
 
 			if (pending == CTRL_PENDING_IN_NS) {
+				printk(KERN_INFO "PUSH CTRL SPACE response from ns ...");
 				result = 1;
-				if (copy_from_user(&ctrlspace, userspace,
+				if (copy_from_user(ctrlspace, userspace,
 						sizeof(TZ_CTLR_SPACE))) {
 					printk(KERN_INFO "Failed to copy ctrl request to kernel\n");
 					return (-1);
@@ -86,7 +88,7 @@ int push_ctrl_task_from_ns(TZ_CTLR_SPACE* userspace) {
  *
  * CTRL_IDLE -> CTRL_PENDING_FROM_S
  */
-int push_ctrl_task_from_s() {
+int push_ctrl_task_from_s(TZ_CTLR_SPACE* space) {
 	int result = 0;
 
 	// check if ctrl system is initialized
@@ -96,7 +98,9 @@ int push_ctrl_task_from_s() {
 		if (ctrl_init == 1) {
 			if (pending == CTRL_IDLE) {
 				result = 1;
-				memcpy(&ctrlspace, shared_ctrl_mem, sizeof(TZ_CTLR_SPACE));
+				printk(KERN_INFO "SET CTRL SPACE ....");
+				//memcpy(&ctrlspace, shared_ctrl_mem, sizeof(TZ_CTLR_SPACE));
+				ctrlspace = space;
 				pending = CTRL_PENDING_FROM_S;
 			}
 		}
@@ -121,8 +125,9 @@ int poll_ctrl_task_to_s() {
 		// check if ctrl system is initialized
 		if (ctrl_init == 1) {
 			if (pending == CTRL_RESPONSE_FROM_NS) {
+				printk(KERN_INFO "POLL FOR SECURE OK ...");
 				result = 1;
-				memcpy(shared_ctrl_mem, &ctrlspace, sizeof(TZ_CTLR_SPACE));
+				//memcpy(shared_ctrl_mem, &ctrlspace, sizeof(TZ_CTLR_SPACE));
 				pending = CTRL_IDLE;
 			}
 		}
@@ -170,7 +175,7 @@ void cleanup_ctrl() {
 
 int initialize_ctrl() {
 	// Allocate memory
-	shared_ctrl_mem = (TZ_CTLR_SPACE*) kmalloc(sizeof(TZ_CTLR_SPACE),
+	/*shared_ctrl_mem = (TZ_CTLR_SPACE*) kmalloc(sizeof(TZ_CTLR_SPACE),
 			GFP_KERNEL);
 
 	if (shared_ctrl_mem == NULL ) {
@@ -186,7 +191,7 @@ int initialize_ctrl() {
 		printk(KERN_ERR "Failed to register ctrl memory in tz\n");
 		return (-1);
 	}
-
+	*/
 	mutex_init(&ctrl_mutex);
 
 	ctrl_init = 1;

@@ -68,14 +68,14 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 	if (_IOC_NR(cmd) > ANDIX_IOC_MAXNR)
 		return (-ENOTTY);
 
-	printk(KERN_INFO "TZ IOCTL CALL\n");
+	//printk(KERN_INFO "TZ IOCTL CALL\n");
 
 	switch (cmd) {
 	// TODO remove userspace maping of com memory!
 	// Use copy_(to/from)_user to process TEE and CTRL Requests
 	// Process TEE Request
 	case ANDIX_CTRL_POLL:
-		printk(KERN_INFO "TZ CTRL POLL\n");
+		//printk(KERN_INFO "TZ CTRL POLL\n");
 		if (!check_process_is_root()) {
 			// Only root process can poll ctrl
 			return (-EACCES);

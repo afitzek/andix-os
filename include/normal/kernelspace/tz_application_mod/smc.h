@@ -31,19 +31,19 @@ static inline uint32_t __smc_2(uint32_t call, uint32_t arg0, uint32_t arg1) {
 	register uint32_t __arg0 __asm__("r0") = arg0;
 	register uint32_t __arg1 __asm__("r1") = arg1;
 	//flush_tlb_all();
-	local_irq_disable();
+	//local_irq_disable();
 	__asm__ __volatile__ ("smc #0\n"
-			: [result]"=&r"(__arg0)
-			: [arg0]"0"(__arg0),
-			[arg1]"r"(__arg1),
-			[call]"r"(__call)
-			: "memory");
-	local_irq_enable();
+			: "=r"(__arg0)
+			: "0"(__arg0),
+			"r"(__arg1),
+			"r"(__call));
+	//__asm__ __volatile__ ("BL .\n");
+	//local_irq_enable();
 	return __arg0;
 }
 
 static inline uint32_t __smc_2_ret(uint32_t call, uint32_t arg0, uint32_t arg1,
-		uint32_t* result) {
+		uint32_t* resultv) {
 	register uint32_t __call __asm__("ip") = call;
 	register uint32_t __arg0 __asm__("r0") = arg0;
 	register uint32_t __arg1 __asm__("r1") = arg1;
@@ -55,8 +55,8 @@ static inline uint32_t __smc_2_ret(uint32_t call, uint32_t arg0, uint32_t arg1,
 			[arg1]"r"(__arg1),
 			[call]"r"(__call)
 			: "memory");
+	*(volatile uint32_t *)(resultv) = __arg1;
 	local_irq_enable();
-	(*result) = __arg1;
 	return __arg0;
 }
 

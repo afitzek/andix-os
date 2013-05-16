@@ -49,12 +49,12 @@ int _init_tz_driver(void) {
 
 	init_shared_mem();
 
-	/*if (initialize_ctrl() != 0) {
+	if (initialize_ctrl() != 0) {
 		printk(KERN_ERR "Failed to initialize ctrl module\n");
 		return (-1);
 	}
 
-	if (initialize_tee() != 0) {
+	/*if (initialize_tee() != 0) {
 		printk(KERN_ERR "Failed to initialize tee module\n");
 		return (-1);
 	}*/

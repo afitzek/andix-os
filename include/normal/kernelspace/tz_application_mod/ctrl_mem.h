@@ -12,7 +12,7 @@
 
 int poll_ctrl_task_to_ns(TZ_CTLR_SPACE* userspace);
 int push_ctrl_task_from_ns(TZ_CTLR_SPACE* userspace);
-int push_ctrl_task_from_s(void);
+int push_ctrl_task_from_s(TZ_CTLR_SPACE* space);
 int poll_ctrl_task_to_s(void);
 int check_process_is_root(void);
 int register_ctrl_mem_in_tz(TZ_CTLR_SPACE *com);

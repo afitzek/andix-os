@@ -11,6 +11,7 @@
 #include <linux/init.h>
 #include <linux/uaccess.h>
 #include <tz_application_mod/shared_mem.h>
+#include <client_error_constants.h>
 
 op_event tee_ctx_init;
 op_event tee_ctx_finalize;
