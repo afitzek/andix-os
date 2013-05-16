@@ -576,7 +576,7 @@
  *
  * This module enables the HAVEGE random number generator.
  */
-#define POLARSSL_HAVEGE_C
+//#define POLARSSL_HAVEGE_C
 
 /**
  * \def POLARSSL_MD_C
@@ -639,7 +639,7 @@
  *
  * This module provides TCP/IP networking routines.
  */
-#define POLARSSL_NET_C
+//#define POLARSSL_NET_C
 
 /**
  * \def POLARSSL_PADLOCK_C
@@ -663,8 +663,8 @@
  * Requires: POLARSSL_MD_C
  *
  * This module adds support for the PKCS#5 PBKDF2 key derivation function.
-#define POLARSSL_PBKDF2_C
  */
+#define POLARSSL_PBKDF2_C
 
 /**
  * \def POLARSSL_PEM_C
@@ -820,7 +820,7 @@
  *
  * This module is used by the HAVEGE random number generator.
  */
-#define POLARSSL_TIMING_C
+//#define POLARSSL_TIMING_C
 
 /**
  * \def POLARSSL_VERSION_C
