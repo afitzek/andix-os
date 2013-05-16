@@ -29,7 +29,7 @@ int32_t ree_remove(uint8_t *storename, uint8_t *filename) {
 int32_t ree_open(uint8_t *storename, uint8_t *filename, int32_t flags,
 		int32_t mode) {
 	TZ_CTLR_SPACE ctrl;
-
+	int fd;
 	ctrl.op = TZ_CTRL_REE_FS_OPEN;
 	ctrl.ret = 0;
 	memcpy(ctrl.params.ree_open.pathname.dirname, storename, TZ_FS_HASH_SIZE);
@@ -39,11 +39,15 @@ int32_t ree_open(uint8_t *storename, uint8_t *filename, int32_t flags,
 
 	service_do_request(&ctrl);
 
-	if (ctrl.ret <= 0) {
+	fd = ctrl.ret;
+
+	ree_fs_info("Resulting fd: %d", fd);
+
+	if (fd <= 0) {
 		ree_fs_error("Failed to open file!");
 	}
 
-	return (ctrl.ret);
+	return (fd);
 }
 
 int32_t ree_close(int32_t fd) {
@@ -130,6 +134,8 @@ int32_t ree_write(int32_t fd, void* buf, uint32_t count) {
 
 		ret = ctrl.ret;
 
+		ree_fs_info("Written %d bytes", ret);
+
 		if (ret <= 0) {
 			ree_fs_error("Failed to write to file!");
 			break;
@@ -154,8 +160,11 @@ int32_t ree_fstat(int32_t fd, fs_stat* buf) {
 
 	service_do_request(&ctrl);
 
+	ree_fs_info("plain stat size: %d", ctrl.params.ree_fstat.stat.st_size);
+
 	if (ctrl.ret == 0) {
-		memcpy(buf, &(ctrl.params.ree_fstat.stat), sizeof(REE_FS_STAT));
+		buf->st_size = ctrl.params.ree_fstat.stat.st_size;
+		//memcpy(buf, &(ctrl.params.ree_fstat.stat), sizeof(REE_FS_STAT));
 	}
 
 	return (ctrl.ret);

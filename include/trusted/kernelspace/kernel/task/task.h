@@ -94,7 +94,7 @@ void nonsecure_set_cp_access(uint32_t cp);
 void task_set_name(task_t* task, char* name);
 
 void set_idle_task(task_t* task);
-
+void init_early_task();
 void set_nonsecure_task(task_t* task);
 task_t* get_nonsecure_task();
 
@@ -112,7 +112,8 @@ uint8_t match_uuids(TASK_UUID *a, TASK_UUID *b);
 void print_tasks();
 
 void init_userspace_task(task_t* task);
-task_t* prepare_static_userspace_task(uintptr_t start, uintptr_t end);
+task_t* prepare_static_userspace_task(uintptr_t start, uintptr_t end,
+		char* name, char* uuid_string);
 
 void process_entry();
 

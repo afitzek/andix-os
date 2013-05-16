@@ -15,6 +15,7 @@
 
 typedef struct {
 	uint8_t ready;
+	task_t* returnTask;
 	TZ_CTLR_SPACE* ctrl_space;
 } service_request;
 

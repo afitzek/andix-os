@@ -58,11 +58,14 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	uint32_t _mon_vect = (uint32_t) &__monitor_vector;
 	uint32_t* csu = (uint32_t*) 0x63F9C000;
 	uintptr_t csu_base;
+	uint32_t i = 0;
 
 	// ========================================================================
 	init_serial();
+	init_early_task();
 	// ========================================================================
-	main_info("============================================================================");
+	main_info(
+			"============================================================================");
 	main_info("");
 #ifdef VERSION
 	main_info("      ANDIX (%s)", VERSION);
@@ -81,27 +84,38 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 #endif
 #endif
 	main_info("");
-	main_info("============================================================================");
+	main_info(
+			"============================================================================");
 
 	// Show Copyright information
 	main_info("");
 	main_info("      ANDIX is an ARM TrustZone monitor operating system.");
-	main_info("      Copyright (C) 2013  Andreas Fitzek <andreas.fitzek[at]iaik.tugraz.at>");
+	main_info(
+			"      Copyright (C) 2013  Andreas Fitzek <andreas.fitzek[at]iaik.tugraz.at>");
 	main_info("");
-	main_info("      This system is free software: you can redistribute it and/or modify");
-	main_info("      it under the terms of the GNU General Public License as published by");
-	main_info("      the Free Software Foundation, either version 3 of the License, or");
+	main_info(
+			"      This system is free software: you can redistribute it and/or modify");
+	main_info(
+			"      it under the terms of the GNU General Public License as published by");
+	main_info(
+			"      the Free Software Foundation, either version 3 of the License, or");
 	main_info("      (at your option) any later version.");
 	main_info("");
-	main_info("      This program is distributed in the hope that it will be useful,");
-	main_info("      but WITHOUT ANY WARRANTY; without even the implied warranty of");
-	main_info("      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+	main_info(
+			"      This program is distributed in the hope that it will be useful,");
+	main_info(
+			"      but WITHOUT ANY WARRANTY; without even the implied warranty of");
+	main_info(
+			"      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
 	main_info("      GNU General Public License for more details.");
 	main_info("");
-	main_info("      You should have received a copy of the GNU General Public License");
-	main_info("      along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+	main_info(
+			"      You should have received a copy of the GNU General Public License");
+	main_info(
+			"      along with this program.  If not, see <http://www.gnu.org/licenses/>.");
 	main_info("");
-	main_info("============================================================================");
+	main_info(
+			"============================================================================");
 
 #ifdef SHOW_MEM_LAYOUT
 	// ========================================================================
@@ -174,7 +188,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	main_info("%s VIRTUAL MEMORY LAYOUT %s", SEPERATOR, SEPERATOR);
 
-	dump_kernel_mmu((uint32_t)&_code, (uint32_t)&_end);
+	dump_kernel_mmu((uint32_t) &_code, (uint32_t) &_end);
 
 	main_info("%s VIRTUAL MEMORY LAYOUT [DONE] %s", SEPERATOR, SEPERATOR);
 
@@ -231,7 +245,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	main_debug("Allowing nonsecure access to all devices via CSU");
 
-	csu_base = (uintptr_t)map_io_mem((uintptr_t) 0x63F9C000, 0x80);
+	csu_base = (uintptr_t) map_io_mem((uintptr_t) 0x63F9C000, 0x80);
 
 	csu = csu_base;
 
@@ -242,7 +256,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 		csu++;
 	}
 
-	uintptr_t base_tzic = (uintptr_t)map_io_mem((uintptr_t) 0x0FFFC080, 0x80);
+	uintptr_t base_tzic = (uintptr_t) map_io_mem((uintptr_t) 0x0FFFC080, 0x80);
 
 	main_debug("TZIC @ 0x%x p (0x%x)", base_tzic, v_to_p(base_tzic));
 

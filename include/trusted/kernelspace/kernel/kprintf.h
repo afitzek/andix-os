@@ -51,6 +51,8 @@ void kprintHex(uint8_t* buffer, uint32_t size);
 
 void getinput(char *buffer, uint32_t size);
 
+char* gettaskname();
+
 void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define non_print_handler(subsys,...) \
@@ -59,22 +61,22 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 #ifdef _FUNCTION_KEYWORD_
 
 #define subsys_error(subsys,...) \
-	kprintf("[ERR][%s]->%s [%s(%d)]:", subsys, __func__, __FILE__, __LINE__); \
+	kprintf("[ERR][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
 	kprintf(__VA_ARGS__); \
 	kprintf("\n")
 
 #define subsys_error_ex(subsys,...) \
-	kprintf_ex("[ERR][%s]->%s [%s(%d)]:", subsys, __func__, __FILE__, __LINE__); \
+	kprintf_ex("[ERR][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
 	kprintf_ex(__VA_ARGS__); \
 	kprintf_ex("\n")
 #else
 #define subsys_error(subsys,...) \
-	kprintf("[ERR] [%s] %s(%d):", subsys, __FILE__, __LINE__); \
+	kprintf("[ERR] [%s] %s(%d) [%s]:", subsys, __FILE__, __LINE__, gettaskname()); \
 	kprintf(__VA_ARGS__); \
 	kprintf("\n")
 
 #define subsys_error_ex(subsys,...) \
-	kprintf_ex("[ERR] [%s] %s(%d):", subsys, __FILE__, __LINE__); \
+	kprintf_ex("[ERR] [%s] %s(%d) [%s]:", subsys, __FILE__, __LINE__, gettaskname()); \
 	kprintf_ex(__VA_ARGS__); \
 	kprintf_ex("\n")
 #endif
@@ -82,22 +84,22 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 #ifdef DEBUG
 #ifdef _FUNCTION_KEYWORD_
 #define subsys_debug(subsys,...) \
-	kprintf("[DBG][%s]->%s [%s(%d)]:", subsys, __func__, __FILE__, __LINE__); \
+	kprintf("[DBG][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
 	kprintf(__VA_ARGS__); \
 	kprintf("\n")
 
 #define subsys_debug_ex(subsys,...) \
-	kprintf_ex("[DBG][%s]->%s [%s(%d)]:", subsys, __func__, __FILE__, __LINE__); \
+	kprintf_ex("[DBG][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
 	kprintf_ex(__VA_ARGS__); \
 	kprintf_ex("\n")
 #else
 #define subsys_debug(subsys,...) \
-	kprintf("[DBG] [%s] %s(%d):", subsys, __FILE__, __LINE__); \
+	kprintf("[DBG] [%s] %s(%d) [%s]:", subsys, __FILE__, __LINE__, gettaskname()); \
 	kprintf(__VA_ARGS__); \
 	kprintf("\n")
 
 #define subsys_debug_ex(subsys,...) \
-	kprintf_ex("[DBG] [%s] %s(%d):", subsys, __FILE__, __LINE__); \
+	kprintf_ex("[DBG] [%s] %s(%d) [%s]:", subsys, __FILE__, __LINE__, gettaskname()); \
 	kprintf_ex(__VA_ARGS__); \
 	kprintf_ex("\n")
 #endif
@@ -112,22 +114,22 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 #ifdef INFO
 #ifdef _FUNCTION_KEYWORD_
 #define subsys_info(subsys,...) \
-	kprintf("[INF][%s]->%s [%s(%d)]:", subsys, __func__, __FILE__, __LINE__); \
+	kprintf("[INF][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
 	kprintf(__VA_ARGS__); \
 	kprintf("\n")
 
 #define subsys_info_ex(subsys,...) \
-	kprintf_ex("[INF][%s]->%s [%s(%d)]:", subsys, __func__, __FILE__, __LINE__); \
+	kprintf_ex("[INF][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
 	kprintf_ex(__VA_ARGS__); \
 	kprintf_ex("\n")
 #else
 #define subsys_info(subsys,...) \
-	kprintf("[INF] [%s] %s(%d):", subsys, __FILE__, __LINE__); \
+	kprintf("[INF] [%s] %s(%d) [%s]:", subsys, __FILE__, __LINE__, gettaskname()); \
 	kprintf(__VA_ARGS__); \
 	kprintf("\n")
 
 #define subsys_info_ex(subsys,...) \
-	kprintf_ex("[INF] [%s] %s(%d):", subsys, __FILE__, __LINE__); \
+	kprintf_ex("[INF] [%s] %s(%d) [%s]:", subsys, __FILE__, __LINE__, gettaskname()); \
 	kprintf_ex(__VA_ARGS__); \
 	kprintf_ex("\n")
 #endif

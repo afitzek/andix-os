@@ -188,9 +188,9 @@ uint32_t tee_open_session(TZ_TEE_OPEN_SESSION* operation, TZ_TEE_SPACE* tee) {
 	session->tee_application = trusted_app;
 	trusted_app->tee_rpc = tee;
 	trusted_app->state = READY;
-
+	tee_info("Going to trusted app: %s", trusted_app->name);
 	switch_to_task(trusted_app);
-
+	tee_info("Back from trusted app: %s", trusted_app->name);
 	return (tee->ret);
 }
 
@@ -314,6 +314,9 @@ void tee_task_entry() {
 		 tee_info("tee->params.initCtx.context: 0x%x",
 		 tee->params.initCtx.context);*/
 		get_current_task()->state = BLOCKED;
-		return_to_ns();
+
+		mon_tee_response();
+
+		//return_to_ns();
 	}
 }

@@ -27,6 +27,8 @@ extern uint32_t payload_end;
 //extern uint32_t payload_dtb;
 extern uint8_t _userpayload;
 extern uint8_t _userpayload_end;
+extern uint8_t _samplepayload;
+extern uint8_t _samplepayload_end;
 
 /**
  * Entrypoint for main kernel task
@@ -99,7 +101,7 @@ void entry_main_task() {
 	kprintf("\nGot password, if this is incorrect you will have to reboot!\n");
 
 	// Currently using password as secret
-	fs_set_secret((uint8_t*)passwordbuffer, strlen(passwordbuffer));
+	fs_set_secret((uint8_t*) passwordbuffer, strlen(passwordbuffer));
 
 	kprintf("%s\n", LINE_SEPERATOR);
 
@@ -124,22 +126,22 @@ void entry_main_task() {
 	service_pre(service);
 
 	main_info("%s STARTING SERVICE TASKS [DONE] %s", SEPERATOR, SEPERATOR);
-/*
-	main_info("%s STARTING PROCESS TASKS %s", SEPERATOR, SEPERATOR);
+	/*
+	 main_info("%s STARTING PROCESS TASKS %s", SEPERATOR, SEPERATOR);
 
-	task_t* process = create_kernel_task(SVC_MODE, SECURE);
+	 task_t* process = create_kernel_task(SVC_MODE, SECURE);
 
-	if (process == NULL ) {
-		main_error("Failed to create process task");
-		kpanic();
-	}
+	 if (process == NULL ) {
+	 main_error("Failed to create process task");
+	 kpanic();
+	 }
 
-	process->context.pc = (uint32_t) (&(process_entry));
-	task_set_name(process, PROCESS_TASK);
-	add_task(process);
+	 process->context.pc = (uint32_t) (&(process_entry));
+	 task_set_name(process, PROCESS_TASK);
+	 add_task(process);
 
-	main_info("%s STARTING PROCESS TASKS [DONE] %s", SEPERATOR, SEPERATOR);
-*/
+	 main_info("%s STARTING PROCESS TASKS [DONE] %s", SEPERATOR, SEPERATOR);
+	 */
 	main_info("%s STARTING TEE TASKS %s", SEPERATOR, SEPERATOR);
 
 	task_t* tee = create_kernel_task(SVC_MODE, SECURE);
@@ -159,9 +161,49 @@ void entry_main_task() {
 
 	main_info("%s PREPARING SECURE USERSPACE TASKS %s", SEPERATOR, SEPERATOR);
 
+	//TASK_UUID uuid;
+
+	// 47b57610-925b-11e2-9e96-0800200c9a66
+	/*uuid.timeLow = 0x47b57610;
+	uuid.timeMid = 0x925b;
+	uuid.timeHiAndVersion = 0x11e2;
+	uuid.clockSeqAndNode[7] = 0x9e;
+	uuid.clockSeqAndNode[6] = 0x96;
+	uuid.clockSeqAndNode[5] = 0x08;
+	uuid.clockSeqAndNode[4] = 0x00;
+	uuid.clockSeqAndNode[3] = 0x20;
+	uuid.clockSeqAndNode[2] = 0x0c;
+	uuid.clockSeqAndNode[1] = 0x9a;
+	uuid.clockSeqAndNode[0] = 0x66;*/
+
 	task_t* user = prepare_static_userspace_task((uintptr_t) &_userpayload,
-			(uintptr_t) &_userpayload_end);
+			(uintptr_t) &_userpayload_end, "SYSTEM DAEMON",
+			"47b57610-925b-11e2-9e96-0800200c9a66");
 	init_userspace_task(user);
+
+	// 47b57610-925b-11e2-9e96-0800200c9a66
+	/*uuid.timeLow = 0x47b57610;
+	uuid.timeMid = 0x925b;
+	uuid.timeHiAndVersion = 0x11e2;
+	uuid.clockSeqAndNode[7] = 0x9e;
+	uuid.clockSeqAndNode[6] = 0x96;
+	uuid.clockSeqAndNode[5] = 0x08;
+	uuid.clockSeqAndNode[4] = 0x00;
+	uuid.clockSeqAndNode[3] = 0x20;
+	uuid.clockSeqAndNode[2] = 0x0c;
+	uuid.clockSeqAndNode[1] = 0x9a;
+	uuid.clockSeqAndNode[0] = 0x66;*/
+
+	task_t* sampleuser = prepare_static_userspace_task((uintptr_t) &_samplepayload,
+			(uintptr_t) &_samplepayload_end, "SAMPLE TRUSTLET",
+			"7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");
+	init_userspace_task(sampleuser);
+
+	main_info("TASK UUID: %s", "47b57610-925b-11e2-9e96-0800200c9a66");
+	main_info("TASK UUID: %s", "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");
+
+	print_tasks();
+	//DEBUG_STOP;
 
 	main_info("%s PREPARING SECURE USERSPACE TASKS [DONE] %s", SEPERATOR,
 			SEPERATOR);

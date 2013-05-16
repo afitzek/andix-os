@@ -139,10 +139,22 @@ int isupper(int c);
  * In the default "C" locale, an uppercase letter is any of: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z,
  * which translate respectively to: a b c d e f g h i j k l m n o p q r s t u v w x y z.
  *
- * @param c The caracter
+ * @param c The character
  * @return
  */
 int tolower(int c);
+
+/**
+ * Check if character is alphabetic
+ *
+ * Checks whether c is an alphabetic letter.
+ *
+ * @param c The character
+ * @return
+ */
+int isalpha(int c);
+
+int isxdigit(int c);
 
 /**
  * Compare strings case insensitive!

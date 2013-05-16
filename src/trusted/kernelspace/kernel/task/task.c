@@ -34,6 +34,55 @@ void set_uuid_emtpy(TASK_UUID *uuid) {
 	}
 }
 
+int uuid_parse(const char *in, TASK_UUID* uuid)
+{
+	char		uuid_string[40];
+	int 		i;
+	const char	*cp;
+	char		buf[3];
+
+	if (strlen(in) != 36)
+		return (-1);
+	for (i=0, cp = in; i <= 36; i++,cp++) {
+		if ((i == 8) || (i == 13) || (i == 18) ||
+		    (i == 23)) {
+			if (*cp == '-')
+				continue;
+			else
+				return (-1);
+		}
+		if (i== 36)
+			if (*cp == 0)
+				continue;
+		if (!isxdigit(*cp))
+			return (-1);
+	}
+
+	memcpy(uuid_string, in, strlen(in));
+
+	uuid_string[8] = 0;
+	uuid_string[13] = 0;
+	uuid_string[18] = 0;
+	uuid_string[23] = 0;
+
+	uuid->timeLow = strtoul(in, NULL, 16);
+	uuid->timeMid = strtous(in+9, NULL, 16);
+	uuid->timeHiAndVersion = strtous(in+14, NULL, 16);
+	//uuid->clockSeqAndNode[0] = strtous(in+19, NULL, 16);
+	cp = in+19;
+	buf[2] = 0;
+	for (i=0; i < 8; i++) {
+		buf[0] = *cp++;
+		buf[1] = *cp++;
+		if((*cp) == '-') {
+			cp++;
+		}
+		uuid->clockSeqAndNode[7-i] = strtouc(buf, NULL, 16);
+	}
+
+	return (0);
+}
+
 uint8_t match_uuids(TASK_UUID *a, TASK_UUID *b) {
 	if (a->timeHiAndVersion != b->timeHiAndVersion) {
 		return (0);
@@ -83,6 +132,10 @@ uint8_t is_uuid_empty(TASK_UUID *uuid) {
 	}
 
 	return (1);
+}
+
+void init_early_task() {
+	current_task = NULL;
 }
 
 void init_task() {
@@ -409,7 +462,9 @@ void print_tasks() {
 						"%d [%d - (%s)]: %s", task->tid, task->state, task_get_state_name(task->state), task->name);
 			} else {
 				task_info(
-						"%d [%d - (%s)]: %s | UUID %x-%x-%x-%x%x-%x%x%x%x%x%x", task->tid, task->state, task_get_state_name(task->state), task->name, task->uuid.timeLow, task->uuid.timeMid, task->uuid.timeHiAndVersion, task->uuid.clockSeqAndNode[0], task->uuid.clockSeqAndNode[1], task->uuid.clockSeqAndNode[2], task->uuid.clockSeqAndNode[3], task->uuid.clockSeqAndNode[4], task->uuid.clockSeqAndNode[5], task->uuid.clockSeqAndNode[6], task->uuid.clockSeqAndNode[7]);
+						"%d [%d - (%s)]: %s | UUID %x-%x-%x-%x%x-%x%x%x%x%x%x", task->tid, task->state, task_get_state_name(task->state), task->name, task->uuid.timeLow, task->uuid.timeMid, task->uuid.timeHiAndVersion,
+						task->uuid.clockSeqAndNode[7], task->uuid.clockSeqAndNode[6], task->uuid.clockSeqAndNode[5], task->uuid.clockSeqAndNode[4],
+						task->uuid.clockSeqAndNode[3], task->uuid.clockSeqAndNode[2], task->uuid.clockSeqAndNode[1], task->uuid.clockSeqAndNode[0]);
 			}
 			task = NULL;
 		} else {

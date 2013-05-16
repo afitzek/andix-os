@@ -210,6 +210,8 @@ int32_t fs_open(uint8_t *storename, uint32_t slen, uint8_t *filename,
 		goto cleanup;
 	}
 
+	fs_info("File size %d", stat.st_size);
+
 	if (stat.st_size == 0) {
 		// create first block
 
@@ -478,6 +480,8 @@ int32_t fs_fstat(cfs_t* handle, fs_stat* buf) {
 		fs_error("Failed to stat file!");
 		return (-1);
 	}
+
+	fs_info("State plain size: %d", stat.st_size);
 
 	uint32_t blk_count = stat.st_size / sizeof(cfs_blk_t);
 	--blk_count; //remove first block

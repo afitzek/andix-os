@@ -67,6 +67,9 @@ void dispatch_swi(uint32_t swi, cpu_state_t* cpu) {
 	case SWI_SECURE_SET_UUID:
 		swi_set_uuid((TASK_UUID*) cpu->r[0]);
 		break;
+	case SWI_GET_RAND:
+		cpu->r[0] = random_next32();
+		break;
 		// ====================================================================
 		// Fallback
 		// ====================================================================

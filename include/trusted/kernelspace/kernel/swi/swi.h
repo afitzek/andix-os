@@ -31,6 +31,8 @@
 
 #define SWI_SECURE_REQUEST  0x81
 #define SWI_SECURE_SET_UUID 0x82
+#define SWI_GET_RAND 0x83
+
 
 typedef struct cpu_state {
 	uint32_t r[13];

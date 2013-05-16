@@ -24,6 +24,13 @@ void getSerial() {
 	}
 }
 
+char* gettaskname() {
+	if(get_current_task() != NULL) {
+		return (get_current_task()->name);
+	}
+	return ("NO-TASK");
+}
+
 void kprintHex(uint8_t* buffer, uint32_t size) {
 	uint32_t i = 0;
 	for(i = 0; i < size; i++) {
