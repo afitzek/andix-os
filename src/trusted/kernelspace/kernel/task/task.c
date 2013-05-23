@@ -317,9 +317,9 @@ task_file_handle_t* task_get_fhandle(task_t* task, int32_t fd) {
 int32_t task_get_next_fd(task_t* task) {
 	list* pos;
 	list* next;
-	int32_t fd = 3;
+	int32_t fd = 100;
 	task_file_handle_t * hdl;
-	for (fd = 3; fd < 0xFFFF; fd++) {
+	for (fd = 100; fd < 0xFFFF; fd++) {
 		int32_t found = 0;
 		list_for_each_safe(pos, next, task->files)
 		{

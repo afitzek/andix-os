@@ -82,7 +82,7 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		kpanic();
 	}
 
-	if (socket == 0) {
+	if (socket == 0 || socket == 3) {
 		return (-1);
 	}
 
@@ -136,6 +136,10 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		user_info("STDIN [%d]:", task->tid);
 		getinput((char*) buffer, size);
 		return (size);
+	}
+
+	if(socket == 3) {
+		random_fill((char*)buffer, size);
 	}
 
 	task_file_handle_t* hdl = task_get_fhandle(task, socket);
@@ -196,6 +200,10 @@ int32_t swi_open(char *name, int flags, int mode) {
 
 	if (task == NULL ) {
 		kpanic();
+	}
+
+	if(strncmp(name, "/dev/urandom", strlen("/dev/urandom")) == 0) {
+		return (3);
 	}
 
 	task_file_handle_t* hdl = (task_file_handle_t*) kmalloc(
