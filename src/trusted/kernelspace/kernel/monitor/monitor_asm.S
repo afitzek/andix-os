@@ -73,10 +73,12 @@ __mon_no_handler:
 __mon_smc_handler:
 
 	mon_save_context
-
+	MCR 	p15, 0, r0, c7, c10, 4 // DSB
+	MCR 	p15, 0, r0, c7, c10, 5 // DMB
 	MOV		r0, sp
 	BL 		mon_smc_handler
-
+	MCR 	p15, 0, r0, c7, c10, 4 // DSB
+	MCR 	p15, 0, r0, c7, c10, 5 // DMB
 	mon_restore_context
 
 

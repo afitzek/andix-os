@@ -168,7 +168,7 @@ uintptr_t virt_to_phys(uintptr_t vaddr) {
 }
 
 uintptr_t map_phys_mem(uintptr_t paddr, uint32_t size, uint8_t access,
-		uint8_t cache, uint8_t buffer) {
+		uint8_t cache, uint8_t buffer, uint8_t nonsecure) {
 	uint32_t pstart = (uint32_t) paddr;
 	uint32_t pend = pstart + size;
 
@@ -188,7 +188,7 @@ uintptr_t map_phys_mem(uintptr_t paddr, uint32_t size, uint8_t access,
 	info.ap = access;
 	info.bufferable = buffer;
 	info.cacheable = cache;
-	info.nonsecure = 0;
+	info.nonsecure = nonsecure;
 	info.execute = EXEC_NON;
 	info.shareable = 0;
 	info.tex = 0;

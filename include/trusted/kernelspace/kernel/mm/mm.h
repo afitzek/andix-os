@@ -71,9 +71,12 @@ uintptr_t virt_to_phys(uintptr_t vaddr);
  * @param access The access flags AP_*
  * @param cache Cacheable
  * @param buffer Bufferable
+ * @param nonsecure Non secure page
  * @return The virtual address of the mapped memory or NULL on error
  */
-uintptr_t map_phys_mem(uintptr_t paddr, uint32_t size, uint8_t access, uint8_t cache, uint8_t buffer);
+uintptr_t map_phys_mem(uintptr_t paddr, uint32_t size,
+		uint8_t access, uint8_t cache, uint8_t buffer,
+		uint8_t nonsecure);
 
 /**
  * Maps IO memory

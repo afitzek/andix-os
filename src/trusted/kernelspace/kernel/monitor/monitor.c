@@ -182,7 +182,7 @@ int set_tz_package(void* ptr) {
 	free_tz_package();
 
 	package = (TZ_PACKAGE*) map_phys_mem((uintptr_t) ptr, sizeof(TZ_PACKAGE),
-			AP_SVC_RW_USR_NO, 0, 0);
+			AP_SVC_RW_USR_NO, 0, 0, 1);
 
 	if (package == NULL ) {
 		mon_error("Failed to map package memory!");
@@ -209,7 +209,7 @@ int set_tz_tee_memory(void* ptr) {
 	free_tz_tee_memory();
 
 	tee_mem = (TZ_TEE_SPACE*) map_phys_mem((uintptr_t) ptr,
-			sizeof(TZ_TEE_SPACE), AP_SVC_RW_USR_NO, 0, 0);
+			sizeof(TZ_TEE_SPACE), AP_SVC_RW_USR_NO, 0, 0, 1);
 
 	if (tee_mem == NULL ) {
 		mon_error("Failed to map tee memory!");
@@ -226,7 +226,7 @@ int set_tz_communication_memory(void* ptr) {
 	free_tz_communication_memory();
 
 	com_mem = (TZ_CTLR_SPACE*) map_phys_mem((uintptr_t) ptr,
-			sizeof(TZ_CTLR_SPACE), AP_SVC_RW_USR_NO, 0, 0);
+			sizeof(TZ_CTLR_SPACE), AP_SVC_RW_USR_NO, 0, 0, 1);
 
 	if (com_mem == NULL ) {
 		mon_error("Failed to map com memory!");
@@ -262,6 +262,11 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		if (com_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
+			inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
+			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
+			inv_tz_memory(package, sizeof(TZ_PACKAGE));
+			mon_info("COM MEMORY IN TZ:");
+			kprintHex(com_mem, sizeof(TZ_CTLR_SPACE));
 			get_current_task()->state = BLOCKED;
 			target_task = get_task_by_name(SERVICE_TASK);
 			if (target_task == NULL ) {
@@ -285,6 +290,12 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		if (tee_mem == NULL ) {
 			cont->r[0] = -1;
 		} else {
+			inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
+			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
+			inv_tz_memory(package, sizeof(TZ_PACKAGE));
+			mon_info("TEE MEMORY IN TZ:");
+			kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
+			//DEBUG_STOP;
 			target_task = get_task_by_name(TEE_TASK);
 			if (target_task == NULL ) {
 				cont->r[0] = -1;
