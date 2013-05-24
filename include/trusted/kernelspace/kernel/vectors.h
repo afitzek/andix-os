@@ -128,6 +128,15 @@ static uint32_t inline getSVCFPIntoAbt() {
 	return (fp);
 }
 
+static uint32_t inline getSYSFPIntoAbt() {
+	uint32_t fp;
+	__asm__ __volatile__(
+			"CPSID aif, #0x1F \n"
+			"MOV %0, fp\n"
+			"CPS #0x17":"=r" (fp)::"memory");
+	return (fp);
+}
+
 static uint32_t inline getMONFPIntoAbt() {
 	uint32_t fp;
 	__asm__ __volatile__(

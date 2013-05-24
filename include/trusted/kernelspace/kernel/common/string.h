@@ -154,7 +154,19 @@ int tolower(int c);
  */
 int isalpha(int c);
 
+/**
+ * Check if character is a hex digit
+ *
+ * @param c The character
+ */
 int isxdigit(int c);
+
+/**
+ * Check if character is a digit
+ *
+ * @param c The character
+ */
+int isdigit(int c);
 
 /**
  * Compare strings case insensitive!

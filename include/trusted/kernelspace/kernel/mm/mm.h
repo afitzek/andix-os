@@ -64,6 +64,13 @@ void kfree(uintptr_t blk);
 uintptr_t virt_to_phys(uintptr_t vaddr);
 
 /**
+ * Get physical memory address for non secure virtual address
+ * @param vaddr the virutal address
+ * @return the physical address or NULL if not mapped
+ */
+uintptr_t virt_ns_to_phys(uintptr_t vaddr);
+
+/**
  * Map a physical address into kernel memory
  *
  * @param paddr The physical address

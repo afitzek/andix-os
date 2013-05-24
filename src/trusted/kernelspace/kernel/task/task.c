@@ -8,6 +8,7 @@
 
 #include <task/task.h>
 #include <mm/mm.h>
+#include <common/stdlib.h>
 
 uint32_t next_tid = 0;
 

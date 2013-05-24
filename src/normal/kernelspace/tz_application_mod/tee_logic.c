@@ -95,8 +95,6 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 
 		printk(KERN_INFO "Push CTRL space from secure!");
 
-		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
-		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
 		// Push ctrl struct to userspace daemon
 		push_ctrl_task_from_s(ctrlspace_1);
 
@@ -108,7 +106,7 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 		printk(KERN_INFO "FD RESULT: 0x%x", ctrlspace_1->ret);
 
 		ctrl_pages_2 = allocate_mapable_memory(sizeof(TZ_CTLR_SPACE),
-				(void**)&ctrl_physical_2, (void**)&ctrlspace_2);
+				(void**) &ctrl_physical_2, (void**) &ctrlspace_2);
 
 		memcpy(ctrlspace_2, ctrlspace_1, sizeof(TZ_CTLR_SPACE));
 
@@ -122,18 +120,21 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 
 		printk(KERN_INFO "CTRL PHYSICAL 0x%x", ctrl_physical_1);
 
-		package->physical_ctrl = (void*)ctrl_physical_1;
+		//package->physical_ctrl = (void*) ctrl_physical_1;
 
-		invalidate_clean(package, sizeof(TZ_PACKAGE));
-		invalidate_clean(teespace, sizeof(TZ_TEE_SPACE));
-		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
-		//invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
-		flush_cache_all();
-		// CALL Monitor with CTRL mem response
+		package->physical_ctrl = ctrlspace_1;
+
 		CP15DMB;
 		CP15DSB;
 		CP15ISB;
-		result = __smc_1(SMC_PROCESS_CMEM, package_physical);
+		flush_cache_all();
+		// Invalidate and clean package and ctrlspace
+		invalidate_clean(package, sizeof(TZ_PACKAGE));
+		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
+		// CALL Monitor with CTRL mem response
+
+		result = __smc_1(SMC_PROCESS_CMEM, package);
+		// invalid package, teespace and ctrlspace
 		invalidate(package, sizeof(TZ_PACKAGE));
 		invalidate(teespace, sizeof(TZ_TEE_SPACE));
 		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
@@ -199,8 +200,11 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 	memset(package, 0, sizeof(TZ_PACKAGE));
 
 	package->result = 0;
-	package->physical_ctrl = ctrl_physical;
-	package->physical_tee = tee_physical;
+	//package->physical_ctrl = ctrl_physical;
+	//package->physical_tee = tee_physical;
+
+	package->physical_ctrl = ctrlspace;
+	package->physical_tee = teemem;
 
 	get_from_user(teemem, userspace);
 
@@ -255,14 +259,14 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 	CP15DMB;
 	CP15DSB;
 	CP15ISB;
-//flush_cache(tee_pages);
-//flush_cache(ctrl_pages);
 	flush_cache_all();
+	// Invalidate and clean teemem and package
 	invalidate_clean(teemem, sizeof(TZ_TEE_SPACE));
 	invalidate_clean(package, sizeof(TZ_PACKAGE));
 //printk(KERN_INFO "SHARED MEM\n");
 //kprintHex(get_shared_tee_mem(), sizeof(TZ_TEE_SPACE));
-	tz_result = __smc_1(SMC_PROCESS_TMEM, (uint32_t) package_physical);
+	tz_result = __smc_1(SMC_PROCESS_TMEM, (uint32_t) package);
+	// Invalidate all buffers
 	invalidate(teemem, sizeof(TZ_TEE_SPACE));
 	invalidate(package, sizeof(TZ_PACKAGE));
 	invalidate(ctrlspace, sizeof(TZ_CTLR_SPACE));

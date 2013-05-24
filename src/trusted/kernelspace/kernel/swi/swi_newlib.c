@@ -10,6 +10,7 @@
 #include <mm/mm.h>
 #include <task/task.h>
 #include <fs/fs.h>
+#include <devices/random/random.h>
 
 int32_t swi_fstat(int file) {
 	task_t* task = get_current_task();
@@ -87,20 +88,20 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 	}
 
 	if (socket == 1) {
-		tmp = kmalloc(size + 1);
+		tmp = (uint8_t*)kmalloc(size + 1);
 		memset(tmp, 0, size + 1);
 		memcpy(tmp, buffer, size);
 		user_info("STDOUT [%d]: %s", task->tid, tmp);
-		kfree(tmp);
+		kfree((uintptr_t)tmp);
 		return (size);
 	}
 
 	if (socket == 2) {
-		tmp = kmalloc(size + 1);
+		tmp = (uint8_t*)kmalloc(size + 1);
 		memset(tmp, 0, size + 1);
 		memcpy(tmp, buffer, size);
 		user_info("STDERR [%d]: %s", task->tid, buffer);
-		kfree(tmp);
+		kfree((uintptr_t)tmp);
 		return (size);
 	}
 
@@ -134,8 +135,10 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 	}
 
 	if (socket == 0) {
+		memset(buffer, 0, size);
 		user_info("STDIN [%d]:", task->tid);
 		getinput((char*) buffer, size);
+		user_info("GOT %s", buffer);
 		return (size);
 	}
 

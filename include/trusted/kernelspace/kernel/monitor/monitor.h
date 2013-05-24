@@ -128,5 +128,13 @@ void setup_mon_stacks();
 void monitor_save_sys_regs(mon_sys_context_t *sysregs);
 void monitor_restore_sys_regs(mon_sys_context_t *sysregs);
 uint32_t monitor_com_mem_dispatcher();
+void inv_tz_memory(void* memory, uint32_t size);
+void free_tz_communication_memory();
+void free_tz_tee_memory();
+void free_tz_package();
+int set_tz_package(void* ptr);
+int set_tz_tee_memory(void* ptr);
+int set_tz_communication_memory(void* ptr);
+void mon_tee_response();
 
 #endif /* MONITOR_H_ */

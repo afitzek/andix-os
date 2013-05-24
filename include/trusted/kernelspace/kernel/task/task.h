@@ -92,6 +92,7 @@ void set_current_task(task_t* task);
 task_t* create_kernel_task(uint32_t mode, EXEC_CONTEXT_t context);
 void nonsecure_set_cp_access(uint32_t cp);
 void task_set_name(task_t* task, char* name);
+int uuid_parse(const char *in, TASK_UUID* uuid);
 
 void set_idle_task(task_t* task);
 void init_early_task();

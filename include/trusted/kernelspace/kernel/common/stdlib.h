@@ -12,8 +12,8 @@
 #define USHORT_MAX (0xffff)
 #define UBYTE_MAX (0xff)
 
-
-
 unsigned long strtoul(const char *nptr, char **endptr, int base);
+unsigned short strtous(const char *nptr, char **endptr, int base);
+unsigned char strtouc(const char *nptr, char **endptr, int base);
 
 #endif /* STDLIB_H_ */

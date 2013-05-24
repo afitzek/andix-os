@@ -53,6 +53,12 @@ void dump_regs(core_reg* regs) {
 		gotoABTMode();
 
 		dump_stack_trace_stack(sp, fp);
+	} else if (mode == USR_MODE) {
+		fp = getSYSFPIntoAbt();
+		sp = getSYSSP();
+		gotoABTMode();
+
+		dump_stack_trace_stack(sp, fp);
 	}
 
 }

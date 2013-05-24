@@ -11,7 +11,7 @@
 
 task_t* prepare_static_userspace_task(uintptr_t start, uintptr_t end,
 		char* name, char* uuid_string) {
-	TASK_UUID uuid;
+	//TASK_UUID uuid;
 	task_debug("Preparing %s task from elf@ 0x%x - 0x%x", name, start, end);
 	task_t* user_elf = create_user_task((uint8_t*)start, end - start);
 	task_set_name(user_elf, name);

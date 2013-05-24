@@ -113,7 +113,7 @@ uint8_t* allocate_map_mem_to_task(uint32_t size, task_t* task) {
 }
 
 void free_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task) {
-	uint32_t pages = needed_pages(0, size);
+	//uint32_t pages = needed_pages(0, size);
 	uint8_t* paddr = v_to_p(vaddr);
 	uint32_t freed = 0;
 
@@ -153,11 +153,11 @@ uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task) {
 
 void unmap_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task) {
 	uint32_t freed = 0;
-	if(vaddr >= USER_START_MAPPED_MEM && (vaddr + size) <
+	if((uint32_t)vaddr >= USER_START_MAPPED_MEM && ((uint32_t)vaddr + size) <
 			(USER_START_MAPPED_MEM + sizeof(task->membitmap) * 32 *
 					SMALL_PAGE_SIZE)) {
 		for(freed = 0; freed < size; freed += SMALL_PAGE_SIZE) {
-			unmap_memory_from_pd(vaddr, task->vuserPD);
+			unmap_memory_from_pd((uint32_t)vaddr, task->vuserPD);
 		}
 	} else {
 		task_error("Trying to unmap not mapable memory 0x%x", vaddr);

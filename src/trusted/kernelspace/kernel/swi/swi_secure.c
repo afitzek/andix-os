@@ -13,6 +13,7 @@
 #include <tee/tee_memregion.h>
 #include <tee/constants/tee_client_constants.h>
 #include <mm/mm.h>
+#include <scheduler.h>
 
 int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) {
 	int pidx = 0;
@@ -70,7 +71,7 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 
 				if (paramType != TEEC_MEMREF_PARTIAL_OUTPUT) {
 
-					v_mem_addr = map_phys_mem(memory->paddr, memory->size,
+					v_mem_addr = (uint8_t*)map_phys_mem((uintptr_t)memory->paddr, memory->size,
 							AP_SVC_RW_USR_NO, 0, 0, 0);
 
 					if (v_mem_addr == NULL ) {
@@ -86,7 +87,7 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 					freed = 0;
 
 					while (freed < memory->size) {
-						unmap_kernel_memory(v_mem_addr);
+						unmap_kernel_memory((uint32_t)v_mem_addr);
 						v_mem_addr += SMALL_PAGE_SIZE;
 						freed += SMALL_PAGE_SIZE;
 					}
@@ -112,8 +113,8 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 		task_t* task) {
 	int pidx = 0;
 	uint32_t paramType = 0;
-	uint32_t paddr;
-	uint32_t size;
+	//uint32_t paddr;
+	uint32_t size = 0;
 	uint32_t freed;
 	uint8_t* v_mem_addr;
 	tee_memory* memory = NULL;
@@ -145,7 +146,8 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 
 				if (paramType != TEEC_MEMREF_PARTIAL_INPUT) {
 
-					v_mem_addr = map_phys_mem(memory->paddr, memory->size,
+					v_mem_addr = (uint8_t*)map_phys_mem((uintptr_t)memory->paddr,
+							memory->size,
 							AP_SVC_RW_USR_NO, 0, 0, 0);
 
 					if (v_mem_addr == NULL ) {
@@ -161,7 +163,7 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 					freed = 0;
 
 					while (freed < memory->size) {
-						unmap_kernel_memory(v_mem_addr);
+						unmap_kernel_memory((uint32_t)v_mem_addr);
 						v_mem_addr += SMALL_PAGE_SIZE;
 						freed += SMALL_PAGE_SIZE;
 					}
@@ -195,7 +197,7 @@ void swi_set_uuid(TASK_UUID* uuid) {
 
 void swi_get_secure_request(TA_RPC* rpc) {
 	tee_session* session = NULL;
-	tee_context* context = NULL;
+	//tee_context* context = NULL;
 	uint8_t procceed = 0;
 	uint32_t result;
 

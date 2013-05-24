@@ -7,6 +7,7 @@
  */
 
 #include <swi/swi.h>
+#include <devices/random/random.h>
 
 void dump_cpu_state(uint32_t swi, cpu_state_t* cpu) {
 	swi_debug("SCR: 0x%x   PC: 0x%x", swi, cpu->lr);

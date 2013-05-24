@@ -58,7 +58,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	uint32_t _mon_vect = (uint32_t) &__monitor_vector;
 	uint32_t* csu = (uint32_t*) 0x63F9C000;
 	uintptr_t csu_base;
-	uint32_t i = 0;
+	//uint32_t i = 0;
 
 	// ========================================================================
 	init_serial();

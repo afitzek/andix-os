@@ -32,7 +32,6 @@ uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation) {
 }
 
 uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
-	uint32_t result = TEE_SUCCESS;
 	void* unsecure_paddr = (void*) operation->paddr;
 
 	tee_info("Registering mem @ p 0x%x", unsecure_paddr);
@@ -41,11 +40,6 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 		tee_error("Invalid physical ram address: @ 0x%x", operation->paddr);
 		return (TEE_ERROR_BAD_PARAMETERS);
 	}
-
-	/*if (operation->size > TEEC_CONFIG_SHAREDMEM_MAX_SIZE) {
-	 tee_error("Invalid memory size : 0x%x", operation->size);
-	 return (TEE_ERROR_BAD_PARAMETERS);
-	 }*/
 
 	tee_context* ctx = tee_context_find(operation->context);
 
@@ -66,58 +60,7 @@ uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation) {
 	mem->size = operation->size;
 	mem->vaddr = 0;
 
-	/*
-
-	 uint32_t pages = needed_pages((void*) operation->paddr, operation->size);
-
-	 if (pages == 0) {
-	 tee_error("Failed to calculate needed memory pages!");
-	 }
-
-	 mem->vaddr = (uint32_t) mmm_allocate_pages(pages);
-
-	 if (mem->vaddr == 0) {
-	 result = TEE_ERROR_OUT_OF_MEMORY;
-	 goto cleanup;
-	 }
-
-	 kernel_mem_info_t info;
-	 info.ap = AP_SVC_RW_USR_NO;
-	 info.bufferable = 0;
-	 info.cacheable = 0;
-	 info.domain = 0;
-	 info.execute = EXEC_NON;
-	 info.nonsecure = 1;
-	 info.shareable = 1;
-	 info.tex = 0;
-	 info.type = SMALL_PAGE;
-	 info.vaddr = mem->vaddr;
-	 info.paddr = mem->paddr;
-
-	 if (map_kernel_sections(mem->paddr, mem->paddr + SMALL_PAGE_SIZE * pages,
-	 mem->vaddr, (&info)) != 0) {
-	 tee_error("Failed to map shared memory!");
-	 result = TEE_ERROR_OUT_OF_MEMORY;
-	 goto cleanup;
-	 }
-	 */
 	return (TEE_SUCCESS);
-
-	cleanup:
-
-	if (mem != NULL ) {
-		/*if (mem->vaddr != 0) {
-		 uint32_t mmm_pages = needed_pages((void*) operation->paddr,
-		 operation->size);
-		 uint32_t i = 0;
-		 for (i = 0; i < mmm_pages; i++) {
-		 mmm_free_page((void*) (mem->vaddr + (SMALL_PAGE_SIZE * i)));
-		 }
-		 }*/
-
-		tee_memory_destroy(mem);
-	}
-	return (result);
 }
 
 uint32_t tee_init_context(TZ_TEE_INIT_CTX* operation) {
@@ -186,7 +129,7 @@ uint32_t tee_open_session(TZ_TEE_OPEN_SESSION* operation, TZ_TEE_SPACE* tee) {
 	tee->params.openSession.session = session->_id;
 
 	session->tee_application = trusted_app;
-	trusted_app->tee_rpc = tee;
+	trusted_app->tee_rpc = (uintptr_t)tee;
 	trusted_app->state = READY;
 	tee_info("Going to trusted app: %s", trusted_app->name);
 	switch_to_task(trusted_app);
@@ -210,7 +153,7 @@ uint32_t tee_close_session(TZ_TEE_CLOSE_SESSION* operation, TZ_TEE_SPACE* tee) {
 		return (TEE_ERROR_ITEM_NOT_FOUND);
 	}
 
-	trusted_app->tee_rpc = tee;
+	trusted_app->tee_rpc = (uintptr_t)tee;
 	trusted_app->state = READY;
 
 	switch_to_task(trusted_app);
@@ -234,7 +177,7 @@ uint32_t tee_invoke(TZ_TEE_INVOKE_CMD* operation, TZ_TEE_SPACE* tee) {
 		return (TEE_ERROR_ITEM_NOT_FOUND);
 	}
 
-	trusted_app->tee_rpc = tee;
+	trusted_app->tee_rpc = (uintptr_t)tee;
 	trusted_app->state = READY;
 
 	switch_to_task(trusted_app);
@@ -245,7 +188,7 @@ uint32_t tee_invoke(TZ_TEE_INVOKE_CMD* operation, TZ_TEE_SPACE* tee) {
 void tee_task_entry() {
 	TZ_TEE_SPACE space;
 	TZ_TEE_SPACE* tee;
-	void* ptee;
+	//void* ptee;
 	while (1) {
 		tee = mon_get_tee_space();
 		if (tee == NULL ) {

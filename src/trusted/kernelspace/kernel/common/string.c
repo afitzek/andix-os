@@ -82,13 +82,17 @@ int isalpha(int c) {
 }
 
 
+int isdigit(int c) {
+	return ((c >= 0x30 && c <= 0x39));
+}
+
 int isxdigit(int c) {
 	return ((c >= 0x30 && c <= 0x39) ||
 			(c >= 0x41 && c <= 0x46) || (c >= 0x61 && c <= 0x66) );
 }
 
 int tolower(int c) {
-  return isupper(c) ? (c) - 'A' + 'a' : c;
+  return (isupper(c) ? (c) - 'A' + 'a' : c);
 }
 
 int strncasecmp(const char * str1, const char * str2, size_t num) {
@@ -102,7 +106,7 @@ int strncasecmp(const char * str1, const char * str2, size_t num) {
       if (((d = c1 - c2) != 0) || (c2 == '\0'))
         break;
     }
-  return d;
+  return (d);
 }
 
 int memcmp(const void* m1, const void* m2, size_t n) {
@@ -112,12 +116,12 @@ int memcmp(const void* m1, const void* m2, size_t n) {
     {
       if (*s1 != *s2)
         {
-          return *s1 - *s2;
+          return (*s1 - *s2);
         }
       s1++;
       s2++;
     }
-  return 0;
+  return (0);
 }
 
 char *strncat(char *s1, const char *s2, size_t n)
@@ -141,8 +145,8 @@ char * strstr(const char *searchee, const char *lookfor)
   if (*searchee == 0)
     {
       if (*lookfor)
-        return (char *) NULL;
-      return (char *) searchee;
+        return ((char *) NULL);
+      return ((char *) searchee);
     }
 
   while (*searchee)
@@ -154,7 +158,7 @@ char * strstr(const char *searchee, const char *lookfor)
         {
           if (lookfor[i] == 0)
             {
-              return (char *) searchee;
+              return ((char *) searchee);
             }
 
           if (lookfor[i] != searchee[i])
@@ -166,6 +170,6 @@ char * strstr(const char *searchee, const char *lookfor)
       searchee++;
     }
 
-  return (char *) NULL;
+  return ((char *) NULL);
 }
 

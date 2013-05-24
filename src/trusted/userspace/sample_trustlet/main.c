@@ -39,6 +39,7 @@ TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 	md_context_t md_ctx2;
 	char input[INPUT_SIZE];
 	int fd;
+	size_t olen;
 	// check parameters...
 
 	if (paramTypes != TEE_PARAM_TYPES(
@@ -58,29 +59,20 @@ TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 		return (TEEC_ERROR_GENERIC);
 	}
 
-	entropy_init(&entropy);
-	if ((ret = ctr_drbg_init(&ctr_drbg, entropy_func, &entropy,
-			(unsigned char *) pers, strlen(pers))) != 0) {
-		printf(" failed\n ! ctr_drbg_init returned -0x%04x\n", -ret);
-		return (TEEC_ERROR_GENERIC);
-	}
-
-	if ((ret = ctr_drbg_random(&ctr_drbg, iv, 16)) != 0) {
-		printf(" failed\n ! ctr_drbg_random returned -0x%04x\n", -ret);
-		return (TEEC_ERROR_GENERIC);
-	}
+	platform_pseudo_entropy(NULL, iv, 16, &olen);
 
 	memcpy(store.crypted_iv, iv, 16);
 
-	if ((ret = ctr_drbg_random(&ctr_drbg, key, AES_KEY_SIZE_BYTES)) != 0) {
-		printf(" failed\n ! ctr_drbg_random returned -0x%04x\n", -ret);
-		return (TEEC_ERROR_GENERIC);
-	}
+	platform_pseudo_entropy(NULL, key, AES_KEY_SIZE_BYTES, &olen);
 
 	sha2(key, AES_KEY_SIZE_BYTES, store.hash, 0);
-
+	printf("Key generated!\n");
 	printf("Please enter PIN for new key: ");
-	fgets(input, INPUT_SIZE, stdin);
+	printf("");
+	read(0, input, INPUT_SIZE);
+	printf("");
+	printf("Got input %s", input);
+	//fgets(input, INPUT_SIZE, stdin);
 	input[strlen(input) - 1] = '\0';
 
 	pbkdf2_hmac(&md_ctx, input, strlen(input), pers, strlen(pers), 1024,
@@ -218,8 +210,8 @@ TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext,
 	printf("SAMPLE-TRUSTLET: Command invoked 0x%x\n", commandID);
 	switch (commandID) {
 	case TZ_NEW_KEY:
-		return test_entropy();
-		//return (sample_new_key(paramTypes, params));
+		//return test_entropy();
+		return (sample_new_key(paramTypes, params));
 	case TZ_ENCRYPT:
 		return (sample_encrypt(paramTypes, params));
 	case TZ_DECRYPT:

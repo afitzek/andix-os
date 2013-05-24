@@ -10,6 +10,7 @@
 #include <mm/mm.h>
 #include <task/task.h>
 #include <cache.h>
+#include <kprintf.h>
 
 task_t* returningTask;
 task_t* returningTaskTEE;
@@ -136,7 +137,7 @@ void free_tz_communication_memory() {
 	if (com_mem != NULL ) {
 		inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
 		mon_info("Unmapping old communication memory");
-		unmap_memory((uint32_t) com_mem, sizeof(TZ_CTLR_SPACE));
+		unmap_memory((uintptr_t) com_mem, sizeof(TZ_CTLR_SPACE));
 		com_mem = NULL;
 	}
 }
@@ -179,9 +180,17 @@ void free_tz_package() {
 }
 
 int set_tz_package(void* ptr) {
+	uintptr_t paddr = virt_ns_to_phys(ptr);
+	uintptr_t tee_paddr = NULL;
+	uintptr_t ctrl_paddr = NULL;
+
+	if (paddr == NULL ) {
+		return (-1);
+	}
+
 	free_tz_package();
 
-	package = (TZ_PACKAGE*) map_phys_mem((uintptr_t) ptr, sizeof(TZ_PACKAGE),
+	package = (TZ_PACKAGE*) map_phys_mem(paddr, sizeof(TZ_PACKAGE),
 			AP_SVC_RW_USR_NO, 0, 0, 1);
 
 	if (package == NULL ) {
@@ -191,12 +200,26 @@ int set_tz_package(void* ptr) {
 
 	inv_tz_memory(package, sizeof(TZ_PACKAGE));
 
-	if (set_tz_tee_memory(package->physical_tee) != 0) {
+	tee_paddr = virt_ns_to_phys(package->physical_tee);
+
+	if (tee_paddr == NULL ) {
 		free_tz_package();
 		return (-1);
 	}
 
-	if (set_tz_communication_memory(package->physical_ctrl) != 0) {
+	if (set_tz_tee_memory(tee_paddr) != 0) {
+		free_tz_package();
+		return (-1);
+	}
+
+	ctrl_paddr = virt_ns_to_phys(package->physical_ctrl);
+
+	if (ctrl_paddr == NULL ) {
+		free_tz_package();
+		return (-1);
+	}
+
+	if (set_tz_communication_memory(ctrl_paddr) != 0) {
 		free_tz_package();
 		return (-1);
 	}
@@ -266,7 +289,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
 			inv_tz_memory(package, sizeof(TZ_PACKAGE));
 			mon_info("COM MEMORY IN TZ:");
-			kprintHex(com_mem, sizeof(TZ_CTLR_SPACE));
+			kprintHex((uint8_t*)com_mem, sizeof(TZ_CTLR_SPACE));
 			get_current_task()->state = BLOCKED;
 			target_task = get_task_by_name(SERVICE_TASK);
 			if (target_task == NULL ) {
@@ -294,7 +317,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
 			inv_tz_memory(package, sizeof(TZ_PACKAGE));
 			mon_info("TEE MEMORY IN TZ:");
-			kprintHex(tee_mem, sizeof(TZ_TEE_SPACE));
+			kprintHex((uint8_t*)tee_mem, sizeof(TZ_TEE_SPACE));
 			//DEBUG_STOP;
 			target_task = get_task_by_name(TEE_TASK);
 			if (target_task == NULL ) {
@@ -347,7 +370,7 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 	//mon_debug("FROM SECURE");
 	dump_mon_context(cont);
 	task_t* task = NULL;
-	uint32_t tmp1;
+	//uint32_t tmp1;
 	mon_debug("ACTION: %d [%s]", cont->r[12], get_ssc_name(cont->r[12]));
 	switch (cont->r[12]) {
 	case SSC_TASK_SWITCH:
@@ -375,7 +398,6 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		free_tz_package();
 		mon_secure_switch_context(cont, get_nonsecure_task());
 		mon_info("SSC_NONS_SERVICE context switched!");
-		cont->r[0] = tmp1;
 		break;
 	default:
 		mon_debug("Invalid Monitor command: %d", cont->r[12]);
@@ -411,7 +433,7 @@ void setup_mon_stacks() {
 	tee_mem = NULL;
 	package = NULL;
 
-	uint32_t ctr;
+	//uint32_t ctr;
 
 	//asm volatile("mrc p15, 0, %0, c0, c0, 1" : "=r" (ctr));
 	//cl_size = 4 << ((ctr >> 16) & 0xf);
