@@ -107,8 +107,6 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 
 		printk(KERN_INFO "FD RESULT: 0x%x", ctrlspace_1->ret);
 
-		// TODO: reallocate ctrlspace
-
 		ctrl_pages_2 = allocate_mapable_memory(sizeof(TZ_CTLR_SPACE),
 				(void**)&ctrl_physical_2, (void**)&ctrlspace_2);
 
@@ -122,12 +120,14 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 		ctrlspace_1 = ctrlspace_2;
 		ctrl_physical_1 = ctrl_physical_2;
 
+		printk(KERN_INFO "CTRL PHYSICAL 0x%x", ctrl_physical_1);
+
 		package->physical_ctrl = (void*)ctrl_physical_1;
 
-		invalidate(package, sizeof(TZ_PACKAGE));
-		invalidate(teespace, sizeof(TZ_TEE_SPACE));
-		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
+		invalidate_clean(package, sizeof(TZ_PACKAGE));
+		invalidate_clean(teespace, sizeof(TZ_TEE_SPACE));
 		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
+		//invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
 		flush_cache_all();
 		// CALL Monitor with CTRL mem response
 		CP15DMB;
@@ -137,8 +137,6 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 		invalidate(package, sizeof(TZ_PACKAGE));
 		invalidate(teespace, sizeof(TZ_TEE_SPACE));
 		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
-		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
-		flush_cache_all();
 		printk(KERN_INFO "PROCESS_CMEM result: %x", result);
 
 		if (package->result != CTRL_STRUCT) {

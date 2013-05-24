@@ -103,6 +103,8 @@ void entry_main_task() {
 	// Currently using password as secret
 	fs_set_secret((uint8_t*) passwordbuffer, strlen(passwordbuffer));
 
+	random_seed_time();
+
 	kprintf("%s\n", LINE_SEPERATOR);
 
 	// ========================================================================
@@ -226,7 +228,7 @@ void entry_main_task() {
 	uint32_t payload_size = vpayload_end - vpayload;
 
 	uintptr_t vpayload_ptr = map_phys_mem((uintptr_t) 0x70008000, payload_size,
-			AP_SVC_RW_USR_NO, 1, 1);
+			AP_SVC_RW_USR_NO, 1, 1, 0);
 
 	if (vpayload_ptr == NULL ) {
 		kpanic();
@@ -245,7 +247,7 @@ void entry_main_task() {
 	main_debug("ATAGS ...");
 
 	uintptr_t vatag_ptr = map_phys_mem((uintptr_t) 0x70000000,
-			SMALL_PAGE_SIZE - 1, AP_SVC_RW_USR_NO, 1, 1);
+			SMALL_PAGE_SIZE - 1, AP_SVC_RW_USR_NO, 1, 1, 0);
 
 	if (vatag_ptr == NULL ) {
 		kpanic();
