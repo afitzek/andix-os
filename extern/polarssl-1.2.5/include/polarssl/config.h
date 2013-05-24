@@ -199,7 +199,7 @@
  *
  * Uncomment this macro to prevent loading of default entropy functions.
  */
-//#define POLARSSL_NO_DEFAULT_ENTROPY_SOURCES
+#define POLARSSL_NO_DEFAULT_ENTROPY_SOURCES
 
 /**
  * \def POLARSSL_NO_PLATFORM_ENTROPY
@@ -210,7 +210,7 @@
  *
  * Uncomment this macro to disable the built-in platform entropy functions.
  */
-//#define POLARSSL_NO_PLATFORM_ENTROPY
+#define POLARSSL_NO_PLATFORM_ENTROPY
 
 /**
  * \def POLARSSL_PKCS1_V21
@@ -639,7 +639,7 @@
  *
  * This module provides TCP/IP networking routines.
  */
-#define POLARSSL_NET_C
+//#define POLARSSL_NET_C
 
 /**
  * \def POLARSSL_PADLOCK_C

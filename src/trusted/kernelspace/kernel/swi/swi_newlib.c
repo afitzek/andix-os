@@ -118,6 +118,7 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 }
 
 int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
+	uint32_t idx = 0;
 	if (!is_valid_user_addr(buffer)) {
 		return (-1);
 	}
@@ -139,7 +140,11 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 	}
 
 	if(socket == 3) {
-		random_fill((char*)buffer, size);
+		swi_info("Random filling buffer @ 0x%x (%d)", buffer, size);
+		for(idx = 0; idx < size; idx++) {
+			buffer[idx] = random_next8();
+		}
+		kprintHex(buffer, size);
 	}
 
 	task_file_handle_t* hdl = task_get_fhandle(task, socket);

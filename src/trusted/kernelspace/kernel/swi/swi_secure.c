@@ -71,7 +71,7 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 				if (paramType != TEEC_MEMREF_PARTIAL_OUTPUT) {
 
 					v_mem_addr = map_phys_mem(memory->paddr, memory->size,
-							AP_SVC_RW_USR_NO, 0, 0);
+							AP_SVC_RW_USR_NO, 0, 0, 0);
 
 					if (v_mem_addr == NULL ) {
 						free_mem_from_task(rpc->tee_param[pidx].memref.buffer,
@@ -146,7 +146,7 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 				if (paramType != TEEC_MEMREF_PARTIAL_INPUT) {
 
 					v_mem_addr = map_phys_mem(memory->paddr, memory->size,
-							AP_SVC_RW_USR_NO, 0, 0);
+							AP_SVC_RW_USR_NO, 0, 0, 0);
 
 					if (v_mem_addr == NULL ) {
 						free_mem_from_task(rpc->tee_param[pidx].memref.buffer,

@@ -101,7 +101,7 @@ static inline uint32_t __smc_4(uint32_t call, uint32_t arg0, uint32_t arg1,
 }
 
 #define CP15ISB	asm volatile ("ISB")
-#define CP15DSB	asm volatile ("DSB")
-#define CP15DMB	asm volatile ("DMB")
+#define CP15DSB	asm volatile ("MCR 	p15, 0, r0, c7, c10, 4")
+#define CP15DMB	asm volatile ("MCR 	p15, 0, r0, c7, c10, 5")
 
 #endif /* SMC_H_ */

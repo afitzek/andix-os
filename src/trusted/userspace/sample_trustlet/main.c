@@ -9,6 +9,7 @@
 #include <tee_internal_api.h>
 #include <polarssl/aes.h>
 #include <polarssl/entropy.h>
+#include <polarssl/entropy_poll.h>
 #include <polarssl/ctr_drbg.h>
 #include <polarssl/pbkdf2.h>
 #include <polarssl/md.h>
@@ -18,6 +19,7 @@
 #include <swi.h>
 #include <andix.h>
 #include <client_constants.h>
+#include <andix/entropy.h>
 
 #define IDX_FILE "idx_file.txt"
 #define INPUT_SIZE 100
@@ -102,6 +104,94 @@ TEE_Result sample_decrypt(uint32_t paramTypes, TEE_Param params[4]) {
 
 }
 
+TEE_Result test_entropy() {
+	entropy_context entropy;
+	ctr_drbg_context ctr_drbg;
+	int ret;
+	uint8_t iv[16];
+	size_t olen;
+	uint8_t key[AES_KEY_SIZE_BYTES];
+	uint8_t userkey[AES_KEY_SIZE_BYTES];
+	char *pers = "aes_trustlet_example";
+
+	memset(iv, 0, 16);
+	memset(key, 0, AES_KEY_SIZE_BYTES);
+
+	printf("platform_entropy_poll\n");
+
+	platform_pseudo_entropy(NULL, key, AES_KEY_SIZE_BYTES, &olen);
+
+	printf("Generated random KEY:\n");
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
+			key[11], key[12], key[13], key[14], key[15]);
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
+			key[11], key[12], key[13], key[14], key[15]);
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[16], key[17], key[18],
+			key[19], key[20], key[21], key[22], key[23]);
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[24], key[25], key[26],
+			key[27], key[28], key[29], key[30], key[31]);
+
+	printf("entropy_init\n");
+
+	entropy_init(&entropy);
+
+	//entropy_update_manual(&entropy, pers, strlen(pers));
+
+	printf("entropy_add_source\n");
+
+	entropy_add_source(&entropy, &platform_pseudo_entropy, NULL,
+			ENTROPY_MIN_PLATFORM);
+
+	printf("ctr_drbg_init\n");
+
+	if ((ret = ctr_drbg_init(&ctr_drbg, entropy_func, &entropy,
+			(unsigned char *) pers, strlen(pers))) != 0) {
+		printf(" failed! ctr_drbg_init returned -0x%04x\n", -ret);
+		return (TEEC_ERROR_GENERIC);
+	}
+
+	printf("ctr_drbg_random\n");
+
+	if ((ret = ctr_drbg_random(&ctr_drbg, iv, 16)) != 0) {
+		printf(" failed! ctr_drbg_random returned -0x%04x\n", -ret);
+		return (TEEC_ERROR_GENERIC);
+	}
+
+	printf("ctr_drbg_random\n");
+
+	if ((ret = ctr_drbg_random(&ctr_drbg, key, AES_KEY_SIZE_BYTES)) != 0) {
+		printf(" failed! ctr_drbg_random returned -0x%04x\n", -ret);
+		return (TEEC_ERROR_GENERIC);
+	}
+
+	printf("Generated random IV:\n");
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", iv[0], iv[1], iv[2],
+			iv[3], iv[4], iv[5], iv[6], iv[7]);
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", iv[8], iv[9], iv[10],
+			iv[11], iv[12], iv[13], iv[14], iv[15]);
+
+	printf("Generated random KEY:\n");
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
+			key[11], key[12], key[13], key[14], key[15]);
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
+			key[11], key[12], key[13], key[14], key[15]);
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[16], key[17], key[18],
+			key[19], key[20], key[21], key[22], key[23]);
+
+	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[24], key[25], key[26],
+			key[27], key[28], key[29], key[30], key[31]);
+
+	return (TEEC_SUCCESS);
+}
+
 void TA_CreateEntryPoint() {
 	printf("SAMPLE-TRUSTLET: Started\n");
 }
@@ -128,7 +218,8 @@ TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext,
 	printf("SAMPLE-TRUSTLET: Command invoked 0x%x\n", commandID);
 	switch (commandID) {
 	case TZ_NEW_KEY:
-		return (sample_new_key(paramTypes, params));
+		return test_entropy();
+		//return (sample_new_key(paramTypes, params));
 	case TZ_ENCRYPT:
 		return (sample_encrypt(paramTypes, params));
 	case TZ_DECRYPT:

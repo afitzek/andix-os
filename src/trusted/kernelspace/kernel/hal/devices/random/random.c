@@ -101,7 +101,7 @@ uint32_t random_min_max(uint32_t min, uint32_t max) {
 
 void random_fill(uint8_t *buffer, uint32_t len) {
 
-	if(!is_valid_kernel_addr(buffer)) {
+	if(!is_valid_addr(buffer)) {
 		return;
 	}
 
