@@ -71,7 +71,8 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 
 				if (paramType != TEEC_MEMREF_PARTIAL_OUTPUT) {
 
-					v_mem_addr = (uint8_t*)map_phys_mem((uintptr_t)memory->paddr, memory->size,
+					v_mem_addr = (uint8_t*) map_phys_mem(
+							(uintptr_t) memory->paddr, memory->size,
 							AP_SVC_RW_USR_NO, 0, 0, 0);
 
 					if (v_mem_addr == NULL ) {
@@ -87,7 +88,7 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 					freed = 0;
 
 					while (freed < memory->size) {
-						unmap_kernel_memory((uint32_t)v_mem_addr);
+						unmap_kernel_memory((uint32_t) v_mem_addr);
 						v_mem_addr += SMALL_PAGE_SIZE;
 						freed += SMALL_PAGE_SIZE;
 					}
@@ -144,10 +145,12 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 					return (TEEC_ERROR_BAD_PARAMETERS);
 				}
 
+				size = comOp->params[pidx].memref.size;
+
 				if (paramType != TEEC_MEMREF_PARTIAL_INPUT) {
 
-					v_mem_addr = (uint8_t*)map_phys_mem((uintptr_t)memory->paddr,
-							memory->size,
+					v_mem_addr = (uint8_t*) map_phys_mem(
+							(uintptr_t) memory->paddr, memory->size,
 							AP_SVC_RW_USR_NO, 0, 0, 0);
 
 					if (v_mem_addr == NULL ) {
@@ -163,13 +166,11 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 					freed = 0;
 
 					while (freed < memory->size) {
-						unmap_kernel_memory((uint32_t)v_mem_addr);
+						unmap_kernel_memory((uint32_t) v_mem_addr);
 						v_mem_addr += SMALL_PAGE_SIZE;
 						freed += SMALL_PAGE_SIZE;
 					}
 				}
-
-				size = comOp->params[pidx].memref.size;
 
 				free_mem_from_task(rpc->tee_param[pidx].memref.buffer, size,
 						task);

@@ -55,7 +55,7 @@ uint32_t map_atags(uintptr_t phys) {
 
 	vmm_debug("Mapping ATAGS @ 0x%x", section_description.vaddr);
 
-	if(map_kernel_memory(&section_description) != 0) {
+	if (map_kernel_memory(&section_description) != 0) {
 		kpanic();
 	}
 
@@ -79,10 +79,10 @@ void init_vmm(struct atag* startTag) {
 
 	struct atag* mem = NULL;
 	uint32_t* ttbr1 = p_to_v(get_kernel_table());
-	uint32_t* ttbr0 = p_to_v(get_user_table());
+	//uint32_t* ttbr0 = p_to_v(get_user_table());
 
-	vmm_debug("TTBR0 Table @ 0x%x TTBR1 @ v 0x%x", ttbr0, ttbr1);
-	vmm_debug("TTBR1 Table @ v 0x%x p 0x%x", ttbr1, v_to_p(ttbr1));
+	//vmm_debug("TTBR0 Table @ 0x%x TTBR1 @ v 0x%x", ttbr0, ttbr1);
+	//vmm_debug("TTBR1 Table @ v 0x%x p 0x%x", ttbr1, v_to_p(ttbr1));
 
 	vmm_debug("initializing kernel heap ...");
 
@@ -124,7 +124,7 @@ void init_vmm(struct atag* startTag) {
 				if (mem->u.mem.size > SECURE_MEMORY_SIZE) {
 					end = (uint32_t) (start + SECURE_MEMORY_SIZE);
 				} // otherwise we hope it is enough
-				phys_pmm_end = (uintptr_t)end;
+				phys_pmm_end = (uintptr_t) end;
 
 				vmm_debug("PMM ... ");
 				pmm_init((uint32_t) phys_pmm_start, (uint32_t) phys_pmm_end);
@@ -160,7 +160,7 @@ void init_vmm(struct atag* startTag) {
 	vmm_debug("MMM ... ");
 	mmm_init((uint32_t) virt_mmm_start, (uint32_t) virt_mmm_end);
 
-	smm_init((uint32_t)virt_smm_start, (uint32_t)virt_smm_end);
+	smm_init((uint32_t) virt_smm_start, (uint32_t) virt_smm_end);
 
 	vmm_debug("=========================================");
 	vmm_debug("Memory overview:");
@@ -284,7 +284,6 @@ void* p_to_v(void* ptr) {
 
 // ============================================================================
 
-
 void controlSet(uint32_t value, uint32_t mask) {
 	uint32_t c1format;
 	asm volatile("MRC p15, 0, %0, c1, c0, 0": "=r" ((c1format)) :: "memory");
@@ -305,8 +304,6 @@ void flushTLB(void) {
 			"DSB\n"
 			"ISB\n":: "r" ((reg)) : "memory", "cc");
 }
-
-
 
 void clean_user() {
 	uint32_t* ttbr0 = p_to_v(get_user_table());
@@ -329,8 +326,8 @@ void init_heap() {
 	phend = vhend - getKernelVirtualOffset(); // paddr
 
 	vmm_debug("End @ 0x%x", &_end);
-	vmm_debug(
-			"HEAP from 0x%x .. 0x%x -> 0x%x .. 0x%x", phstart, phend, vhstart, vhend);
+	vmm_debug("HEAP from 0x%x .. 0x%x -> 0x%x .. 0x%x", phstart, phend, vhstart,
+			vhend);
 
 	heap_end = (void*) vhend;
 	heap_start = (k_mem_block_t*) vhstart;
@@ -366,8 +363,10 @@ void dump_heap() {
 
 	uint32_t hsize = (uint32_t) heap_end - (uint32_t) heap_start;
 
-	uint32_t hfree = 0;
+	uint32_t hfree = hsize;
 	uint32_t halloc = 0;
+
+	hfree = 0;
 
 	vmm_debug("===============================");
 	vmm_debug("HEAP DUMP:");
@@ -375,8 +374,11 @@ void dump_heap() {
 	vmm_debug("BLOCKS: -----------------------");
 
 	while ((void*) block < heap_end) {
-		vmm_debug(
-				"[%c] 0x%x ... 0x%x BLK @ 0x%x (%d B, %d KB, %d MB)", M_IS_FREE(block) ? 'F' : 'U', (uint32_t)block + sizeof(k_mem_block_t), (uint32_t)block + sizeof(k_mem_block_t) + block->size, block, block->size, block->size / 1024, block->size / (1024 * 1024));
+		vmm_debug("[%c] 0x%x ... 0x%x BLK @ 0x%x (%d B, %d KB, %d MB)",
+				M_IS_FREE(block) ? 'F' : 'U',
+				(uint32_t)block + sizeof(k_mem_block_t),
+				(uint32_t)block + sizeof(k_mem_block_t) + block->size, block,
+				block->size, block->size / 1024, block->size / (1024 * 1024));
 
 		if (M_IS_FREE(block)) {
 			hfree += block->size;
@@ -387,12 +389,12 @@ void dump_heap() {
 				+ block->size);
 	}
 	vmm_debug("-------------------------------");
-	vmm_debug(
-			"SIZE  : 0x%x (%d B, %d KB, %d MB)", hsize, hsize, hsize / 1024, hsize / (1024 * 1024));
-	vmm_debug(
-			"FREE  : 0x%x (%d B, %d KB, %d MB)", hfree, hfree, hfree / 1024, hfree / (1024 * 1024));
-	vmm_debug(
-			"USED  : 0x%x (%d B, %d KB, %d MB)", halloc, halloc, halloc / 1024, halloc / (1024 * 1024));
+	vmm_debug("SIZE  : 0x%x (%d B, %d KB, %d MB)", hsize, hsize, hsize / 1024,
+			hsize / (1024 * 1024));
+	vmm_debug("FREE  : 0x%x (%d B, %d KB, %d MB)", hfree, hfree, hfree / 1024,
+			hfree / (1024 * 1024));
+	vmm_debug("USED  : 0x%x (%d B, %d KB, %d MB)", halloc, halloc,
+			halloc / 1024, halloc / (1024 * 1024));
 	vmm_debug("===============================");
 }
 

@@ -136,7 +136,7 @@ TZ_PACKAGE* package = NULL;
 void free_tz_communication_memory() {
 	if (com_mem != NULL ) {
 		inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
-		mon_info("Unmapping old communication memory");
+		mon_debug("Unmapping old communication memory");
 		unmap_memory((uintptr_t) com_mem, sizeof(TZ_CTLR_SPACE));
 		com_mem = NULL;
 	}
@@ -147,7 +147,7 @@ uint32_t cl_size;
 void free_tz_tee_memory() {
 	if (tee_mem != NULL ) {
 		inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
-		mon_info("Unmapping old tee memory");
+		mon_debug("Unmapping old tee memory");
 		unmap_memory((uint32ptr_t) tee_mem, sizeof(TZ_TEE_SPACE));
 		tee_mem = NULL;
 	}
@@ -171,7 +171,7 @@ void inv_tz_memory(void* memory, uint32_t size) {
 void free_tz_package() {
 	if (package != NULL ) {
 		inv_tz_memory(package, sizeof(TZ_PACKAGE));
-		mon_info("Unmapping old package memory");
+		mon_debug("Unmapping old package memory");
 		unmap_memory((uint32ptr_t) package, sizeof(TZ_PACKAGE));
 		package = NULL;
 	}
@@ -277,10 +277,10 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		com_mem = mon_get_control_space();
 
 		// THIS REQUEST IS A RESPONSE => DISPATCH TO SERVICE TASK!
-		mon_info("Process com memory! @ v 0x%x p 0x%x", com_mem,
+		mon_debug("Process com memory! @ v 0x%x p 0x%x", com_mem,
 				virt_to_phys((uintptr_t)com_mem));
 
-		mon_info("CTRL RESULT: 0x%x", com_mem->ret);
+		mon_debug("CTRL RESULT: 0x%x", com_mem->ret);
 
 		if (com_mem == NULL ) {
 			cont->r[0] = -1;
@@ -288,8 +288,8 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 			inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
 			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
 			inv_tz_memory(package, sizeof(TZ_PACKAGE));
-			mon_info("COM MEMORY IN TZ:");
-			kprintHex((uint8_t*)com_mem, sizeof(TZ_CTLR_SPACE));
+			//mon_info("COM MEMORY IN TZ:");
+			//kprintHex((uint8_t*)com_mem, sizeof(TZ_CTLR_SPACE));
 			get_current_task()->state = BLOCKED;
 			target_task = get_task_by_name(SERVICE_TASK);
 			if (target_task == NULL ) {
@@ -307,7 +307,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 		tee_mem = mon_get_tee_space();
 
 		// THIS REQUEST IS A REQUEST => DISPATCH TO PROCESS TASK!
-		mon_info("Process tee memory! @ v 0x%x p 0x%x", tee_mem,
+		mon_debug("Process tee memory! @ v 0x%x p 0x%x", tee_mem,
 				virt_to_phys((uintptr_t)tee_mem));
 
 		if (tee_mem == NULL ) {
@@ -316,8 +316,8 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 			inv_tz_memory(tee_mem, sizeof(TZ_TEE_SPACE));
 			inv_tz_memory(com_mem, sizeof(TZ_CTLR_SPACE));
 			inv_tz_memory(package, sizeof(TZ_PACKAGE));
-			mon_info("TEE MEMORY IN TZ:");
-			kprintHex((uint8_t*)tee_mem, sizeof(TZ_TEE_SPACE));
+			//mon_info("TEE MEMORY IN TZ:");
+			//kprintHex((uint8_t*)tee_mem, sizeof(TZ_TEE_SPACE));
 			//DEBUG_STOP;
 			target_task = get_task_by_name(TEE_TASK);
 			if (target_task == NULL ) {
@@ -397,7 +397,7 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		//v7_flush_dcache_all();
 		free_tz_package();
 		mon_secure_switch_context(cont, get_nonsecure_task());
-		mon_info("SSC_NONS_SERVICE context switched!");
+		mon_debug("SSC_NONS_SERVICE context switched!");
 		break;
 	default:
 		mon_debug("Invalid Monitor command: %d", cont->r[12]);

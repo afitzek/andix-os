@@ -42,9 +42,6 @@ int processParameters(TEEC_Operation* source, TEECOM_Operation* target) {
 			break;
 		case TEEC_VALUE_INPUT:
 		case TEEC_VALUE_INOUT:
-			printf("Processing parameters %d Value (A %x B %x)\n", pidx,
-					source->params[pidx].value.a,
-					source->params[pidx].value.b);
 			target->params[pidx].value.a =
 					source->params[pidx].value.a;
 			target->params[pidx].value.b =
@@ -77,9 +74,9 @@ int processComm() {
 	int res = -1;
 	if (comm != NULL ) {
 		if (tee_fd != 0) {
-			printf("CALLING TZ TEE comm (0x%x)\n", (unsigned int) comm);
+			//printf("CALLING TZ TEE comm (0x%x)\n", (unsigned int) comm);
 			res = ioctl(tee_fd, ANDIX_TEE_PUSH, comm);
-			printf("RETURN FROM TZ TEE\n");
+			//printf("RETURN FROM TZ TEE\n");
 		}
 	}
 	return (res);

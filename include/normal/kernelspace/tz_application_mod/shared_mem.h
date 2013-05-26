@@ -13,6 +13,6 @@ struct page* allocate_mapable_memory(uint32_t size, void** paddr, void** vaddr);
 void invalidate(void* memory, uint32_t size);
 void flush_cache(struct page* shared_pages);
 void invalidate_clean(void* memory, uint32_t size);
-void init_shared_mem();
+void init_shared_mem(void);
 
 #endif /* SHARED_MEM_H_ */

@@ -34,7 +34,7 @@ PROGRAM_NAME = encrypter.bin
 
 ASFLAGS = -g -mcpu=cortex-a8
 CFLAGS = -g -I$(NORM_US_APP_ENC_INC) -I$(ANDIX_INC_COMMON) -I$(ARM_POLARSSL_INC_DIR) -I$(ARM_NEWLIB_INC_DIR) -mcpu=cortex-a8 
-LDFLAGS = -L$(ARM_TOOLCHAIN_LIB_DIR) -L$(ANDIX_DEPLOY_DIR)/norm/lib -lgcc 
+LDFLAGS = -L$(ANDIX_DEPLOY_DIR)/norm/lib 
 
 all: mkbuilddirs $(OUTDIR)$(PROGRAM_NAME)
 

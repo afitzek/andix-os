@@ -267,7 +267,8 @@ void dump_mmu(uint32_t vstart, uint32_t vend, uint32_t* l1_tt) {
 
 	for (; idx <= idx_end; idx++) {
 		uint32_t phys = l1_tt[idx] & 0xFFF00000;
-		uint32_t virt = idx << 20;
+		uint32_t virt = phys;
+		virt = idx << 20;
 		if ((l1_tt[idx] & 0x3) != 0) {
 			if ((l1_tt[idx] & 0x3) == 2) {
 				vmm_debug("[%d] 0x%x ... 0x%x -> 0x%x ... 0x%x [%d]", idx, virt,

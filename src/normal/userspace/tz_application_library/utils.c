@@ -8,6 +8,7 @@
 #include <tee_client_api.h>
 #include <tee_utils.h>
 #include <stdlib.h>
+#include <string.h>
 
 unsigned char strtouc(const char *nptr, char **endptr, int base) {
 	const unsigned char *s = (const unsigned char *) nptr;

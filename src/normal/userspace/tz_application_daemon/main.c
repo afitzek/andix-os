@@ -18,6 +18,7 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <stdlib.h>
 
 int openTZ() {
 	return (open(DEVICE_NAME, O_RDWR));
@@ -119,7 +120,7 @@ void dispatcher_loop(int fd, TZ_TEE_SPACE *comm) {
 					/* New connection */
 					int newsock;
 					len = sizeof(struct sockaddr_un);
-					newsock = accept(s, &remote, &len);
+					newsock = accept(s, (struct sockaddr*)&remote, &len);
 					if (newsock == -1) {
 						perror("accept");
 						continue;
@@ -165,13 +166,13 @@ int main(int argc, char** argv) {
 
 	comm = (TZ_TEE_SPACE *) mmap(NULL, sizeof(TZ_TEE_SPACE) + 0x1000,
 			PROT_READ | PROT_WRITE, MAP_SHARED, fd_tz, 0);
-	uint32_t orig = comm;
+	uint32_t orig = (uint32_t)comm;
 	if (comm == NULL || comm == MAP_FAILED ) {
 		printf("FAILED TO map tee memory: %s\n", strerror(errno));
 		goto cleanup;
 	}
 
-	printf("TEE memory is mapped @ 0x%08x\n", comm);
+	printf("TEE memory is mapped @ 0x%08x\n", (uint32_t)comm);
 
 	uint32_t poff = ioctl(fd_tz, ANDIX_IOGMOFF);
 
@@ -179,7 +180,7 @@ int main(int argc, char** argv) {
 
 	comm = (TZ_TEE_SPACE*) (((uint32_t) comm) | poff);
 
-	printf("TEE memory is located @ 0x%08x\n", comm);
+	printf("TEE memory is located @ 0x%08x\n", (uint32_t)comm);
 
 	comm->op = TZ_TEE_OP_INIT_CTX;
 	comm->params.initCtx.context = 0;
@@ -200,13 +201,13 @@ int main(int argc, char** argv) {
 
 		mlock(test, 0x2000);
 
-		printf("REGISTER MEM @ 0x%x\n", test);
+		printf("REGISTER MEM @ 0x%x\n", (uint32_t)test);
 
 		comm->op = TZ_TEE_OP_REGISTER_MEM;
 		comm->params.regMem.context = ctx;
 		comm->params.regMem.memid = 0;
 		comm->params.regMem.size = 0x2000;
-		comm->params.regMem.paddr = test;
+		comm->params.regMem.paddr = (uint32_t)test;
 		comm->params.regMem.flags = 0;
 
 		printf("CALLING TZ REG MEM!\n");
@@ -216,7 +217,7 @@ int main(int argc, char** argv) {
 		printf("RESULT: 0x%x\n", comm->ret);
 		printf("MEMID: 0x%x\n", comm->params.regMem.memid);
 
-		printf("RELEASE MEM @ 0x%x\n", test);
+		printf("RELEASE MEM @ 0x%x\n", (uint32_t)test);
 
 		comm->op = TZ_TEE_OP_RELEASE_MEM;
 		comm->params.regMem.context = ctx;

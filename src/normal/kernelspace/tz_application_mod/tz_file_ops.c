@@ -71,7 +71,6 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 	//printk(KERN_INFO "TZ IOCTL CALL\n");
 
 	switch (cmd) {
-	// TODO remove userspace maping of com memory!
 	// Use copy_(to/from)_user to process TEE and CTRL Requests
 	// Process TEE Request
 	case ANDIX_CTRL_POLL:
@@ -90,7 +89,7 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 		break;
 	case ANDIX_CTRL_PUSH:
 
-		printk(KERN_INFO "TZ CTRL PUSH\n");
+		//printk(KERN_INFO "TZ CTRL PUSH\n");
 
 		if (!check_process_is_root()) {
 			// Only root process can push ctrl
@@ -107,13 +106,13 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 		break;
 	case ANDIX_TEE_PUSH:
 
-		printk(KERN_INFO "TZ TEE PUSH\n");
+		//printk(KERN_INFO "TZ TEE PUSH\n");
 
 		verify_arg = access_ok(VERIFY_WRITE, arg, sizeof(TZ_TEE_SPACE));
 
 		if (verify_arg == 0) {
 			printk(KERN_ERR "TZ_TEE_SPACE not valid "
-					"memory for writing! (0x%x)\n", arg);
+					"memory for writing! (0x%x)\n", (unsigned int)arg);
 			return (-EINVAL);
 		}
 

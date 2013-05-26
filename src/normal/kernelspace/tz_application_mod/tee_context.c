@@ -6,7 +6,7 @@
  */
 
 #include <tz_application_mod/tee_context.h>
-#include <asm-generic/current.h>
+//#include <asm-generic/current.h>
 
 tee_list_t* tee_contexts;
 

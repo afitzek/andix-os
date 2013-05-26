@@ -91,7 +91,7 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		tmp = (uint8_t*)kmalloc(size + 1);
 		memset(tmp, 0, size + 1);
 		memcpy(tmp, buffer, size);
-		user_info("STDOUT [%d]: %s", task->tid, tmp);
+		userspace_out("STDOUT: %s", tmp);
 		kfree((uintptr_t)tmp);
 		return (size);
 	}
@@ -100,7 +100,7 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		tmp = (uint8_t*)kmalloc(size + 1);
 		memset(tmp, 0, size + 1);
 		memcpy(tmp, buffer, size);
-		user_info("STDERR [%d]: %s", task->tid, buffer);
+		userspace_out("STDERR: %s", buffer);
 		kfree((uintptr_t)tmp);
 		return (size);
 	}
@@ -136,9 +136,9 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 
 	if (socket == 0) {
 		memset(buffer, 0, size);
-		user_info("STDIN [%d]:", task->tid);
+		userspace_out("STDIN:%s" ,"");
 		getinput((char*) buffer, size);
-		user_info("GOT %s", buffer);
+		userspace_out("GOT %s" ,buffer);
 		return (size);
 	}
 

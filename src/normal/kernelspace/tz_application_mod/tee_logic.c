@@ -89,11 +89,9 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 
 	uint32_t ctrl_physical_1 = virt_to_phys((void*) ctrlspace);
 	uint32_t ctrl_physical_2 = virt_to_phys((void*) ctrlspace);
-	uint32_t tee_physical = virt_to_phys((void*) teespace);
-	uint32_t package_physical = virt_to_phys((void*) package);
 	while (1) {
 
-		printk(KERN_INFO "Push CTRL space from secure!");
+		//printk(KERN_INFO "Push CTRL space from secure!");
 
 		// Push ctrl struct to userspace daemon
 		push_ctrl_task_from_s(ctrlspace_1);
@@ -103,7 +101,7 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 			schedule();
 		}
 
-		printk(KERN_INFO "FD RESULT: 0x%x", ctrlspace_1->ret);
+		//printk(KERN_INFO "FD RESULT: 0x%x", ctrlspace_1->ret);
 
 		ctrl_pages_2 = allocate_mapable_memory(sizeof(TZ_CTLR_SPACE),
 				(void**) &ctrl_physical_2, (void**) &ctrlspace_2);
@@ -118,7 +116,7 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 		ctrlspace_1 = ctrlspace_2;
 		ctrl_physical_1 = ctrl_physical_2;
 
-		printk(KERN_INFO "CTRL PHYSICAL 0x%x", ctrl_physical_1);
+		//printk(KERN_INFO "CTRL PHYSICAL 0x%x", ctrl_physical_1);
 
 		//package->physical_ctrl = (void*) ctrl_physical_1;
 
@@ -133,12 +131,12 @@ int tz_process_ctrl_mem(TZ_TEE_SPACE* teespace, TZ_CTLR_SPACE* ctrlspace,
 		invalidate_clean(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
 		// CALL Monitor with CTRL mem response
 
-		result = __smc_1(SMC_PROCESS_CMEM, package);
+		result = __smc_1(SMC_PROCESS_CMEM, (unsigned int) package);
 		// invalid package, teespace and ctrlspace
 		invalidate(package, sizeof(TZ_PACKAGE));
 		invalidate(teespace, sizeof(TZ_TEE_SPACE));
 		invalidate(ctrlspace_1, sizeof(TZ_CTLR_SPACE));
-		printk(KERN_INFO "PROCESS_CMEM result: %x", result);
+		//printk(KERN_INFO "PROCESS_CMEM result: %x", result);
 
 		if (package->result != CTRL_STRUCT) {
 			// is response is TEE break
@@ -169,7 +167,7 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 	void* package_physical;
 
 	tee_pages = allocate_mapable_memory(sizeof(TZ_TEE_SPACE), &tee_physical,
-			&teemem);
+			(void**)&teemem);
 
 	if (tee_pages == NULL ) {
 		printk(KERN_ERR "tee_process: out of memory!\n");
@@ -177,7 +175,7 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 	}
 
 	ctrl_pages = allocate_mapable_memory(sizeof(TZ_CTLR_SPACE), &ctrl_physical,
-			&ctrlspace);
+			(void**)&ctrlspace);
 
 	if (ctrl_pages == NULL ) {
 		free_mapable_memory(tee_pages, sizeof(TZ_TEE_SPACE));
@@ -186,7 +184,7 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 	}
 
 	package_pages = allocate_mapable_memory(sizeof(TZ_PACKAGE),
-			&package_physical, &package);
+			&package_physical, (void**)&package);
 
 	if (package_pages == NULL ) {
 		free_mapable_memory(tee_pages, sizeof(TZ_TEE_SPACE));
@@ -239,11 +237,11 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 		goto err_ret;
 	}
 
-	printk(KERN_INFO "tee_process: event 0x%x\n", (unsigned int) event);
-	printk(KERN_INFO "tee_process: event->pre 0x%x\n",
-			(unsigned int) event->pre);
-	printk(KERN_INFO "tee_process: event->post 0x%x\n",
-			(unsigned int) event->post);
+	//printk(KERN_INFO "tee_process: event 0x%x\n", (unsigned int) event);
+	//printk(KERN_INFO "tee_process: event->pre 0x%x\n",
+	//		(unsigned int) event->pre);
+	//printk(KERN_INFO "tee_process: event->post 0x%x\n",
+	//		(unsigned int) event->post);
 
 	if (event->pre != NULL ) {
 		result = event->pre(teemem);
@@ -271,7 +269,7 @@ int tee_process(TZ_TEE_SPACE* userspace) {
 	invalidate(package, sizeof(TZ_PACKAGE));
 	invalidate(ctrlspace, sizeof(TZ_CTLR_SPACE));
 //tee_invalidate(get_shared_tee_mem(), sizeof(TZ_TEE_SPACE));
-	printk(KERN_INFO "Returned Value: 0x%x\n", result);
+	//printk(KERN_INFO "Returned Value: 0x%x\n", result);
 //kprintHex(get_shared_tee_mem(), sizeof(TZ_TEE_SPACE));
 	CP15DMB;
 	CP15DSB;

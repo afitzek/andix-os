@@ -73,7 +73,7 @@ TEE_Result sysd_echo(__uint32_t_ paramTypes, TEE_Param params[4]) {
 TEE_Result sysd_install(__uint32_t_ paramTypes, TEE_Param params[4]) {
 	andixpack* pack;
 	uint8_t* elf;
-	char c = "t";
+	char c = 't';
 	if (paramTypes != TEE_PARAM_TYPES(
 			TEE_PARAM_TYPE_MEMREF_INPUT,
 			TEE_PARAM_TYPE_NONE,

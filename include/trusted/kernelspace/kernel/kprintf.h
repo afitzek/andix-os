@@ -60,6 +60,10 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #ifdef _FUNCTION_KEYWORD_
 
+#define userspace_out(...) \
+	kprintf("[USERSPACE][%s]:", gettaskname()); \
+	kprintf(__VA_ARGS__);
+
 #define subsys_error(subsys,...) \
 	kprintf("[ERR][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
 	kprintf(__VA_ARGS__); \
@@ -195,7 +199,8 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define mon_error(...) subsys_error(MON_TAG, __VA_ARGS__)
 #define mon_info(...) subsys_info(MON_TAG, __VA_ARGS__)
-#define mon_debug(...) subsys_debug(MON_TAG, __VA_ARGS__)
+//#define mon_debug(...) subsys_debug(MON_TAG, __VA_ARGS__)
+#define mon_debug(...) non_print_handler(MON_TAG, __VA_ARGS__)
 
 // CMM
 
@@ -219,7 +224,8 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define vmm_error(...) subsys_error(VMM_TAG, __VA_ARGS__)
 #define vmm_info(...) subsys_info(VMM_TAG, __VA_ARGS__)
-#define vmm_debug(...) subsys_debug(VMM_TAG, __VA_ARGS__)
+//#define vmm_debug(...) subsys_debug(VMM_TAG, __VA_ARGS__)
+#define vmm_debug(...) non_print_handler(VMM_TAG, __VA_ARGS__)
 
 // SMM
 
@@ -283,8 +289,8 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define swi_error(...) subsys_error(SWI_TAG, __VA_ARGS__)
 #define swi_info(...) subsys_info(SWI_TAG, __VA_ARGS__)
-#define swi_debug(...) subsys_debug(SWI_TAG, __VA_ARGS__)
-
+//#define swi_debug(...) subsys_debug(SWI_TAG, __VA_ARGS__)
+#define swi_debug(...) non_print_handler(SWI_TAG, __VA_ARGS__)
 
 // USER
 
@@ -356,6 +362,7 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define tee_error(...) subsys_error(TEE_TAG, __VA_ARGS__)
 #define tee_info(...) subsys_info(TEE_TAG, __VA_ARGS__)
-#define tee_debug(...) subsys_debug(TEE_TAG, __VA_ARGS__)
+//#define tee_debug(...) subsys_debug(TEE_TAG, __VA_ARGS__)
+#define tee_debug(...) non_print_handler(TEE_TAG, __VA_ARGS__)
 
 #endif /* KPRINTF_H_ */

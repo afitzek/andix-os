@@ -12,8 +12,11 @@
 #define TZ_ENCRYPT	(0x11)
 #define TZ_DECRYPT	(0x21)
 
+#define TRUSTLET_UUID "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5"
+
 typedef struct {
 	unsigned char iv[16];
+	unsigned int  datasize;
 	unsigned char data[1];
 } crypt_pack_t;
 

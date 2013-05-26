@@ -12,6 +12,7 @@
 #include <linux/uaccess.h>
 #include <tz_application_mod/shared_mem.h>
 #include <client_error_constants.h>
+#include <tz_application_mod/utils.h>
 
 op_event tee_ctx_init;
 op_event tee_ctx_finalize;
@@ -27,7 +28,7 @@ int tee_op_dummy(TZ_TEE_SPACE* com_mem) {
 
 int tee_ctx_init_pre(TZ_TEE_SPACE* com_mem) {
 	printk(KERN_INFO "tee_ctx_init_pre: CTX Addr 0x%x",
-			&(com_mem->params.initCtx.context));
+			(unsigned int)&(com_mem->params.initCtx.context));
 	com_mem->params.initCtx.context = 0xDEADC;
 	return (TEE_EVENT_RET_SUCCESS);
 }
@@ -200,7 +201,7 @@ int tee_mem_rel_pre(TZ_TEE_SPACE* com_mem) {
 		return (TEE_EVENT_RET_ERROR);
 	}
 
-	if (mem->user_addr != com_mem->params.regMem.paddr) {
+	if (mem->user_addr != (void*) com_mem->params.regMem.paddr) {
 		printk(KERN_ERR "tee_mem_rel_pre: Memory ID not matching address");
 		com_mem->ret = TEEC_ERROR_BAD_PARAMETERS;
 		return (TEE_EVENT_RET_ERROR);
@@ -276,7 +277,13 @@ int tee_translate_parameter_to_tz(TEECOM_Operation* operation, uint32_t *result)
 				(*result) = TEEC_ERROR_BAD_PARAMETERS;
 				return (TEE_EVENT_RET_ERROR);
 			}
-			copy_from_user(mem->com_vaddr, mem->user_addr, mem->size);
+			if (copy_from_user(mem->com_vaddr, mem->user_addr, mem->size)
+					!= 0) {
+				printk(KERN_ERR "tee_translate_parameter_to_tz: "
+						"failed to copy from user");
+				(*result) = TEEC_ERROR_COMMUNICATION;
+				return (TEE_EVENT_RET_ERROR);
+			}
 			invalidate_clean(mem->com_vaddr, mem->size);
 			operation->params[pidx].memref.memid = mem->tz_id;
 			break;
@@ -285,7 +292,8 @@ int tee_translate_parameter_to_tz(TEECOM_Operation* operation, uint32_t *result)
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
-int tee_translate_parameter_from_tz(TEECOM_Operation* operation, uint32_t *result) {
+int tee_translate_parameter_from_tz(TEECOM_Operation* operation,
+		uint32_t *result) {
 	int pidx = 0;
 	uint32_t paramType;
 	tee_shared_memory* mem;
@@ -304,7 +312,12 @@ int tee_translate_parameter_from_tz(TEECOM_Operation* operation, uint32_t *resul
 				return (TEE_EVENT_RET_ERROR);
 			}
 			invalidate(mem->com_vaddr, mem->size);
-			copy_to_user(mem->user_addr, mem->com_vaddr, mem->size);
+			if (copy_to_user(mem->user_addr, mem->com_vaddr, mem->size) != 0) {
+				printk(KERN_ERR "tee_translate_parameter_from_tz: "
+						"failed to copy to user");
+				(*result) = TEEC_ERROR_COMMUNICATION;
+				return (TEE_EVENT_RET_ERROR);
+			}
 			operation->params[pidx].memref.memid = mem->id;
 			break;
 		}
@@ -337,8 +350,7 @@ int tee_session_open_pre(TZ_TEE_SPACE* com_mem) {
 
 	if (com_mem->params.openSession.operation.valid == 1) {
 		return (tee_translate_parameter_to_tz(
-				&com_mem->params.openSession.operation,
-				&com_mem->ret));
+				&com_mem->params.openSession.operation, &com_mem->ret));
 	}
 
 	return (TEE_EVENT_RET_SUCCESS);
@@ -425,8 +437,7 @@ int tee_invoke_pre(TZ_TEE_SPACE* com_mem) {
 	com_mem->params.invokeCommand.session = session->tz_id;
 
 	return (tee_translate_parameter_to_tz(
-			&com_mem->params.invokeCommand.operation,
-			&com_mem->ret));
+			&com_mem->params.invokeCommand.operation, &com_mem->ret));
 }
 
 int tee_invoke_post(TZ_TEE_SPACE* com_mem) {
@@ -444,7 +455,6 @@ int tee_invoke_post(TZ_TEE_SPACE* com_mem) {
 	com_mem->params.invokeCommand.session = session->id;
 
 	return (tee_translate_parameter_from_tz(
-				&com_mem->params.invokeCommand.operation,
-				&com_mem->ret));
+			&com_mem->params.invokeCommand.operation, &com_mem->ret));
 }
 

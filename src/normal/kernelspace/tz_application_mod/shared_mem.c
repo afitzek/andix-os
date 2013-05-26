@@ -56,7 +56,7 @@ void invalidate_clean(void* memory, uint32_t size) {
 }
 
 
-void init_shared_mem() {
+void init_shared_mem(void) {
 	uint32_t ctr;
 
 	asm volatile("mrc p15, 0, %0, c0, c0, 1" : "=r" (ctr));
@@ -79,10 +79,10 @@ struct page* allocate_mapable_memory(uint32_t size, void** paddr, void** vaddr) 
 		printk(KERN_ERR "Failed to allocate memory\n");
 		return (0);
 	}
-	(*vaddr) = (TZ_TEE_SPACE*) page_address(shared_pages);
-	(*paddr) = virt_to_phys((*vaddr));
-	printk(KERN_INFO "Mapable memory @ 0x%x p (0x%x)\n",
-			(unsigned int) (*vaddr), (unsigned int) (*paddr));
+	(*vaddr) = (void*) page_address(shared_pages);
+	(*paddr) = (void*) virt_to_phys((*vaddr));
+	//printk(KERN_INFO "Mapable memory @ 0x%x p (0x%x)\n",
+	//		(unsigned int) (*vaddr), (unsigned int) (*paddr));
 
 	return (shared_pages);
 }

@@ -357,4 +357,22 @@ void TEEC_RequestCancellation(
  */
 #define TEEC_PARAM_TYPES( t0, t1, t2, t3) ((t0) | ((t1) << 4) | ((t2) << 8) | ((t3) << 12))
 
+// ANDIX HELPERS
+
+/**
+ * Get readable string for origin value
+ *
+ * @param origin The origin value
+ * @return The origin string
+ */
+const char* TEEC_StringifyOrigin(uint32_t origin);
+
+/**
+ * Get readable string for result value
+ *
+ * @param result The result value
+ * @return The result string
+ */
+const char* TEEC_StringifyError(TEEC_Result result);
+
 #endif /* TEE_CLIENT_API_H_ */

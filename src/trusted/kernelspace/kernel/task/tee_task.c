@@ -208,35 +208,35 @@ void tee_task_entry() {
 
 		uint32_t result = TEEC_ERROR_COMMUNICATION;
 
-		tee_info("TEE Request 0x%x", space.op);
+		tee_debug("TEE Request 0x%x", space.op);
 
 		switch (space.op) {
 		case TZ_TEE_OP_REGISTER_MEM:
-			tee_info("TZ_TEE_OP_REGISTER_MEM OPERATION");
+			tee_debug("TZ_TEE_OP_REGISTER_MEM OPERATION");
 			result = tee_register_mem(&(space.params.regMem));
 			break;
 		case TZ_TEE_OP_RELEASE_MEM:
-			tee_info("TZ_TEE_OP_RELEASE_MEM OPERATION");
+			tee_debug("TZ_TEE_OP_RELEASE_MEM OPERATION");
 			result = tee_release_mem(&(space.params.regMem));
 			break;
 		case TZ_TEE_OP_INIT_CTX:
-			tee_info("TZ_TEE_OP_INIT_CTX OPERATION");
+			tee_debug("TZ_TEE_OP_INIT_CTX OPERATION");
 			result = tee_init_context(&(space.params.initCtx));
 			break;
 		case TZ_TEE_OP_FIN_CTX:
-			tee_info("TZ_TEE_OP_FIN_CTX OPERATION");
+			tee_debug("TZ_TEE_OP_FIN_CTX OPERATION");
 			result = tee_finalize_context(&(space.params.finCtx));
 			break;
 		case TZ_TEE_OP_OPEN_SESSION:
-			tee_info("TZ_TEE_OP_OPEN_SESSION OPERATION");
+			tee_debug("TZ_TEE_OP_OPEN_SESSION OPERATION");
 			result = tee_open_session(&(space.params.openSession), &space);
 			break;
 		case TZ_TEE_OP_CLOSE_SESSION:
-			tee_info("TZ_TEE_OP_CLOSE_SESSION OPERATION");
+			tee_debug("TZ_TEE_OP_CLOSE_SESSION OPERATION");
 			result = tee_close_session(&(space.params.closeSession), &space);
 			break;
 		case TZ_TEE_OP_INVOKE_CMD:
-			tee_info("TZ_TEE_OP_INVOKE_CMD OPERATION");
+			tee_debug("TZ_TEE_OP_INVOKE_CMD OPERATION");
 			result = tee_invoke(&(space.params.invokeCommand), &space);
 			break;
 		default:

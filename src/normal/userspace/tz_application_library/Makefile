@@ -34,7 +34,7 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 ASFLAGS = -g -mcpu=cortex-a8
 CFLAGS = -g -fPIC -I$(NORM_US_APP_LIB_INC) -I$(ANDIX_INC_COMMON) -mcpu=cortex-a8 
-LDFLAGS = -L$(ARM_TOOLCHAIN_LIB_DIR) -lgcc
+LDFLAGS = 
 
 all: mkbuilddirs $(OUTDIR)libandixtee.so
 

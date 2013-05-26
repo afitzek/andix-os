@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <communication_types.h>
 #include <k_comm.h>
+#include <string.h>
 
 TEEC_Result TEEC_InitializeContext(const char* name, TEEC_Context* context) {
 	if (name == NULL || strcmp(name, ANDIX_TEE_NAME) == 0) {
@@ -66,7 +67,7 @@ TEEC_Result TEEC_RegisterSharedMemory(TEEC_Context* context,
 	space->op = TZ_TEE_OP_REGISTER_MEM;
 	space->params.regMem.context = context->id;
 	space->params.regMem.flags = sharedMem->flags;
-	space->params.regMem.paddr = sharedMem->buffer;
+	space->params.regMem.paddr = (uint32_t) sharedMem->buffer;
 	space->params.regMem.size = sharedMem->size;
 
 	processComm();
@@ -94,7 +95,7 @@ void TEEC_ReleaseSharedMemory(TEEC_SharedMemory* sharedMem) {
 		space->op = TZ_TEE_OP_RELEASE_MEM;
 		space->params.regMem.context = 0;
 		space->params.regMem.memid = sharedMem->memid;
-		space->params.regMem.paddr = sharedMem->buffer;
+		space->params.regMem.paddr = (uint32_t)sharedMem->buffer;
 		space->params.regMem.size = sharedMem->size;
 		space->params.regMem.flags = sharedMem->flags;
 		processComm();
@@ -118,7 +119,7 @@ TEEC_Result TEEC_OpenSession(TEEC_Context* context, TEEC_Session* session,
 	lockComm();
 	TZ_TEE_SPACE* space = getCommSpace();
 	space->op = TZ_TEE_OP_OPEN_SESSION;
-	space->params.openSession.connectionData = connectionData;
+	space->params.openSession.connectionData = (uint32_t)connectionData;
 	space->params.openSession.connectionMethod = connectionMethod;
 	space->params.openSession.context = context->id;
 	space->params.openSession.session = session->id;
@@ -213,5 +214,61 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session* session, uint32_t commandID,
 
 void TEEC_RequestCancellation(TEEC_Operation* operation) {
 	// not supported!!
+}
+
+const char* TEEC_StringifyOrigin(uint32_t origin) {
+	if(origin == TEEC_ORIGIN_API) {
+		return ("TEEC_ORIGIN_API");
+	} else if(origin == TEEC_ORIGIN_COMMS) {
+		return ("TEEC_ORIGIN_COMMS");
+	} else if(origin == TEEC_ORIGIN_TEE) {
+		return ("TEEC_ORIGIN_TEE");
+	} else if(origin == TEEC_ORIGIN_TRUSTED_APP) {
+		return ("TEEC_ORIGIN_TRUSTED_APP");
+	} else {
+		return ("UNKNOWN");
+	}
+}
+
+const char* TEEC_StringifyError(TEEC_Result result) {
+	if(result == TEEC_SUCCESS) {
+		return ("TEEC_SUCCESS");
+	} else if(result == TEEC_ERROR_ACCESS_CONFLICT) {
+		return ("TEEC_ERROR_ACCESS_CONFLICT");
+	} else if(result == TEEC_ERROR_ACCESS_DENIED) {
+		return ("TEEC_ERROR_ACCESS_DENIED");
+	} else if(result == TEEC_ERROR_BAD_FORMAT) {
+		return ("TEEC_ERROR_BAD_FORMAT");
+	} else if(result == TEEC_ERROR_BAD_PARAMETERS) {
+		return ("TEEC_ERROR_BAD_PARAMETERS");
+	} else if(result == TEEC_ERROR_BAD_STATE) {
+		return ("TEEC_ERROR_BAD_STATE");
+	} else if(result == TEEC_ERROR_BUSY) {
+		return ("TEEC_ERROR_BUSY");
+	} else if(result == TEEC_ERROR_CANCEL) {
+		return ("TEEC_ERROR_CANCEL");
+	} else if(result == TEEC_ERROR_COMMUNICATION) {
+		return ("TEEC_ERROR_COMMUNICATION");
+	} else if(result == TEEC_ERROR_EXCESS_DATA) {
+		return ("TEEC_ERROR_EXCESS_DATA");
+	} else if(result == TEEC_ERROR_GENERIC) {
+		return ("TEEC_ERROR_GENERIC");
+	} else if(result == TEEC_ERROR_ITEM_NOT_FOUND) {
+		return ("TEEC_ERROR_ITEM_NOT_FOUND");
+	} else if(result == TEEC_ERROR_NOT_IMPLEMENTED) {
+		return ("TEEC_ERROR_NOT_IMPLEMENTED");
+	} else if(result == TEEC_ERROR_NOT_SUPPORTED) {
+		return ("TEEC_ERROR_NOT_SUPPORTED");
+	} else if(result == TEEC_ERROR_NO_DATA) {
+		return ("TEEC_ERROR_NO_DATA");
+	} else if(result == TEEC_ERROR_OUT_OF_MEMORY) {
+		return ("TEEC_ERROR_OUT_OF_MEMORY");
+	} else if(result == TEEC_ERROR_SECURITY) {
+		return ("TEEC_ERROR_SECURITY");
+	} else if(result == TEEC_ERROR_SHORT_BUFFER) {
+		return ("TEEC_ERROR_SHORT_BUFFER");
+	} else {
+		return ("UNKNOWN");
+	}
 }
 
