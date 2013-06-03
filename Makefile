@@ -31,9 +31,9 @@ tool_clean: tool_packer_clean tool_scripts_clean
 # Linux Build targets
 ####
 
-linux_builds: linux_modules_build linux_serv_daemon_build linux_app_lib_build linux_app_daemon_build linux_app_build linux_enc_app_build
+linux_builds: linux_modules_build linux_serv_daemon_build linux_app_lib_build linux_app_daemon_build linux_app_build linux_enc_app_build linux_tz_test_app_build
 
-linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean linux_app_daemon_clean linux_app_clean linux_enc_app_clean
+linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean linux_app_daemon_clean linux_app_clean linux_enc_app_clean linux_tz_test_app_clean
 
 ####
 
@@ -303,6 +303,25 @@ linux_app_daemon_clean:
 	$(sep-command)
 
 ####
+
+####
+# Andix linux application
+####
+
+LINUX_TZ_TEST_APP = ANDIX LINUX TZ TEST APPLICATION
+
+linux_tz_test_app_build: linux_app_lib_build
+	$(build-num)
+	$(start-build-command) $(LINUX_TZ_TEST_APP)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_TZ_TEST_SRC)
+	$(sep-command)
+
+linux_tz_test_app_clean:
+	$(start-clean-command) $(LINUX_TZ_TEST_APP)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_TZ_TEST_SRC) clean
+	$(sep-command)
 
 ####
 # Andix linux application

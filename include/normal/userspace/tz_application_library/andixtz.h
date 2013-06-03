@@ -12,9 +12,10 @@
 #include <communication_types.h>
 
 #define ANDIXTZ_IOC_MAGIC  'T'
-#define ANDIX_IOCTZ 		_IOW(ANDIXTZ_IOC_MAGIC,  1, int)
-#define ANDIX_IOGMOFF		_IOW(ANDIXTZ_IOC_MAGIC,  2, int)
-#define ANDIX_IOCTEEZ 		_IOW(ANDIXTZ_IOC_MAGIC,  3, int)
+#define ANDIX_CTRL_POLL		_IOW(ANDIXTZ_IOC_MAGIC,  1, int)
+#define ANDIX_CTRL_PUSH		_IOW(ANDIXTZ_IOC_MAGIC,  2, int)
+#define ANDIX_TEE_PUSH		_IOW(ANDIXTZ_IOC_MAGIC,  3, int)
+#define ANDIX_TZ_TEST		_IOW(ANDIXTZ_IOC_MAGIC,  4, int)
 
 #define DEVICE_NAME			"/dev/andixtee0"
 #define SOCKET_NAME			"/tmp/tee.socket"

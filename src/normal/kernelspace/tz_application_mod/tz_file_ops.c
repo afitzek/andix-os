@@ -14,6 +14,7 @@
 #include <linux/uaccess.h>
 #include <andix_tz_mod.h>
 #include <tz_application_mod/tee_logic.h>
+#include <linux/io.h>
 
 //static atomic_t tz_dev_available = ATOMIC_INIT(1);
 
@@ -61,6 +62,9 @@ int tz_process_tee_mem(TZ_TEE_SPACE* userspace) {
 long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 
 	int verify_arg = 0;
+	void* tz_vaddr = NULL;
+	uint32_t tz_value = 0;
+	unsigned long tz_paddr = 0xb0000000;
 
 	// Entry Point for Userspace ...
 	if (_IOC_TYPE(cmd) != ANDIXTZ_IOC_MAGIC)
@@ -117,6 +121,20 @@ long tz_driver_ioctl(struct file * file, unsigned int cmd, unsigned long arg) {
 		}
 
 		return (tz_process_tee_mem((TZ_TEE_SPACE*) arg));
+		break;
+	case ANDIX_TZ_TEST:
+		tz_vaddr = ioremap(tz_paddr, 4);
+
+		if(tz_vaddr != NULL) {
+
+			tz_value = ioread32(tz_vaddr);
+
+			printk(KERN_INFO "TZ MEM VALUE: 0x%x\n", tz_value);
+
+			iounmap(tz_vaddr);
+		} else {
+			printk(KERN_ERR "TZ mapping failed\n");
+		}
 		break;
 	default: /* redundant, as cmd was checked against MAXNR */
 		return (-ENOTTY);

@@ -12,8 +12,10 @@
 #define ANDIX_CTRL_POLL		_IOW(ANDIXTZ_IOC_MAGIC,  1, int)
 #define ANDIX_CTRL_PUSH		_IOW(ANDIXTZ_IOC_MAGIC,  2, int)
 #define ANDIX_TEE_PUSH		_IOW(ANDIXTZ_IOC_MAGIC,  3, int)
+#define ANDIX_TZ_TEST		_IOW(ANDIXTZ_IOC_MAGIC,  4, int)
 
-#define ANDIX_IOC_MAXNR 3
+#define ANDIX_IOC_MAXNR 4
 
+#define DEVICE_NAME			"/dev/andixtee0"
 
 #endif /* ANDIX_TZ_MOD_H_ */
