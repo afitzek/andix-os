@@ -23,6 +23,7 @@ void *memset(void *s, int c, int n);
 char* getModeString(uint32_t cpsr);
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
 #define roundup(x, y)		((((x) + ((y) - 1)) / (y)) * (y))
 uint8_t is_kernel_addr(uint32_t value);
 uint8_t is_valid_addr(void* ptr);

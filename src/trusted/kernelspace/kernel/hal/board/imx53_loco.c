@@ -66,6 +66,30 @@ static const device_info_t imx53_loco_dev_map[] = {
 				.driver = SRNG_DRIVER_NAME,
 				.id		= 0,
 				.flags	= 0
+		},
+		[7] = {
+				.name 	= CSU_DEVICE,
+				.base 	= (uintptr_t)0x63F9C000,
+				.size 	= 0x4000,
+				.driver = IMX53_CSU_DRIVER_NAME,
+				.id		= 0,
+				.flags	= FLAG_DO_INIT
+		},
+		[8] = {
+				.name 	= INTERRUPT_CTRL_DEVICE,
+				.base 	= (uintptr_t)0x0FFFC000,
+				.size 	= 0x4000,
+				.driver = IMX53_TZIC_DRIVER_NAME,
+				.id		= 0,
+				.flags	= FLAG_DO_INIT
+		},
+		[9] = {
+				.name 	= WATCHDOG_DEVICE,
+				.base 	= (uintptr_t)0x53F98000,
+				.size 	= 0x4000,
+				.driver = IMX53_WDOG_DRIVER_NAME,
+				.id		= 0,
+				.flags	= FLAG_DO_INIT
 		}
 };
 
@@ -81,7 +105,7 @@ static const platform_device_t imx53_loco_platform_device_map[] = {
 
 static const hal_platform_t imx53_loco = {
 		.sys_id					= 0xcc9,
-		.device_count 			= 7,
+		.device_count 			= 10,
 		.dev_map 				= imx53_loco_dev_map,
 		.platform_device_count 	= 1,
 		.platform_device_map	= imx53_loco_platform_device_map

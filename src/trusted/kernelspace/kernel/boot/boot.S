@@ -291,7 +291,12 @@ _irq:
 
 .global _fiq
 _fiq:
-	B	_no_handler
+	iaik_msr_prologue 0x8
+
+	MOV r0, sp
+	BL	pIRQ
+
+	iaik_msr_epilogue
 
 .global _pref_ab
 _pref_ab:

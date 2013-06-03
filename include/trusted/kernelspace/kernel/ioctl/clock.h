@@ -16,6 +16,7 @@
 #define IOCTL_CLOCK_GET_CTR			(0x00000001)
 #define IOCTL_CLOCK_RESET_CTR		(0x00000002)
 #define IOCTL_CLOCK_GET_FREQ_KHZ	(0x00000003)
+#define IOCTL_CLOCK_ALARM_AT		(0x00000004)
 
 struct clk_request {
 	uint32_t value;

@@ -14,6 +14,9 @@
 #include <drivers/timer/imx_gpt.h>
 #include <drivers/net/imx_fec.h>
 #include <drivers/random/simplerng.h>
+#include <drivers/csu/imx_csu.h>
+#include <drivers/interrupt_controller/imx_tzic.h>
+#include <drivers/watchdog/imx_wdog.h>
 #include <common/typedefs.h>
 
 

@@ -235,6 +235,8 @@ void pIRQ(core_reg* regs) {
 
 	dump_regs(regs);
 
+	irq_do(regs);
+
 	dab_debug("====== INTERRUPT ========");
 }
 

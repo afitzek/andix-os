@@ -83,6 +83,8 @@ platform_driver_t* hal_find_driver(const char* name);
 
 hal_platform_t* hal_get_platform();
 
+const char* hal_get_error_string(uint32_t error);
+
 uint32_t hal_write(platform_device_t* dev, void* data, uint32_t size);
 uint32_t hal_read(platform_device_t* dev, void* data, uint32_t nsize);
 uint32_t hal_ioctl(platform_device_t* dev, uint32_t request, uintptr_t param, uint32_t psize);

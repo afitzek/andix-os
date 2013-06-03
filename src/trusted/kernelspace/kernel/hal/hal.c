@@ -30,8 +30,8 @@ hal_platform_t * current_platform;
 uint32_t hal_init_magic = 0;
 
 void hal_init(uint32_t sysid, atag_t* atags) {
-	hal_debug(
-			"HAL initializing ... from 0x%x - 0x%x", &__hal_platform_table[0], &__hal_platform_table_end);
+	hal_debug("HAL initializing ... from 0x%x - 0x%x", &__hal_platform_table[0],
+			&__hal_platform_table_end);
 	hal_debug("for System: 0x%x", sysid);
 	current_platform = NULL;
 	int idx = 0;
@@ -62,12 +62,13 @@ void hal_init(uint32_t sysid, atag_t* atags) {
 	for (devidx = 0; devidx < platform->device_count; devidx++) {
 		const device_info_t* dev_info = &(platform->dev_map[devidx]);
 		platform_driver_t* driver = hal_find_driver(dev_info->driver);
-		hal_debug(
-				"Device %s.%d [%s:0x%x] @ 0x%x", dev_info->name, dev_info->id, dev_info->driver, driver, dev_info->base);
+		/*hal_debug(
+		 "Device %s.%d [%s:0x%x] @ 0x%x", dev_info->name, dev_info->id, dev_info->driver, driver, dev_info->base);*/
 		if (driver == NULL ) {
 			hal_debug("Driver %s not found ...", dev_info->driver);
 		} else {
-			platform_device_t* device = (platform_device_t*)kmalloc(sizeof(platform_device_t));
+			platform_device_t* device = (platform_device_t*) kmalloc(
+					sizeof(platform_device_t));
 			device->driver = driver;
 			device->id = dev_info->id;
 			device->info = dev_info;
@@ -75,15 +76,16 @@ void hal_init(uint32_t sysid, atag_t* atags) {
 
 			if (device->driver->probe) {
 				if (device->driver->probe(device) != HAL_SUCCESS) {
-					kfree((void*)device);
+					kfree((void*) device);
 					hal_debug("Failed to add hal device!");
 				} else {
 					hal_add_device(device);
-					hal_debug(
-							"## REGISTERED Device %s.%d [%s:0x%x] @ 0x%x ##", dev_info->name, dev_info->id, dev_info->driver, driver, device);
+					hal_debug("Device %s.%d [%s:0x%x] @ 0x%x ready",
+							dev_info->name, dev_info->id, dev_info->driver,
+							driver, device);
 				}
 			} else {
-				kfree((void*)device);
+				kfree((void*) device);
 				hal_debug("Failed to add hal device!");
 			}
 		}
@@ -116,33 +118,7 @@ void hal_rem_device(platform_device_t *dev) {
 
 void hal_map_io_mem(platform_device_t *dev) {
 
-	dev->vbase = (uintptr_t)map_io_mem(dev->info->base, dev->size);
-	/*
-	 kernel_mem_info_t section_description;
-
-	 uint32_t frames = dev->size / SMALL_PAGE_SIZE;
-
-	 // Setup IO Mappings
-	 section_description.domain = 0;
-	 section_description.ap = AP_SVC_RW_USR_NO;
-	 section_description.execute = EXEC_NON;
-	 section_description.tex = 0x0;
-	 section_description.cacheable = 0;
-	 section_description.bufferable = 0;
-	 section_description.nonsecure = 0;
-	 section_description.shareable = 0;
-	 section_description.type = SMALL_PAGE;
-	 section_description.paddr = (uint32_t)dev->info->base;
-	 if (frames == 1) {
-	 section_description.vaddr = (uint32_t)allocate_mapped_page();
-	 } else {
-	 section_description.vaddr = (uint32_t)allocate_mapped_page_frames(frames);
-	 }
-	 dev->vbase = (uintptr_t)section_description.vaddr;
-	 //hal_debug("Got vAddr: 0x%x", dev->vbase);
-	 //dump_mmm_info();
-	 map_kernel_memory(&section_description);
-	 */
+	dev->vbase = (uintptr_t) map_io_mem(dev->info->base, dev->size);
 	//hal_debug(
 	//		"Mapped [%d frames] IO 0x%x .. 0x%x -> 0x%x .. 0x%x", frames, section_description.paddr, section_description.paddr + dev->size, section_description.vaddr, section_description.vaddr + dev->size);
 }
@@ -236,17 +212,38 @@ uint32_t hal_ioctl(platform_device_t* dev, uint32_t request, uintptr_t param,
 	return HAL_E_FUNC_NOT_AVAIL;
 }
 
+const char* hal_get_error_string(uint32_t error) {
+	switch (error) {
+	case HAL_SUCCESS:
+		return ("HAL_SUCCESS");
+	case HAL_E_DEV_ERROR:
+		return ("HAL_E_DEV_ERROR");
+	case HAL_E_FUNC_NOT_AVAIL:
+		return ("HAL_E_FUNC_NOT_AVAIL");
+	case HAL_E_INVALID_DEV:
+		return ("HAL_E_INVALID_DEV");
+	case HAL_E_IOCTL_PARA_INVALID:
+		return ("HAL_E_IOCTL_PARA_INVALID");
+	case HAL_E_IOCTL_REQ_NOT_AVAIL:
+		return ("HAL_E_IOCTL_REQ_NOT_AVAIL");
+	case HAL_E_OUT_OF_MEMORY:
+		return ("HAL_E_OUT_OF_MEMORY");
+	default:
+		return ("UNKNOWN");
+	}
+}
+
 void hal_set_device_id(platform_device_t* dev) {
 	uint32_t max = 0;
-    list* pos;
-    list* next;
-    platform_device_t* device;
+	list* pos;
+	list* next;
+	platform_device_t* device;
 	list_for_each_safe(pos, next, hal_devices)
 	{
 		if (pos->data != NULL ) {
 			device = (platform_device_t*) pos->data;
 			if (device->driver == dev->driver) {
-				if(device->id > max) {
+				if (device->id > max) {
 					max = device->id;
 				}
 			}

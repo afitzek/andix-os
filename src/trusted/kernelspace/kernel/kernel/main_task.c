@@ -286,6 +286,10 @@ void entry_main_task() {
 
 	main_info("%s BOOT NONSECURE [DONE] %s", SEPERATOR, SEPERATOR);
 
+	kprintf("\nReady to start non-secure linux. Press any key to proceed.\n");
+
+	getchar();
+
 	get_current_task()->state = BLOCKED;
 
 	print_tasks();

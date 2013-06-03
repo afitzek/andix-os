@@ -38,9 +38,12 @@ struct platform_device {
 #define FLAG_DO_INIT		(1 << 0)
 #define FLAG_DO_INIT_POS	(0)
 
-#define SERIAL_DEVICE		"serial"
-#define TIMER_DEVICE		"timer"
-#define ETHERNET_DEVICE		"eth"
-#define RANDOM_DEVICE		"random"
+#define SERIAL_DEVICE				"serial"
+#define TIMER_DEVICE				"timer"
+#define ETHERNET_DEVICE				"eth"
+#define RANDOM_DEVICE				"random"
+#define INTERRUPT_CTRL_DEVICE		"interrupt_ctrl"
+#define CSU_DEVICE					"csu"
+#define WATCHDOG_DEVICE				"wdog"
 
 #endif /* DEVICES_H_ */

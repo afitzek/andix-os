@@ -1,0 +1,190 @@
+/*
+ * interrupt_controller.c
+ *
+ *  Created on: Jun 2, 2013
+ *      Author: andy
+ */
+
+#include <devices/interrupt_controller/interrupt_controller.h>
+#include <devices/devices.h>
+#include <kprintf.h>
+#include <mm/mm.h>
+
+irq_handler* handler_table;
+int32_t max_irq;
+int32_t min_irq;
+platform_device_t* irq_ctrl = NULL;
+
+void irq_init() {
+	irq_ctrl = NULL;
+	handler_table = NULL;
+	int32_t idx = 0;
+	irq_ctrl = hal_find_device(INTERRUPT_CTRL_DEVICE, 0);
+
+	if (irq_ctrl != NULL ) {
+		if (hal_ioctl(irq_ctrl, IRQ_GET_MAX_IRQ, (uintptr_t) &max_irq,
+				sizeof(max_irq)) != HAL_SUCCESS) {
+			irq_error(
+					"Failed to determine max interrupt. Interrupts not supported!");
+			goto reset;
+		}
+
+		if (hal_ioctl(irq_ctrl, IRQ_GET_MIN_IRQ, (uintptr_t) &min_irq,
+				sizeof(min_irq)) != HAL_SUCCESS) {
+			irq_error(
+					"Failed to determine min interrupt. Interrupts not supported!");
+			goto reset;
+		}
+
+		if (max_irq < 0 || min_irq < 0) {
+			irq_error("Invalid irq range detected. Interrupts not supported!");
+			goto reset;
+		}
+
+		irq_info("IRQ %d - %d", min_irq, max_irq);
+
+		handler_table = (irq_handler*) kmalloc(max_irq * sizeof(irq_handler*));
+
+		if (handler_table == NULL ) {
+			irq_error(
+					"Failed to allocate irq handler table. Interrupts not supported!");
+			goto reset;
+		}
+
+		for (idx = min_irq; idx < max_irq; idx++) {
+			handler_table[idx] = NULL;
+		}
+
+		irq_info("IRQ system setup. OK");
+		return;
+	}
+	irq_error("No interrupt controller available. Interrupts not supported!");
+	reset: max_irq = 0;
+	min_irq = 0;
+	irq_ctrl = NULL;
+}
+
+int irq_register_handler(int irq, irq_handler handler) {
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return (-1);
+	}
+
+	if (min_irq > irq || irq > max_irq) {
+		irq_error("IRQ out of range!");
+		return (-1);
+	}
+
+	if (handler_table[irq] != NULL ) {
+		irq_info("Handler for IRQ already registered!");
+		return (-1);
+	}
+
+	if (handler == NULL ) {
+		irq_info("IRQ Handler is NULL!");
+		return (-1);
+	}
+
+	if (hal_ioctl(irq_ctrl, IRQ_CATCH, (uintptr_t) &irq,
+			sizeof(irq)) != HAL_SUCCESS) {
+		irq_info("FAILED to register IRQ at interrupt controller!");
+		return (-1);
+	}
+
+	handler_table[irq] = handler;
+
+	irq_info("Registered %s for IRQ %d", get_function_name((void*)handler),
+			irq);
+
+	return (0);
+}
+
+void irq_free(int irq) {
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return;
+	}
+
+	if (min_irq > irq || irq > max_irq) {
+		irq_error("IRQ out of range!");
+		return;
+	}
+
+	if (handler_table[irq] == NULL ) {
+		irq_info("No Handler for IRQ registered!");
+		return;
+	}
+
+	if (hal_ioctl(irq_ctrl, IRQ_RELEASE, (uintptr_t) &irq,
+			sizeof(irq)) != HAL_SUCCESS) {
+		irq_info("FAILED to release IRQ at interrupt controller!");
+		return;
+	}
+
+	handler_table[irq] = NULL;
+}
+
+int irq_handle(int irq, core_reg* regs) {
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return (-2);
+	}
+
+	if (min_irq > irq || irq > max_irq) {
+		irq_error("IRQ out of range!");
+		return (-2);
+	}
+
+	if (handler_table[irq] == NULL ) {
+		irq_error("No Handler for IRQ registered!");
+		return (-2);
+	}
+
+	handler_table[irq](irq, regs);
+
+	return (0);
+}
+
+int irq_do(core_reg* regs) {
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return (-2);
+	}
+
+	if (hal_ioctl(irq_ctrl, IRQ_DO_PENDING, (uintptr_t) &regs,
+			sizeof(core_reg)) != HAL_SUCCESS) {
+		irq_info("FAILED to process pending IRQs at interrupt controller!");
+		return (-1);
+	}
+	return (0);
+}
+
+int irq_get_pending() {
+	int irq = 0;
+
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return (-1);
+	}
+
+	if (hal_ioctl(irq_ctrl, IRQ_GET_PENDING, (uintptr_t) &irq,
+			sizeof(irq)) != HAL_SUCCESS) {
+		irq_info("FAILED to clear interrupt!");
+		return (-1);
+	}
+
+	return (irq);
+}
+
+void irq_clear(int irq) {
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return;
+	}
+
+	if (hal_ioctl(irq_ctrl, IRQ_CLEAR_INT, (uintptr_t) &irq,
+			sizeof(irq)) != HAL_SUCCESS) {
+		irq_info("FAILED to clear interrupt!");
+		return;
+	}
+}

@@ -365,4 +365,13 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 //#define tee_debug(...) subsys_debug(TEE_TAG, __VA_ARGS__)
 #define tee_debug(...) non_print_handler(TEE_TAG, __VA_ARGS__)
 
+// IRQ
+
+#define IRQ_TAG " irq "
+
+#define irq_error(...) subsys_error(IRQ_TAG, __VA_ARGS__)
+#define irq_info(...) subsys_info(IRQ_TAG, __VA_ARGS__)
+#define irq_debug(...) subsys_debug(IRQ_TAG, __VA_ARGS__)
+
+
 #endif /* KPRINTF_H_ */

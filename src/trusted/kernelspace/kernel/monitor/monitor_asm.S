@@ -30,8 +30,8 @@ __mon_undef:       .word __mon_no_handler
 __mon_smc:         .word __mon_smc_handler
 __mon_pabt:        .word __mon_no_handler
 __mon_dabt:        .word __mon_no_handler
-__mon_irq:         .word __mon_no_handler
-__mon_fiq:         .word __mon_no_handler
+__mon_irq:         .word __mon_irq_handler
+__mon_fiq:         .word __mon_fiq_handler
 
 __mon_no_handler:
 	B		.
@@ -81,7 +81,21 @@ __mon_smc_handler:
 	MCR 	p15, 0, r0, c7, c10, 5 // DMB
 	mon_restore_context
 
+__mon_irq_handler:
+	mon_save_context
 
+	MOV r0, sp
+	BL	pIRQ
+
+	mon_restore_context
+
+__mon_fiq_handler:
+	mon_save_context
+
+	MOV r0, sp
+	BL	pIRQ
+
+	mon_restore_context
 
         .global monitor_save_sys_regs
         .global monitor_restore_sys_regs

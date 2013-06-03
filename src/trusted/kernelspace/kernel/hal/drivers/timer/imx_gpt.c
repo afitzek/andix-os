@@ -20,7 +20,7 @@ int imx_gpt_probe(platform_device_t *dev) {
 	/* setup GP Timer 1 */
 	__raw_writel(GPTCR_SWR, &gpt->control);
 
-	__raw_writel(0, &gpt->interrupt);
+	__raw_writel(0x3F, &gpt->interrupt);
 
 	/* We have no udelay by now */
 	while(__raw_readl(&gpt->control) & GPTCR_SWR);
@@ -29,7 +29,7 @@ int imx_gpt_probe(platform_device_t *dev) {
 
 	/* Freerun Mode, PERCLK1 input */
 	i = __raw_readl(&gpt->control);
-	__raw_writel(i | GPTCR_CLKSOURCE_32 | GPTCR_TEN, &gpt->control);
+	__raw_writel(i | GPTCR_FRR | GPTCR_CLKSOURCE_32 | GPTCR_TEN, &gpt->control);
 
 	return HAL_SUCCESS;
 }
@@ -71,6 +71,9 @@ uint32_t imx_gpt_ioctl(platform_device_t *dev, uint32_t request,
 			break;
 		case IOCTL_CLOCK_GET_FREQ_KHZ:
 			requ->value = CLK_32KHZ;
+			break;
+		case IOCTL_CLOCK_ALARM_AT:
+			__raw_writel(requ->value, &gpt->out_cmp_r1);
 			break;
 		default:
 			return HAL_E_IOCTL_REQ_NOT_AVAIL;

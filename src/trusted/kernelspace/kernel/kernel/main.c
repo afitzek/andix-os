@@ -16,6 +16,7 @@
 #include <monitor/monitor.h>
 #include <task/task.h>
 #include <scheduler.h>
+#include <platform/vector_debug.h>
 
 #ifdef SHOW_MEM_LAYOUT
 extern uint32_t _data;
@@ -42,6 +43,10 @@ extern uint32_t __monitor_vector;
 extern uint32_t _code;
 extern uint32_t _end;
 
+void dummy_irq_handler(int irq, core_reg* regs) {
+	main_info("dummy_irq_handler: %d", irq);
+}
+
 /**
  * Main entry point
  * @param atagparam ATAG Parameters Pointer
@@ -58,6 +63,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	uint32_t _mon_vect = (uint32_t) &__monitor_vector;
 	uint32_t* csu = (uint32_t*) 0x63F9C000;
 	uintptr_t csu_base;
+	uint32_t* v_load_addr = (uint32_t*)__virt_load_addr;
+	clk_request_t clk_request;
 	//uint32_t i = 0;
 
 	// ========================================================================
@@ -234,6 +241,32 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	clean_user();
 	random_init();
+	irq_init();
+	//wdog_init();
+	enable_irq();
+	enable_fiq();
+	uint32_t c = get_cpsr();
+
+	main_info("CPSR: 0x%x", c);
+
+	irq_register_handler(39, &dummy_irq_handler);
+
+	platform_device_t* timer = hal_find_device(TIMER_DEVICE, 0);
+
+	if(timer != NULL) {
+		if(hal_ioctl(timer, IOCTL_CLOCK_GET_CTR,
+				&clk_request, sizeof(clk_request)) != HAL_SUCCESS) {
+			main_error("Failed to get counter value!");
+		} else {
+			main_info("Counter value: 0x%x", clk_request.value);
+			clk_request.value = clk_request.value + 1000;
+			main_info("Alarm @: 0x%x", clk_request.value);
+			hal_ioctl(timer, IOCTL_CLOCK_ALARM_AT, &clk_request, sizeof(clk_request));
+			//sleep(2);
+			hal_ioctl(timer, IOCTL_CLOCK_GET_CTR, &clk_request, sizeof(clk_request));
+			main_info("Counter value: 0x%x", clk_request.value);
+		}
+	}
 
 	main_info("%s HAL SYSTEM [DONE] %s", SEPERATOR, SEPERATOR);
 	// ========================================================================
@@ -243,7 +276,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	// ========================================================================
 	main_info("%s TRUSTZONE STUFF %s", SEPERATOR, SEPERATOR);
 
-	main_debug("Allowing nonsecure access to all devices via CSU");
+	/*main_debug("Allowing nonsecure access to all devices via CSU");
 
 	csu_base = (uintptr_t) map_io_mem((uintptr_t) 0x63F9C000, 0x80);
 
@@ -254,8 +287,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 		(*csu) = 0x00FF00FF;
 		//main_debug("CSU @ 0x%x : 0x%x -> 0x%x", csu, old, (*csu));
 		csu++;
-	}
-
+	}*/
+	/*
 	uintptr_t base_tzic = (uintptr_t) map_io_mem((uintptr_t) 0x0FFFC080, 0x80);
 
 	main_debug("TZIC @ 0x%x p (0x%x)", base_tzic, v_to_p(base_tzic));
@@ -263,6 +296,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	uintptr_t tzic = base_tzic + 0x20;
 
 	for (int i = 0; i < 4; i++) {
+		main_debug("TZIC SET 0x%X = 0x%X", v_to_p(tzic), 0xFFFFFFFF);
 		(*tzic) = 0xFFFFFFFF;
 		tzic++;
 	}
@@ -270,23 +304,41 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	tzic = base_tzic + 0x100;
 
 	for (int i = 0; i < 32; i++) {
+		main_debug("TZIC SET 0x%X = 0x%X", v_to_p(tzic), 0x80808080);
 		(*tzic) = 0x80808080;
 		tzic++;
 	}
 
 	tzic = base_tzic + 3;
-
+	main_debug("TZIC SET 0x%X = 0x%X", v_to_p(tzic), 0x1F);
 	(*tzic) = 0x1f;
-
+	*/
 	main_debug("Protecting memory ...");
 	uint8_t* base_m4if = (uint8_t*) map_io_mem((uintptr_t) 0x63FD8000, 0x1000);
-
+	uint8_t* base_extmc = (uint8_t*) map_io_mem((uintptr_t) 0x63FDBF00, 0x1000);
 	uint32_t* wm_start = (uint32_t*) (base_m4if + 0xF0);
 	uint32_t* wm_end = (uint32_t*) (base_m4if + 0x110);
 	uint32_t* wm_status = (uint32_t*) (base_m4if + 0x114);
-	(*wm_start) = 0x80000000 | 0xb0000;
+	uint32_t* extmc_lock = (uint32_t*) (base_extmc);
+	uint32_t extmc = 0;
+	__raw_writel(0x80000000 | 0xb0000, wm_start);
+	__raw_writel(0xc0000, wm_end);
+	__raw_writel(0x80000000 | 0xb0000, wm_status);
+	extmc = __raw_readl(extmc_lock);
+	main_debug("extmc_lock: 0x%x", extmc);
+	extmc = extmc | 0x8;
+	__raw_writel(extmc, extmc_lock);
+
+	main_debug("wm_start: 0x%x", __raw_readl(wm_start));
+	main_debug("wm_end: 0x%x", __raw_readl(wm_end));
+	main_debug("wm_status: 0x%x", __raw_readl(wm_status));
+	main_debug("extmc_lock: 0x%x", __raw_readl(extmc_lock));
+
+	main_debug("Protected memory!");
+
+	/*(*wm_start) = 0x80000000 | 0xb0000;
 	(*wm_end) = 0xc0000;
-	(*wm_status) = 0x80000000;
+	(*wm_status) = 0x80000000;*/
 
 	__asm__ __volatile__("MRC   p15, 0, %0, c1, c1, 0": "=r" (cp15)::"memory");
 
@@ -309,6 +361,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	add_task(main_task);
 
 	print_tasks();
+
+	main_info("Protected MEM 0x%x @ 0x%x", (*v_load_addr), __phys_load_addr);
 
 	switch_to_task(main_task);
 
