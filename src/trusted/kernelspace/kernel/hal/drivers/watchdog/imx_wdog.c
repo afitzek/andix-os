@@ -14,7 +14,7 @@ void imx_wdog_reset(imx_wdog_t* wdog) {
 	__raw_writew(0xAAAA, &(wdog->wsr));
 }
 
-void imx_wdog_irq_handler(int irq, core_reg* regs) {
+void imx_wdog_irq_handler(int irq) {
 
 	hal_info("WDOG Interrupt!");
 }

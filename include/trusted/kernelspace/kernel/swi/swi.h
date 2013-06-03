@@ -15,6 +15,7 @@
 #include <task/task.h>
 #include <swi/swi_newlib.h>
 #include <swi/swi_secure.h>
+#include <platform/vector_debug.h>
 
 #define	SEEK_SET	0
 #define	SEEK_CUR	1
@@ -32,12 +33,6 @@
 #define SWI_SECURE_REQUEST  0x81
 #define SWI_SECURE_SET_UUID 0x82
 #define SWI_GET_RAND 0x83
-
-
-typedef struct cpu_state {
-	uint32_t r[13];
-	uint32_t lr;
-} cpu_state_t;
 
 void dispatch_swi(uint32_t swi, cpu_state_t* cpu);
 

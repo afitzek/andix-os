@@ -124,7 +124,7 @@ void irq_free(int irq) {
 	handler_table[irq] = NULL;
 }
 
-int irq_handle(int irq, core_reg* regs) {
+int irq_handle(int irq) {
 	if (irq_ctrl == NULL ) {
 		irq_error("Interrupts not supported!");
 		return (-2);
@@ -140,19 +140,18 @@ int irq_handle(int irq, core_reg* regs) {
 		return (-2);
 	}
 
-	handler_table[irq](irq, regs);
+	handler_table[irq](irq);
 
 	return (0);
 }
 
-int irq_do(core_reg* regs) {
+int irq_do() {
 	if (irq_ctrl == NULL ) {
 		irq_error("Interrupts not supported!");
 		return (-2);
 	}
 
-	if (hal_ioctl(irq_ctrl, IRQ_DO_PENDING, (uintptr_t) &regs,
-			sizeof(core_reg)) != HAL_SUCCESS) {
+	if (hal_ioctl(irq_ctrl, IRQ_DO_PENDING, (uintptr_t) NULL, 0) != HAL_SUCCESS) {
 		irq_info("FAILED to process pending IRQs at interrupt controller!");
 		return (-1);
 	}
@@ -188,3 +187,26 @@ void irq_clear(int irq) {
 		return;
 	}
 }
+
+void irq_swint(int irq) {
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return;
+	}
+
+	if (hal_ioctl(irq_ctrl, IRQ_SW_INT, (uintptr_t) &irq,
+			sizeof(irq)) != HAL_SUCCESS) {
+		irq_info("FAILED to generate interrupt!");
+		return;
+	}
+}
+
+void irq_dump() {
+	if (irq_ctrl == NULL ) {
+		irq_error("Interrupts not supported!");
+		return;
+	}
+
+	hal_ioctl(irq_ctrl, IRQ_DUMP_INFO, NULL, 0);
+}
+

@@ -7,30 +7,30 @@
 
 void enable_irq() {
 	__asm__ __volatile__ (
-				"MRS r0, CPSR\n"
-				"BIC r0, r0, #0x80\n"
-				"MSR CPSR, r0");
+				"MRS r1, CPSR\n"
+				"BIC r1, r1, #0x80\n"
+				"MSR CPSR_c, r1");
 }
 
 void disable_irq() {
 	__asm__ __volatile__ (
-				"MRS r0, CPSR\n"
-				"ORR r0, r0, #0x80\n"
-				"MSR CPSR, r0");
+				"MRS r1, CPSR\n"
+				"ORR r1, r1, #0x80\n"
+				"MSR CPSR_c, r1");
 }
 
 void enable_fiq() {
 	__asm__ __volatile__ (
-				"MRS r0, CPSR\n"
-				"BIC r0, r0, #0x40\n"
-				"MSR CPSR, r0");
+				"MRS r1, CPSR\n"
+				"BIC r1, r1, #0x40\n"
+				"MSR CPSR_c, r1");
 }
 
 void disable_fiq() {
 	__asm__ __volatile__ (
-				"MRS r0, CPSR\n"
-				"ORR r0, r0, #0x40\n"
-				"MSR CPSR, r0");
+				"MRS r1, CPSR\n"
+				"ORR r1, r1, #0x40\n"
+				"MSR CPSR_c, r1");
 }
 
 unsigned int get_cpsr() {

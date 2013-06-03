@@ -43,7 +43,7 @@ extern uint32_t __monitor_vector;
 extern uint32_t _code;
 extern uint32_t _end;
 
-void dummy_irq_handler(int irq, core_reg* regs) {
+void dummy_irq_handler(int irq) {
 	main_info("dummy_irq_handler: %d", irq);
 }
 
@@ -267,6 +267,12 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 			main_info("Counter value: 0x%x", clk_request.value);
 		}
 	}
+
+	irq_dump();
+
+	irq_swint(39);
+
+	irq_dump();
 
 	main_info("%s HAL SYSTEM [DONE] %s", SEPERATOR, SEPERATOR);
 	// ========================================================================

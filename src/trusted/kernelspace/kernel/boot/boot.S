@@ -282,21 +282,21 @@ _swi:
 
 .global _irq
 _irq:
-	iaik_msr_prologue 0x8
+	iaik_msr_prologue 0x4
 
 	MOV r0, sp
 	BL	pIRQ
 
-	iaik_msr_epilogue
+	swi_return
 
 .global _fiq
 _fiq:
-	iaik_msr_prologue 0x8
+	iaik_msr_prologue 0x4
 
 	MOV r0, sp
 	BL	pIRQ
 
-	iaik_msr_epilogue
+	swi_return
 
 .global _pref_ab
 _pref_ab:
@@ -313,7 +313,7 @@ _pref_ab:
 .global _undef
 _undef:
 	//B	_no_handler
-	iaik_msr_prologue 0x8
+	iaik_msr_prologue 0
 
 	MOV r0, sp
 	BL	pUA

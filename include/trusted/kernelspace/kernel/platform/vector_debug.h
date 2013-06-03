@@ -18,4 +18,9 @@ typedef struct {
     uint32_t cpsr;
 } core_reg;
 
+typedef struct cpu_state {
+	uint32_t r[13];
+	uint32_t lr;
+} cpu_state_t;
+
 #endif /* VECTOR_DEBUG_H_ */
