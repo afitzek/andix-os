@@ -245,11 +245,14 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	//wdog_init();
 	enable_irq();
 	enable_fiq();
+	send_fiq_irq_to_monitor();
 	uint32_t c = get_cpsr();
+	uint32_t s = get_scr();
 
 	main_info("CPSR: 0x%x", c);
+	main_info("SCR : 0x%x", s);
 
-	irq_register_handler(39, &dummy_irq_handler);
+	//irq_register_handler(39, &dummy_irq_handler);
 
 	platform_device_t* timer = hal_find_device(TIMER_DEVICE, 0);
 
@@ -270,7 +273,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	irq_dump();
 
-	irq_swint(39);
+	//irq_swint(39);
 
 	irq_dump();
 
@@ -282,7 +285,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	// ========================================================================
 	main_info("%s TRUSTZONE STUFF %s", SEPERATOR, SEPERATOR);
 
-	/*main_debug("Allowing nonsecure access to all devices via CSU");
+	main_debug("Allowing nonsecure access to all devices via CSU");
 
 	csu_base = (uintptr_t) map_io_mem((uintptr_t) 0x63F9C000, 0x80);
 
@@ -293,8 +296,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 		(*csu) = 0x00FF00FF;
 		//main_debug("CSU @ 0x%x : 0x%x -> 0x%x", csu, old, (*csu));
 		csu++;
-	}*/
-	/*
+	}
+/*
 	uintptr_t base_tzic = (uintptr_t) map_io_mem((uintptr_t) 0x0FFFC080, 0x80);
 
 	main_debug("TZIC @ 0x%x p (0x%x)", base_tzic, v_to_p(base_tzic));
@@ -318,7 +321,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	tzic = base_tzic + 3;
 	main_debug("TZIC SET 0x%X = 0x%X", v_to_p(tzic), 0x1F);
 	(*tzic) = 0x1f;
-	*/
+*/
 	main_debug("Protecting memory ...");
 	uint8_t* base_m4if = (uint8_t*) map_io_mem((uintptr_t) 0x63FD8000, 0x1000);
 	uint8_t* base_extmc = (uint8_t*) map_io_mem((uintptr_t) 0x63FDBF00, 0x1000);
@@ -327,9 +330,10 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	uint32_t* wm_status = (uint32_t*) (base_m4if + 0x114);
 	uint32_t* extmc_lock = (uint32_t*) (base_extmc);
 	uint32_t extmc = 0;
+	__raw_writel(0x0, wm_start);
+	__raw_writel(0xbffff, wm_end);
 	__raw_writel(0x80000000 | 0xb0000, wm_start);
-	__raw_writel(0xc0000, wm_end);
-	__raw_writel(0x80000000 | 0xb0000, wm_status);
+	__raw_writel(0x80000000, wm_status);
 	extmc = __raw_readl(extmc_lock);
 	main_debug("extmc_lock: 0x%x", extmc);
 	extmc = extmc | 0x8;

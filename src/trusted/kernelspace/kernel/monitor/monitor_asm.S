@@ -28,14 +28,39 @@ __monitor_vector:
 __mon_reset:       .word __mon_no_handler
 __mon_undef:       .word __mon_no_handler
 __mon_smc:         .word __mon_smc_handler
-__mon_pabt:        .word __mon_no_handler
-__mon_dabt:        .word __mon_no_handler
+__mon_pabt:        .word __mon_data_ab
+__mon_dabt:        .word __mon_data_ab
 __mon_irq:         .word __mon_irq_handler
 __mon_fiq:         .word __mon_fiq_handler
 
 __mon_no_handler:
 	B		.
 
+		//----------------------------------------------------------------------
+		// Standard prologue for the monitor service routines.
+		//
+.macro iaik_msr_prologue pc_arm_adjust=0
+        SRSDB sp!, #ABT_MODE
+        STMFD sp!, {r0-r12}           /* Save monitor core context */
+
+        MRC   p15, 0, r0, c1, c1, 0   /* Read secure configuration register */
+        STMFD sp!, {r0}
+        TST   r0, #SCR_NS
+        BICNE r0, #SCR_NS             /* Clear SCR.NS bit */
+        MCRNE p15, 0, r0, c1, c1, 0   /* Write secure configuration register */
+.endm
+
+        //----------------------------------------------------------------------
+        // Standard epilogue for the monitor service routines.
+        //
+        .macro iaik_msr_epilogue
+        LDMFD sp!, {r0}                /* Read save value of secure configuration register */
+        TST   r0,  #SCR_NS
+        MCRNE p15, 0, r0, c1, c1, 0    /* Restore secure configuration register */
+
+        LDMFD sp!, {r0-r12}            /* Load monitor core context */
+        RFEIA sp!                      /* Return from exception */
+        .endm
 
 .macro	mon_save_context pc_ret_off=0
 	ISB
@@ -80,6 +105,17 @@ __mon_smc_handler:
 	MCR 	p15, 0, r0, c7, c10, 4 // DSB
 	MCR 	p15, 0, r0, c7, c10, 5 // DMB
 	mon_restore_context
+
+.global __mon_data_ab
+__mon_data_ab:
+	//B	_no_handler
+	iaik_msr_prologue 0x8
+
+	MOV r0, sp
+	BL	pDA
+	B	.
+
+	iaik_msr_epilogue
 
 __mon_irq_handler:
 	mon_save_context

@@ -236,6 +236,8 @@ void pIRQ(core_reg* regs) {
 
 	dump_regs(regs);
 
+	//platform_device_t* irqctrl = hal_find_device(INTERRUPT_CTRL_DEVICE, 0);
+
 	irq_do();
 
 	dab_debug("====== INTERRUPT ========");

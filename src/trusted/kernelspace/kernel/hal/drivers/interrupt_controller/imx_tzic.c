@@ -29,11 +29,11 @@ int imx_tzic_probe(platform_device_t *dev) {
 		__raw_writel(0xFFFFFFFF, &tzic->intsec[i]);
 	}
 
-	__raw_writel(0x1, &tzic->priomask);
+	__raw_writel(0xFF, &tzic->priomask);
 
 	// set priorities for all interrupts
 	for (i = 0; i < 32; i++) {
-		__raw_writel(0xF0F0F0F0, &tzic->priority[i]);
+		__raw_writel(0x80808080, &tzic->priority[i]);
 	}
 
 	// all interrupts are non secure
@@ -93,9 +93,16 @@ int imx_tzic_probe_enable(imx_tzic_t* tzic, int irq) {
 int imx_tzic_set_secure(imx_tzic_t* tzic, int irq) {
 	int reg = irq / 32;
 	int off = irq % 32;
+	int prioreg = irq / 4;
+	int priooff = irq % 4;
+	uint32_t prio = 0;
+	uint8_t* prios = &prio;
 	if (reg >= 0 && reg < 4 && off >= 0 && off < 32) {
 		__raw_writel(__raw_readl(&tzic->intsec[reg]) & ~(1 << off),
 				&tzic->intsec[reg]);
+		prio = __raw_readl(&tzic->priority[prioreg]);
+		prios[priooff] = 0xF;
+		__raw_writel(prio, &tzic->priority[prioreg]);
 		return (0);
 	}
 	hal_error("irq set enable failed: IRQ: %d Reg: %d Off: %d", irq, reg, off);
