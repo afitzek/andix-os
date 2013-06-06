@@ -29,7 +29,7 @@ int imx_tzic_probe(platform_device_t *dev) {
 		__raw_writel(0xFFFFFFFF, &tzic->intsec[i]);
 	}
 
-	__raw_writel(0xFF, &tzic->priomask);
+	__raw_writel(0x4F, &tzic->priomask);
 
 	// set priorities for all interrupts
 	for (i = 0; i < 32; i++) {
@@ -101,7 +101,7 @@ int imx_tzic_set_secure(imx_tzic_t* tzic, int irq) {
 		__raw_writel(__raw_readl(&tzic->intsec[reg]) & ~(1 << off),
 				&tzic->intsec[reg]);
 		prio = __raw_readl(&tzic->priority[prioreg]);
-		prios[priooff] = 0xF;
+		prios[priooff] = 0x10;
 		__raw_writel(prio, &tzic->priority[prioreg]);
 		return (0);
 	}
@@ -142,6 +142,18 @@ int imx_tzic_unset_enable(imx_tzic_t* tzic, int irq) {
 		return (0);
 	}
 	hal_error("irq unset enable failed: IRQ: %d Reg: %d Off: %d", irq, reg, off);
+	return (-1);
+}
+
+
+int imx_tzic_clear_irq(imx_tzic_t* tzic, int irq) {
+	int reg = irq / 32;
+	int off = irq % 32;
+	if (reg >= 0 && reg < 4 && off >= 0 && off < 32) {
+		__raw_writel((1 << off), &tzic->srcclear[reg]);
+		return (0);
+	}
+	hal_error("irq set enable failed: IRQ: %d Reg: %d Off: %d", irq, reg, off);
 	return (-1);
 }
 
@@ -187,7 +199,7 @@ int imx_tzic_do_pending(imx_tzic_t* tzic) {
 
 	for (idx = 0; idx < 4; idx++) {
 		if ((__raw_readl(&tzic->hipending[idx])
-				& __raw_readl(&tzic->intsec[idx])) != 0) {
+				& ~__raw_readl(&tzic->intsec[idx])) != 0) {
 			for (odx = 0; odx < 32; odx++) {
 				if (CHECK_BIT(__raw_readl(&tzic->hipending[idx]),
 						odx) != 0) {
@@ -199,7 +211,7 @@ int imx_tzic_do_pending(imx_tzic_t* tzic) {
 	}
 
 	for (idx = 0; idx < 4; idx++) {
-		if ((__raw_readl(&tzic->pending[idx]) & __raw_readl(&tzic->intsec[idx]))
+		if ((__raw_readl(&tzic->pending[idx]) & ~__raw_readl(&tzic->intsec[idx]))
 				!= 0) {
 			for (odx = 0; odx < 32; odx++) {
 				if (CHECK_BIT(__raw_readl(&tzic->pending[idx]), odx) != 0) {
@@ -300,12 +312,9 @@ uint32_t imx_tzic_ioctl(platform_device_t *dev, uint32_t request,
 			hal_error("Parameter is NULL");
 			return (HAL_E_IOCTL_PARA_INVALID);
 		}
+		imx_tzic_clear_irq(tzic, (int)(*param));
 		break;
 	case IRQ_DO_PENDING:
-		if (param == NULL ) {
-			hal_error("Parameter is NULL");
-			return (HAL_E_IOCTL_PARA_INVALID);
-		}
 		imx_tzic_do_pending(tzic);
 		break;
 	case IRQ_SW_INT:

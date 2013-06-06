@@ -118,7 +118,7 @@ __mon_data_ab:
 	iaik_msr_epilogue
 
 __mon_irq_handler:
-	mon_save_context
+	mon_save_context 0x4
 
 	MOV r0, sp
 	BL	pIRQ
@@ -126,7 +126,7 @@ __mon_irq_handler:
 	mon_restore_context
 
 __mon_fiq_handler:
-	mon_save_context
+	mon_save_context 0x4
 
 	MOV r0, sp
 	BL	pIRQ

@@ -220,8 +220,8 @@ void pUA(core_reg* regs) {
 }
 
 void pIRQ(core_reg* regs) {
-	disable_irq();
-	disable_fiq();
+	//disable_irq();
+	//disable_fiq();
 	uint32_t scr;
 
 	kprintf_ex("\n");
@@ -241,8 +241,8 @@ void pIRQ(core_reg* regs) {
 	irq_do();
 
 	dab_debug("====== INTERRUPT ========");
-	enable_irq();
-	enable_fiq();
+	//enable_irq();
+	//enable_fiq();
 }
 
 void pSWI(core_reg* regs) {

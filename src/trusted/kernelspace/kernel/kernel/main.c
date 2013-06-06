@@ -45,6 +45,7 @@ extern uint32_t _end;
 
 void dummy_irq_handler(int irq) {
 	main_info("dummy_irq_handler: %d", irq);
+	irq_clear(irq);
 }
 
 /**
@@ -252,7 +253,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	main_info("CPSR: 0x%x", c);
 	main_info("SCR : 0x%x", s);
 
-	//irq_register_handler(39, &dummy_irq_handler);
+	irq_register_handler(109, &dummy_irq_handler);
 
 	platform_device_t* timer = hal_find_device(TIMER_DEVICE, 0);
 
@@ -273,7 +274,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	irq_dump();
 
-	//irq_swint(39);
+	//irq_swint(109);
 
 	irq_dump();
 

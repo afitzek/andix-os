@@ -125,6 +125,8 @@ void irq_free(int irq) {
 }
 
 int irq_handle(int irq) {
+	irq_info("Handling IRQ: %d", irq);
+
 	if (irq_ctrl == NULL ) {
 		irq_error("Interrupts not supported!");
 		return (-2);
