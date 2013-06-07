@@ -21,7 +21,8 @@ struct device_info {
 	uint32_t		size;
 	uint32_t		id;
 	uint8_t			flags;
-	//uintptr_t		data;
+	uintptr_t		data;
+	uint32_t		datasize;
 };
 
 typedef struct device_info device_info_t;

@@ -17,12 +17,16 @@
 #include <common.h>
 #include <common/typedefs.h>
 #include <kprintf.h>
+#include <doc/hal_doc.h>
 
 /**
  * \addtogroup hal
  *	\{
  */
 
+/**
+ *
+ */
 static inline uint8_t __raw_readb(const volatile void *addr)
 {
 	return (*(volatile uint8_t *)(addr));

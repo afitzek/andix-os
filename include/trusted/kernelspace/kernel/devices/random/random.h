@@ -12,6 +12,11 @@
 #include <common/typedefs.h>
 
 /**
+ * \addtogroup hal_random
+ *	\{
+ */
+
+/**
  * IOCTL call to reseed device
  */
 #define SRNG_IO_SEED		(0x01)
@@ -98,5 +103,7 @@ uint32_t random_min_max(uint32_t min, uint32_t max);
  * @param len the length
  */
 void random_fill(uint8_t *buffer, uint32_t len);
+
+/* \} group */
 
 #endif /* RANDOM_H_ */

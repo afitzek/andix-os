@@ -16,6 +16,9 @@
  * Stuff for Hardware access
  */
 
+/* \addtogroup hal
+ * \{ */
+
 list* hal_devices = NULL;/*{ .data = (uintptr_t) NULL,
  .next = &hal_devices, .prev = &hal_devices };*/
 
@@ -266,3 +269,5 @@ platform_driver_t* hal_find_driver(const char* name) {
 	}
 	return (NULL );
 }
+
+/* \} group */

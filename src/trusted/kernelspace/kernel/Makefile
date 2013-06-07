@@ -13,6 +13,8 @@ OUTDIR = $(ANDIX_BUILD_DIR)/$(PROGRAM)
 D_DIR = $(ANDIX_BUILD_DIR)/$(PROGRAM)doc
 OUTDIR_DOC = $(subst /,\/,$(D_DIR))
 
+INCDIR_DOC = $(subst /,\/,$(TZ_KERNEL_INC))
+
 DOC_LOGO = $(ANDIX_DOC_DIR)/logo.png
 E_DOC_LOGO = $(subst /,\/,$(DOC_LOGO))
 
@@ -86,6 +88,7 @@ doc:
 	@sed -i -e "s/{{GITHASH}}/$(GITHASH)/" doc/andix.doxfile.tmp
 	@sed -i -e "s/{{LOGO}}/$(E_DOC_LOGO)/" doc/andix.doxfile.tmp
 	@sed -i -e "s/{{OUTDIR}}/$(OUTDIR_DOC)/" doc/andix.doxfile.tmp
+	@sed -i -e "s/{{INC_PATH}}/$(INCDIR_DOC)/" doc/andix.doxfile.tmp
 	@$(DOC) doc/andix.doxfile.tmp
 	@rm -rf doc/andix.doxfile.tmp
 	@cp -R $(OUTDIR_DOC)/html $(ANDIX_DOC_GEN_DIR)/$(PROGRAM)

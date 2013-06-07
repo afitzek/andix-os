@@ -69,6 +69,7 @@ $(A_OBJS):$(OUTDIR)%.o:%.S
 .PHONY: doc
 doc:
 	@echo
+	@mkdir -p $(D_DIR) $(ANDIX_DOC_GEN_DIR)/$(PROGRAM)
 	@cp doc/andix.doxyfile doc/andix.doxfile.tmp
 	@sed -i -e "s/{{VERSION}}/$(VERSION)/" doc/andix.doxfile.tmp
 	@sed -i -e "s/{{GITHASH}}/$(GITHASH)/" doc/andix.doxfile.tmp

@@ -12,6 +12,11 @@
 #include <platform/vector_debug.h>
 #include <hal.h>
 
+/**
+ * \addtogroup irq_ctrl
+ *	\{
+ */
+
 #define IRQ_CATCH (0x1)
 #define IRQ_RELEASE (0x2)
 #define IRQ_GET_PENDING (0x3)
@@ -34,5 +39,7 @@ void irq_clear(int irq);
 int irq_do();
 void irq_swint(int irq);
 void irq_dump();
+
+/* \} group */
 
 #endif /* INTERRUPT_CONTROLLER_H_ */
