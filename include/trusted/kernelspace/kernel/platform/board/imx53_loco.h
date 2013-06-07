@@ -17,6 +17,7 @@
 #include <drivers/csu/imx_csu.h>
 #include <drivers/interrupt_controller/imx_tzic.h>
 #include <drivers/watchdog/imx_wdog.h>
+#include <drivers/tzmem_controller/imx_m4if.h>
 #include <common/typedefs.h>
 
 

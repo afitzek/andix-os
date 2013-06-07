@@ -222,7 +222,7 @@ void pUA(core_reg* regs) {
 void pIRQ(core_reg* regs) {
 	//disable_irq();
 	//disable_fiq();
-	uint32_t scr;
+	/*uint32_t scr;
 
 	kprintf_ex("\n");
 	dab_debug("====== INTERRUPT ========");
@@ -237,10 +237,10 @@ void pIRQ(core_reg* regs) {
 	dump_regs(regs);
 
 	//platform_device_t* irqctrl = hal_find_device(INTERRUPT_CTRL_DEVICE, 0);
-
+	*/
 	irq_do();
 
-	dab_debug("====== INTERRUPT ========");
+	//dab_debug("====== INTERRUPT ========");
 	//enable_irq();
 	//enable_fiq();
 }

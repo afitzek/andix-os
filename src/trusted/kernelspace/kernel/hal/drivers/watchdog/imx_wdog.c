@@ -16,6 +16,14 @@ void imx_wdog_reset(imx_wdog_t* wdog) {
 
 void imx_wdog_irq_handler(int irq) {
 
+	platform_device_t* wdog_dev = hal_find_device(WATCHDOG_DEVICE, 0);
+
+	if(wdog_dev != NULL) {
+		if(wdog_dev->device_data != NULL) {
+			imx_wdog_reset((imx_wdog_t*)wdog_dev->device_data);
+		}
+	}
+
 	hal_info("WDOG Interrupt!");
 }
 

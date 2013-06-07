@@ -145,7 +145,6 @@ int imx_tzic_unset_enable(imx_tzic_t* tzic, int irq) {
 	return (-1);
 }
 
-
 int imx_tzic_clear_irq(imx_tzic_t* tzic, int irq) {
 	int reg = irq / 32;
 	int off = irq % 32;
@@ -222,12 +221,12 @@ int imx_tzic_do_pending(imx_tzic_t* tzic) {
 		}
 	}
 
-	return (-1);
+	return (0);
 }
 
 void imx_tzic_swint(int irq, imx_tzic_t* tzic) {
 	if (0 > irq || irq > 128) {
-		hal_error("IRQ out of range!");
+		hal_error("IRQ out of range! %d", irq);
 		return;
 	}
 
@@ -238,7 +237,14 @@ void imx_tzic_swint(int irq, imx_tzic_t* tzic) {
 uint32_t imx_tzic_ioctl(platform_device_t *dev, uint32_t request,
 		uintptr_t param, uint32_t psize) {
 	int idx = 0;
-	imx_tzic_t* tzic = (imx_tzic_t*) dev->device_data;
+	imx_tzic_t* tzic = NULL;
+
+	if (dev == NULL ) {
+		hal_error("device dev is NULL");
+		return (HAL_E_INVALID_DEV);
+	}
+
+	tzic = (imx_tzic_t*) dev->device_data;
 
 	if (tzic == NULL ) {
 		hal_error("device tzic is NULL");
@@ -312,7 +318,7 @@ uint32_t imx_tzic_ioctl(platform_device_t *dev, uint32_t request,
 			hal_error("Parameter is NULL");
 			return (HAL_E_IOCTL_PARA_INVALID);
 		}
-		imx_tzic_clear_irq(tzic, (int)(*param));
+		imx_tzic_clear_irq(tzic, (int) (*param));
 		break;
 	case IRQ_DO_PENDING:
 		imx_tzic_do_pending(tzic);

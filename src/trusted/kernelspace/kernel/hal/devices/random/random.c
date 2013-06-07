@@ -9,20 +9,6 @@
 #include <devices/random/random.h>
 #include <hal.h>
 
-/**
- * \addtogroup hal
- *	\{
- */
-
-/**
- * \defgroup hal_random RANDOM - Hardware abstraction for random generation
- *
- * Abstracts random number generation, can be implemented with real hardware
- * or pseudo random numbers
- */
-
-/* \} group */
-
 platform_device_t* rand_device;
 
 uint8_t random_init() {

@@ -10,20 +10,6 @@
 #include <kprintf.h>
 #include <mm/mm.h>
 
-/**
- * \addtogroup hal
- *	\{
- */
-
-/**
- * \defgroup irq_ctrl IRQ_CTRL - Interrupt controller
- *
- * Allows the registration of interrupt handlers. The registered interrupts
- * are hidden from the normal world.
- */
-
-/* \} group */
-
 irq_handler* handler_table;
 int32_t max_irq;
 int32_t min_irq;

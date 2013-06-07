@@ -21,6 +21,7 @@
 #define HAL_E_IOCTL_PARA_INVALID	(-4)
 #define HAL_E_OUT_OF_MEMORY			(-5)
 #define HAL_E_DEV_ERROR				(-6)
+#define HAL_E_OUT_OF_RESOURCES		(-7)
 
 #define __REG(x)     (*((volatile uint32_t *)(x)))
 

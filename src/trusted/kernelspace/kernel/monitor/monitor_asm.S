@@ -39,7 +39,7 @@ __mon_no_handler:
 		//----------------------------------------------------------------------
 		// Standard prologue for the monitor service routines.
 		//
-.macro iaik_msr_prologue pc_arm_adjust=0
+.macro iaik_msr_prologue pc_arm_adjust=#0
         SRSDB sp!, #ABT_MODE
         STMFD sp!, {r0-r12}           /* Save monitor core context */
 
@@ -62,7 +62,7 @@ __mon_no_handler:
         RFEIA sp!                      /* Return from exception */
         .endm
 
-.macro	mon_save_context pc_ret_off=0
+.macro	mon_save_context pc_ret_off=#0
 	ISB
 	DSB
 	DMB
@@ -108,8 +108,8 @@ __mon_smc_handler:
 
 .global __mon_data_ab
 __mon_data_ab:
-	//B	_no_handler
-	iaik_msr_prologue 0x8
+	SUB    lr, lr, #8
+	iaik_msr_prologue #8
 
 	MOV r0, sp
 	BL	pDA
@@ -118,7 +118,8 @@ __mon_data_ab:
 	iaik_msr_epilogue
 
 __mon_irq_handler:
-	mon_save_context 0x4
+	SUB    lr, lr, #4
+	mon_save_context  #4
 
 	MOV r0, sp
 	BL	pIRQ
@@ -126,7 +127,8 @@ __mon_irq_handler:
 	mon_restore_context
 
 __mon_fiq_handler:
-	mon_save_context 0x4
+	SUB    lr, lr, #4
+	mon_save_context #4
 
 	MOV r0, sp
 	BL	pIRQ

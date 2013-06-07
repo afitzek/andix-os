@@ -231,6 +231,8 @@ const char* hal_get_error_string(uint32_t error) {
 		return ("HAL_E_IOCTL_REQ_NOT_AVAIL");
 	case HAL_E_OUT_OF_MEMORY:
 		return ("HAL_E_OUT_OF_MEMORY");
+	case HAL_E_OUT_OF_RESOURCES:
+		return ("HAL_E_OUT_OF_RESOURCES");
 	default:
 		return ("UNKNOWN");
 	}

@@ -25,6 +25,11 @@ int imx_csu_probe(platform_device_t *dev) {
 	return HAL_SUCCESS;
 }
 
+uint32_t imx_csu_ioctl(platform_device_t *dev,
+		uint32_t request, uintptr_t param, uint32_t psize) {
+	// we don't know which device is which so we support nothing...
+	return HAL_E_IOCTL_REQ_NOT_AVAIL;
+}
 
 static const platform_driver_t imx_csu_driver = { .probe = imx_csu_probe,
 		.release = NULL, .write = NULL,

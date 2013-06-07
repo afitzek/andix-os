@@ -90,6 +90,14 @@ static const device_info_t imx53_loco_dev_map[] = {
 				.driver = IMX53_WDOG_DRIVER_NAME,
 				.id		= 0,
 				.flags	= FLAG_DO_INIT
+		},
+		[10] = {
+				.name 	= TZMEM_CTRL_DEVICE,
+				.base 	= (uintptr_t)0x63FD8000,
+				.size 	= 0x4000,
+				.driver = IMX53_M4IF_DRIVER_NAME,
+				.id		= 0,
+				.flags	= FLAG_DO_INIT
 		}
 };
 
@@ -105,7 +113,8 @@ static const platform_device_t imx53_loco_platform_device_map[] = {
 
 static const hal_platform_t imx53_loco = {
 		.sys_id					= 0xcc9,
-		.device_count 			= 10,
+		.device_count 			= sizeof(imx53_loco_dev_map)/
+			 sizeof(device_info_t),
 		.dev_map 				= imx53_loco_dev_map,
 		.platform_device_count 	= 1,
 		.platform_device_map	= imx53_loco_platform_device_map

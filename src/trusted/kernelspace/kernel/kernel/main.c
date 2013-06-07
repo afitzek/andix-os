@@ -17,6 +17,8 @@
 #include <task/task.h>
 #include <scheduler.h>
 #include <platform/vector_debug.h>
+#include <devices/interrupt_controller/interrupt_controller.h>
+#include <devices/tzmem_controller/tzmem_controller.h>
 
 #ifdef SHOW_MEM_LAYOUT
 extern uint32_t _data;
@@ -241,121 +243,31 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	hal_init(systemID, (atag_t*) atag_base);
 
 	clean_user();
+
 	random_init();
+
 	irq_init();
 	//wdog_init();
+
+	send_fiq_irq_to_monitor();
 	enable_irq();
 	enable_fiq();
-	send_fiq_irq_to_monitor();
-	uint32_t c = get_cpsr();
-	uint32_t s = get_scr();
 
-	main_info("CPSR: 0x%x", c);
-	main_info("SCR : 0x%x", s);
+	tzmem_init();
 
-	irq_register_handler(109, &dummy_irq_handler);
+	tzmem_dump();
 
-	platform_device_t* timer = hal_find_device(TIMER_DEVICE, 0);
-
-	if(timer != NULL) {
-		if(hal_ioctl(timer, IOCTL_CLOCK_GET_CTR,
-				&clk_request, sizeof(clk_request)) != HAL_SUCCESS) {
-			main_error("Failed to get counter value!");
-		} else {
-			main_info("Counter value: 0x%x", clk_request.value);
-			clk_request.value = clk_request.value + 1000;
-			main_info("Alarm @: 0x%x", clk_request.value);
-			hal_ioctl(timer, IOCTL_CLOCK_ALARM_AT, &clk_request, sizeof(clk_request));
-			//sleep(2);
-			hal_ioctl(timer, IOCTL_CLOCK_GET_CTR, &clk_request, sizeof(clk_request));
-			main_info("Counter value: 0x%x", clk_request.value);
-		}
+	if(pmm_protect_secure_mem() != 0) {
+		main_error("=====================================================");
+		main_error("CANNOT PERFORM SECURE BOOT!");
+		main_error("FAILED TO PROTECT ALL SECURE MEMORY!");
+		main_error("=====================================================");
+		kpanic();
 	}
 
-	irq_dump();
-
-	//irq_swint(109);
-
-	irq_dump();
+	tzmem_dump();
 
 	main_info("%s HAL SYSTEM [DONE] %s", SEPERATOR, SEPERATOR);
-	// ========================================================================
-
-	// ========================================================================
-	// TZ STUFF (TODO: INCLUDE INTO HAL SYSTEM)
-	// ========================================================================
-	main_info("%s TRUSTZONE STUFF %s", SEPERATOR, SEPERATOR);
-
-	main_debug("Allowing nonsecure access to all devices via CSU");
-
-	csu_base = (uintptr_t) map_io_mem((uintptr_t) 0x63F9C000, 0x80);
-
-	csu = csu_base;
-
-	while (csu < (uint32_t*) ((uint32_t) csu_base + 0x80)) {
-		//uint32_t old = (*csu);
-		(*csu) = 0x00FF00FF;
-		//main_debug("CSU @ 0x%x : 0x%x -> 0x%x", csu, old, (*csu));
-		csu++;
-	}
-/*
-	uintptr_t base_tzic = (uintptr_t) map_io_mem((uintptr_t) 0x0FFFC080, 0x80);
-
-	main_debug("TZIC @ 0x%x p (0x%x)", base_tzic, v_to_p(base_tzic));
-
-	uintptr_t tzic = base_tzic + 0x20;
-
-	for (int i = 0; i < 4; i++) {
-		main_debug("TZIC SET 0x%X = 0x%X", v_to_p(tzic), 0xFFFFFFFF);
-		(*tzic) = 0xFFFFFFFF;
-		tzic++;
-	}
-
-	tzic = base_tzic + 0x100;
-
-	for (int i = 0; i < 32; i++) {
-		main_debug("TZIC SET 0x%X = 0x%X", v_to_p(tzic), 0x80808080);
-		(*tzic) = 0x80808080;
-		tzic++;
-	}
-
-	tzic = base_tzic + 3;
-	main_debug("TZIC SET 0x%X = 0x%X", v_to_p(tzic), 0x1F);
-	(*tzic) = 0x1f;
-*/
-	main_debug("Protecting memory ...");
-	uint8_t* base_m4if = (uint8_t*) map_io_mem((uintptr_t) 0x63FD8000, 0x1000);
-	uint8_t* base_extmc = (uint8_t*) map_io_mem((uintptr_t) 0x63FDBF00, 0x1000);
-	uint32_t* wm_start = (uint32_t*) (base_m4if + 0xF0);
-	uint32_t* wm_end = (uint32_t*) (base_m4if + 0x110);
-	uint32_t* wm_status = (uint32_t*) (base_m4if + 0x114);
-	uint32_t* extmc_lock = (uint32_t*) (base_extmc);
-	uint32_t extmc = 0;
-	__raw_writel(0x0, wm_start);
-	__raw_writel(0xbffff, wm_end);
-	__raw_writel(0x80000000 | 0xb0000, wm_start);
-	__raw_writel(0x80000000, wm_status);
-	extmc = __raw_readl(extmc_lock);
-	main_debug("extmc_lock: 0x%x", extmc);
-	extmc = extmc | 0x8;
-	__raw_writel(extmc, extmc_lock);
-
-	main_debug("wm_start: 0x%x", __raw_readl(wm_start));
-	main_debug("wm_end: 0x%x", __raw_readl(wm_end));
-	main_debug("wm_status: 0x%x", __raw_readl(wm_status));
-	main_debug("extmc_lock: 0x%x", __raw_readl(extmc_lock));
-
-	main_debug("Protected memory!");
-
-	/*(*wm_start) = 0x80000000 | 0xb0000;
-	(*wm_end) = 0xc0000;
-	(*wm_status) = 0x80000000;*/
-
-	__asm__ __volatile__("MRC   p15, 0, %0, c1, c1, 0": "=r" (cp15)::"memory");
-
-	main_debug("SCR: 0x%x", cp15);
-
-	main_info("%s TRUSTZONE STUFF [DONE] %s", SEPERATOR, SEPERATOR);
 	// ========================================================================
 
 	// ========================================================================

@@ -76,4 +76,11 @@ void* pmm_allocate_pages(uint32_t numpages);
  */
 void pmm_free_page(void* page);
 
+/**
+ * Activate HW protection for secure memory!
+ *
+ * @return 0 on success -1 on failure
+ */
+int32_t pmm_protect_secure_mem();
+
 #endif /* PMM_H_ */
