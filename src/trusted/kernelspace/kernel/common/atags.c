@@ -10,7 +10,6 @@
 #include <kprintf.h>
 #include <mm/mm.h>
 
-
 /**
  * \defgroup atags ATAGS - Bootparameters
  *
@@ -35,7 +34,7 @@ struct atag* atag_copy(struct atag* startTag) {
 		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
 	} while (atag->hdr.tag != ATAG_NONE);
 	size += (2 * 4);
-	struct atag* newTag = (struct atag*)kmalloc(size);
+	struct atag* newTag = (struct atag*) kmalloc(size);
 	memcpy(newTag, startTag, size);
 	cur_atags = newTag;
 	return (newTag);
@@ -45,18 +44,27 @@ struct atag* atag_get_current() {
 	return (cur_atags);
 }
 
-void atag_generate_nonsecure(uintptr_t start) {
+void atag_generate_nonsecure(uintptr_t start, const char* cmdline,
+		uint32_t rdstart, uint32_t rdsize) {
 	atag_setup_core(start);
+	atag_setup_revision();
 	list* pos = NULL;
 	list* next = NULL;
 	list* phys_mem = pmm_get_mem_list();
-	list_for_each_safe(pos, next, phys_mem) {
+	list_for_each_safe(pos, next, phys_mem)
+	{
 		phys_mem_area* area = (phys_mem_area*) pos->data;
-		if(area) {
-			if(area->type == MEM_TYPE_UNSECURE) {
+		if (area) {
+			if (area->type == MEM_TYPE_UNSECURE) {
 				atag_setup_mem(area->pstart, area->pend - area->pstart);
 			}
 		}
+	}
+	if (cmdline != NULL ) {
+		atag_setup_cmdline(cmdline);
+	}
+	if(rdstart != 0) {
+		atag_setup_initrd(rdstart, rdsize);
 	}
 	//atag_setup_mem(0x70000000, 0x20000000); // TODO: We should generate this
 	//atag_setup_mem(0xC0000000, 0x10000000); // TODO: We should generate this
@@ -84,9 +92,14 @@ void atag_dump(struct atag* startTag) {
 			atag_debug("   REVS :  0x%x", atag->u.revision.rev);
 		} else if (atag->hdr.tag == ATAG_MEM) {
 			atag_debug("   START:  0x%x", atag->u.mem.start);
-			atag_debug(
-					"   SIZE :  0x%x (%d MB)", atag->u.mem.size, atag->u.mem.size / (1024 * 1024));
+			atag_debug("   SIZE :  0x%x (%d MB)", atag->u.mem.size,
+					atag->u.mem.size / (1024 * 1024));
 			atag_debug("   END  :  0x%x", atag->u.mem.start + atag->u.mem.size);
+		} else if (atag->hdr.tag == ATAG_CMDLINE) {
+			atag_debug("   CMD:  %s", atag->u.cmdline.cmdline);
+		} else if (atag->hdr.tag == ATAG_INITRD2) {
+			atag_debug("   START:  0x%x", atag->u.initrd2.start);
+			atag_debug("   SIZE :  0x%x", atag->u.initrd2.size);
 		}
 
 		ptr = (uint8_t*) atag;
@@ -113,6 +126,22 @@ struct atag* atag_get_next_mem_tag(struct atag* startTag) {
 
 	do {
 		if (atag->hdr.tag == ATAG_MEM) {
+			return (atag);
+		}
+
+		ptr = (uint8_t*) atag;
+
+		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
+	} while (atag->hdr.tag != ATAG_NONE);
+
+	return (NULL );
+}
+
+struct atag* atag_get_revision_tag(struct atag* startTag) {
+	struct atag* atag = startTag;
+	uint8_t* ptr = (uint8_t*) startTag;
+	do {
+		if (atag->hdr.tag == ATAG_REVISION) {
 			return (atag);
 		}
 
@@ -168,7 +197,7 @@ void atag_setup_core(uintptr_t address) {
 
 	params->u.core.flags = 1; /* ensure read-only */
 	params->u.core.pagesize = 0; /* systems pagesize (4k) */
-	params->u.core.rootdev = 0; /* zero root device (typicaly overidden from commandline )*/
+	params->u.core.rootdev = 3; /* zero root device (typicaly overidden from commandline )*/
 
 	params = tag_next(params); /* move pointer to next tag */
 }
@@ -179,6 +208,41 @@ void atag_setup_mem(uint32_t start, uint32_t len) {
 
 	params->u.mem.start = start; /* Start of memory area (physical address) */
 	params->u.mem.size = len; /* Length of area */
+
+	params = tag_next(params); /* move pointer to next tag */
+}
+
+void atag_setup_revision() {
+	atag_t* revision_tag = atag_get_revision_tag(atag_get_current());
+	if (revision_tag != NULL ) {
+		params->hdr.tag = revision_tag->hdr.tag;
+		params->hdr.size = revision_tag->hdr.size;
+		params->u.revision.rev = revision_tag->u.revision.rev;
+		params = tag_next(params);
+	}
+}
+
+void atag_setup_initrd(uint32_t start, uint32_t size) {
+	params->hdr.tag = ATAG_INITRD2; /* Initrd2 tag */
+	params->hdr.size = tag_size(atag_initrd2); /* size tag */
+
+	params->u.initrd2.start = start; /* physical start */
+	params->u.initrd2.size = size; /* compressed ramdisk size */
+
+	params = tag_next(params); /* move pointer to next tag */
+}
+
+void atag_setup_cmdline(const char * line) {
+	int linelen = strlen(line);
+
+	if (!linelen)
+		return; /* do not insert a tag for an empty commandline */
+
+	params->hdr.tag = ATAG_CMDLINE; /* Commandline tag */
+	params->hdr.size = (sizeof(struct atag_header) + linelen + 1 + 4) >> 2;
+
+	memset(params->u.cmdline.cmdline, 0, linelen + 1 + 4);
+	strncpy(params->u.cmdline.cmdline, line, linelen + 1 + 4); /* place commandline into tag */
 
 	params = tag_next(params); /* move pointer to next tag */
 }

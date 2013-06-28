@@ -19,6 +19,7 @@
 #include <drivers/watchdog/imx_wdog.h>
 #include <drivers/tzmem_controller/imx_m4if.h>
 #include <common/typedefs.h>
+#include <platform/board/imx53/imx53_early_io.h>
 
 
 #endif /* IMX53_LOCO_H_ */

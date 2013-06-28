@@ -16,7 +16,7 @@
 #include <hal.h>
 
 /**
- * \addtogroup imx_csu
+ * \addtogroup imx53_csu
  *	\{
  */
 

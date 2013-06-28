@@ -78,6 +78,10 @@ static inline void __raw_writel(uint32_t v, volatile void *addr) {
 	*(volatile uint32_t *) (addr) = v;
 }
 
+typedef void (*early_io_init)(void);
+typedef void (*early_io_putc)(uint8_t c);
+typedef uint8_t (*early_io_getc)(void);
+
 /**
  * Platform Structure
  */
@@ -87,6 +91,9 @@ struct hal_platform {
 	const device_info_t* dev_map; /**< The device map */
 	uint32_t platform_device_count;
 	const platform_device_t* platform_device_map;
+	early_io_init __early_io_init;
+	early_io_putc __early_io_putc;
+	early_io_getc __early_io_getc;
 };
 
 /**

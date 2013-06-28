@@ -16,6 +16,11 @@
 #include <hal.h>
 
 /**
+ * \addtogroup imx53_tzic
+ *	\{
+ */
+
+/**
  * TZIC Driver name
  */
 #define IMX53_TZIC_DRIVER_NAME "IMX53_TZIC"
@@ -195,5 +200,7 @@ void imx_tzic_swint(int irq, imx_tzic_t* tzic);
  * IMX TZIC driver instance
  */
 static const platform_driver_t imx_tzic_driver;
+
+/** \} */
 
 #endif /* IMX_TZIC_H_ */

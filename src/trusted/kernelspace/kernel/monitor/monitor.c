@@ -331,12 +331,12 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 	}
 	dump_mon_context(cont);
 
-	/*if (target_task != NULL ) {
+	if (target_task != NULL ) {
 	 mon_debug(
 	 "GOING FROM SECURE TO %sSECURE", (target_task->context.scr & 1) ? "NON-" : "");
 	 } else {
 	 mon_debug("GOING FROM SECURE TO (?)SECURE");
-	 }*/
+	 }
 }
 
 TZ_CTLR_SPACE* mon_get_control_space() {
@@ -404,12 +404,12 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		break;
 	}
 	dump_mon_context(cont);
-	/*if (task != NULL ) {
+	if (task != NULL ) {
 	 mon_debug(
 	 "GOING FROM SECURE TO %sSECURE", (task->context.scr & 1) ? "NON-" : "");
 	 } else {
 	 mon_debug("GOING FROM SECURE TO (?)SECURE");
-	 }*/
+	 }
 }
 
 void mon_smc_handler(mon_context_t* cont) {

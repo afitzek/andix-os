@@ -71,8 +71,10 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	//uint32_t i = 0;
 
 	// ========================================================================
-	init_serial();
+	init_serial(sysid);
+
 	init_early_task();
+	//mputchar('c');
 	// ========================================================================
 	main_info(
 			"============================================================================");
@@ -231,7 +233,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	atags = (struct atag*) atag_base;
 	main_info("Atags copied to : @ 0x%x", atag_base);
-
+	atag_dump(atags);
 	//arm_irq_enable();
 	// ========================================================================
 

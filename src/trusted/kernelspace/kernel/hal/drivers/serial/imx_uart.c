@@ -79,10 +79,6 @@ void imx_uart_putchar(char c) {
 	while (!(__raw_readl((void*) uts) & UTS_TXEMPTY)) {
 		NOP;
 	}
-
-	/* If \n, also do \r */
-	if (c == '\n')
-		imx_uart_putchar('\r');
 }
 
 static const platform_driver_t imx_uart_driver = { .probe = imx_uart_probe,

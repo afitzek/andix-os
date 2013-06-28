@@ -81,4 +81,24 @@
 /* \} group */
 
 
+/**
+ * \addtogroup driver
+ *	\{
+ */
+
+/**
+ * \defgroup imx53_csu IMX53 CSU - Central Security Unit
+ *
+ * Driver for Central Security Unit is used to manage permission for device access
+ */
+
+/**
+ * \defgroup imx53_tzic IMX53 TZIC - TrustZone Aware Interrupt Controller
+ *
+ * Driver for TrustZone aware interrupt controller
+ */
+
+/* \} group */
+
+
 #endif

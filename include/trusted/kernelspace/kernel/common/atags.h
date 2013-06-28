@@ -199,8 +199,10 @@ typedef struct atag atag_t;
 /**
  * Setup ATAGS for rich OS
  * @param start memory start address
+ * @param cmdline boot command line
  */
-void atag_generate_nonsecure(uintptr_t start);
+void atag_generate_nonsecure(uintptr_t start, const char* cmdline,
+		uint32_t rdstart, uint32_t size);
 
 /**
  * Print ATAGS starting at startTag

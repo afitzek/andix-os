@@ -272,4 +272,19 @@ platform_driver_t* hal_find_driver(const char* name) {
 	return (NULL );
 }
 
+hal_platform_t * hal_find_platform(uint32_t sysid) {
+	int idx = 0;
+	hal_platform_t* platform = NULL;
+	while (&__hal_platform_table[idx] < &__hal_platform_table_end) {
+		hal_platform_t* check = __hal_platform_table[idx];
+		//hal_debug("checking platform @ 0x%x [%d]", check, check->sys_id);
+		if (check->sys_id == sysid) {
+			//hal_debug("Platform @ 0x%x", check);
+			platform = check;
+		}
+		idx++;
+	}
+	return (platform);
+}
+
 /* \} group */

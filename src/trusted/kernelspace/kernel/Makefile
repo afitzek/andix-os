@@ -103,6 +103,9 @@ getpayloads:
 	cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/sample.bin $(realpath $(TOP))/payload/sample.bin
 	touch $(realpath $(TOP))/payload/userpayload.S
 	touch $(realpath $(TOP))/payload/samplepayload.S
+	touch $(realpath $(TOP))/payload/payload.S
+	touch $(realpath $(TOP))/payload/android_payload.S
+	touch $(realpath $(TOP))/payload/android_payload_rd.S
 	touch $(realpath $(TOP))/kernel/main.c
 
 .PHONY: mkbuilddirs		

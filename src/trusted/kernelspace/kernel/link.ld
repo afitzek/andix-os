@@ -39,6 +39,14 @@ SECTIONS
 		*(.payload);
 		payload_end = .; _payload_end = .; __payload_end = .;
 		. = ALIGN(4);
+    	payload_and = .; _payload_and = .; __payload_and = .;
+		*(.payload_and);
+		payload_and_end = .; _payload_and_end = .; __payload_and_end = .;
+		. = ALIGN(4);
+    	payload_and_rd = .; _payload_and_rd = .; __payload_and_rd = .;
+		*(.payload_and_rd);
+		payload_and_rd_end = .; _payload_and_rd_end = .; __payload_and_rd_end = .;
+		. = ALIGN(4);
 		dtb = .; _dtb = .; __dtb = .;
 		*(.dtb);
 		dtb_end = .; _dtb_end = .; __dtb_end = .;

@@ -7,16 +7,17 @@
  */
 
 #include <kprintf.h>
-#include <drivers/serial/imx_uart.h>
+#include <devices/devices.h>
 #include <task/task.h>
+#include <hal.h>
 
-uint32_t uart_base = UART_BASE;
-
-//extern uint32_t __symbol_table;
-//extern uint32_t __symbol_table_end;
 extern uint32_t svc_stack;
 
 platform_device_t* serial_dev = NULL;
+
+early_io_init early_init;
+early_io_putc early_putc;
+early_io_getc early_getc;
 
 void getSerial() {
 	if (serial_dev == NULL ) {
@@ -25,7 +26,7 @@ void getSerial() {
 }
 
 char* gettaskname() {
-	if(get_current_task() != NULL) {
+	if (get_current_task() != NULL ) {
 		return (get_current_task()->name);
 	}
 	return ("NO-TASK");
@@ -33,8 +34,8 @@ char* gettaskname() {
 
 void kprintHex(uint8_t* buffer, uint32_t size) {
 	uint32_t i = 0;
-	for(i = 0; i < size; i++) {
-		if(i != 0 && (i % 16 == 0)) {
+	for (i = 0; i < size; i++) {
+		if (i != 0 && (i % 16 == 0)) {
 			kprintf("\n");
 		}
 		kprintf("%X:", buffer[i]);
@@ -49,16 +50,19 @@ int getchar() {
 		hal_read(serial_dev, &character, 1);
 		return ((int) character);
 	} else {
-		return (-1);
+		if (early_getc != NULL ) {
+			return (early_getc());
+		}
 	}
+	return (-1);
 }
 
 void getinput(char *buffer, uint32_t size) {
 	uint32_t idx = 0;
 	int currentChar = 0;
-	while(idx < size) {
+	while (idx < size) {
 		currentChar = getchar();
-		if(currentChar != 0xA && currentChar != 0xD) {
+		if (currentChar != 0xA && currentChar != 0xD) {
 			buffer[idx] = (char) currentChar;
 			idx++;
 		} else {
@@ -67,79 +71,61 @@ void getinput(char *buffer, uint32_t size) {
 	}
 }
 
-static void mputchar(char c) {
+void mputchar(char c) {
 
 	//getSerial();
 	//if (serial_dev != NULL ) {
 	//	hal_write(serial_dev, &c, 1);
 	//	return;
 	//}
-	if (kputchar != NULL) {
-	 kputchar(c);
-	 return;
-	 }
-
-	__REG(uart_base + UTXD) = c;
-
-	/* wait for transmitter to be ready */
-	while (!(__REG(uart_base + UTS) & UTS_TXEMPTY))
-		;
-
+	if (kputchar != NULL ) {
+		kputchar(c);
+	} else {
+		if (early_putc != NULL ) {
+			early_putc(c);
+		} else {
+			return;
+		}
+	}
 	/* If \n, also do \r */
 	if (c == '\n')
 		mputchar('\r');
 }
 
-static void mputchar_ex(char c) {
-	//getSerial();
-	//if (serial_dev != NULL ) {
-	//	hal_write(serial_dev, &c, 1);
-	//	return;
-	//}
+void mputchar_ex(char c) {
+	mputchar(c);
+	/*
+	 if (kputchar != NULL ) {
+	 kputchar(c);
+	 return;
+	 }
 
-	if (kputchar != NULL ) {
-		kputchar(c);
-		return;
-	}
+	 __REG(UART_BASE + UTXD) = 0x41;
 
-	__REG(UART_BASE + UTXD) = c;
+	 while (!(__REG(UART_BASE + UTS) & UTS_TXEMPTY))
+	 ;
 
-	/* wait for transmitter to be ready */
-	while (!(__REG(UART_BASE + UTS) & UTS_TXEMPTY))
-		;
-
-	/* If \n, also do \r */
-	if (c == '\n')
-		mputchar_ex('\r');
+	 if (c == '\n')
+	 mputchar_ex('\r');*/
 }
 
-void init_serial() {
+void init_serial(uint32_t sysid) {
 	serial_dev = NULL;
-
-	uart_base = UART_BASE;
-
-	__REG(UART_BASE + UCR1) = 0x0;
-	__REG(UART_BASE + UCR2) = 0x0;
-
-	while (!(__REG(UART_BASE + UCR2) & UCR2_SRST))
-		;
-
-	__REG(UART_BASE + UCR3) = 0x0704;
-	__REG(UART_BASE + UCR4) = 0x8000;
-	__REG(UART_BASE + UESC) = 0x002b;
-	__REG(UART_BASE + UTIM) = 0x0;
-
-	__REG(UART_BASE + UTS) = 0x0;
-
-	__REG(UART_BASE + UFCR) = 4 << 7; /* divide input clock by 2 */
-	__REG(UART_BASE + UBIR) = 0xf;
-	__REG(UART_BASE + UBMR) = 0xf0;
-
-	__REG(UART_BASE + UCR2) = UCR2_WS | UCR2_IRTS | UCR2_RXEN | UCR2_TXEN
-			| UCR2_SRST;
-	__REG(UART_BASE + UCR1) = UCR1_UARTEN;
-
 	kputchar = NULL;
+	early_init = NULL;
+	early_putc = NULL;
+	early_getc = NULL;
+
+	hal_platform_t* plat = hal_find_platform(sysid);
+	if (plat != NULL ) {
+		early_init = plat->__early_io_init;
+		early_putc = plat->__early_io_putc;
+		early_getc = plat->__early_io_getc;
+	}
+
+	if (early_init != NULL ) {
+		early_init();
+	}
 }
 
 void kdumpMem32(void* mem, uint32_t size) {
@@ -165,13 +151,13 @@ void kdumpMem32(void* mem, uint32_t size) {
 
 void dump_bt(backtrace_t* bt, uint32_t idx) {
 	//uint32_t* lv = bt->linkvalue;
-	char* func_name = get_function_name((void*)bt->codeptr);
+	char* func_name = get_function_name((void*) bt->codeptr);
 	if (func_name) {
-		main_error(
-				"%d   | %s | 0x%x | 0x%x | 0x%x | 0x%x", idx, func_name, bt->codeptr, bt->linkvalue, bt->stackptr, bt->frameptr);
+		main_error("%d   | %s | 0x%x | 0x%x | 0x%x | 0x%x", idx, func_name,
+				bt->codeptr, bt->linkvalue, bt->stackptr, bt->frameptr);
 	} else {
-		main_error(
-				"%d   | ----------------- | 0x%x | 0x%x | 0x%x | 0x%x", idx, bt->codeptr, bt->linkvalue, bt->stackptr, bt->frameptr);
+		main_error("%d   | ----------------- | 0x%x | 0x%x | 0x%x | 0x%x", idx,
+				bt->codeptr, bt->linkvalue, bt->stackptr, bt->frameptr);
 	}
 	//main_debug("CODE PTR: 0x%x, LINK: 0x%x, SP: 0x%x, FP: 0x%x", bt->codeptr, bt->linkvalue, bt->stackptr, bt->frameptr);
 	//if(is_valid_kernel_addr(lv)) {
@@ -204,8 +190,7 @@ void dump_stack_trace() {
 	main_error("=======================================");
 	main_error("STACK TRACE:");
 	main_error("=======================================");
-	main_error(
-			"IDX | FUNC NAME | CODE PTR | SAVE LINK | STACK PTR | FRAME PTR");
+	main_error("IDX | FUNC NAME | CODE PTR | SAVE LINK | STACK PTR | FRAME PTR");
 	uint32_t idx = 0;
 	while ((void*) bt < (void*) startstack) {
 		dump_bt(bt, idx);
@@ -231,8 +216,7 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp) {
 	main_error("=======================================");
 	main_error("STACK TRACE:");
 	main_error("=======================================");
-	main_error(
-			"IDX | FUNC NAME | CODE PTR | SAVE LINK | STACK PTR | FRAME PTR");
+	main_error("IDX | FUNC NAME | CODE PTR | SAVE LINK | STACK PTR | FRAME PTR");
 	uint32_t idx = 0;
 	while ((void*) bt < (void*) startstack) {
 		dump_bt(bt, idx);

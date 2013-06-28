@@ -117,7 +117,10 @@ static const hal_platform_t imx53_loco = {
 			 sizeof(device_info_t),
 		.dev_map 				= imx53_loco_dev_map,
 		.platform_device_count 	= 1,
-		.platform_device_map	= imx53_loco_platform_device_map
+		.platform_device_map	= imx53_loco_platform_device_map,
+		.__early_io_init		= &imx53_early_init,
+		.__early_io_putc		= &imx53_early_putchar,
+		.__early_io_getc		= &imx53_early_getchar
 };
 
 HAL_PLATFORM_REGISTER(imx53_loco)

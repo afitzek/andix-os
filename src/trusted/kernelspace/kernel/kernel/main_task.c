@@ -167,16 +167,16 @@ void entry_main_task() {
 
 	// 47b57610-925b-11e2-9e96-0800200c9a66
 	/*uuid.timeLow = 0x47b57610;
-	uuid.timeMid = 0x925b;
-	uuid.timeHiAndVersion = 0x11e2;
-	uuid.clockSeqAndNode[7] = 0x9e;
-	uuid.clockSeqAndNode[6] = 0x96;
-	uuid.clockSeqAndNode[5] = 0x08;
-	uuid.clockSeqAndNode[4] = 0x00;
-	uuid.clockSeqAndNode[3] = 0x20;
-	uuid.clockSeqAndNode[2] = 0x0c;
-	uuid.clockSeqAndNode[1] = 0x9a;
-	uuid.clockSeqAndNode[0] = 0x66;*/
+	 uuid.timeMid = 0x925b;
+	 uuid.timeHiAndVersion = 0x11e2;
+	 uuid.clockSeqAndNode[7] = 0x9e;
+	 uuid.clockSeqAndNode[6] = 0x96;
+	 uuid.clockSeqAndNode[5] = 0x08;
+	 uuid.clockSeqAndNode[4] = 0x00;
+	 uuid.clockSeqAndNode[3] = 0x20;
+	 uuid.clockSeqAndNode[2] = 0x0c;
+	 uuid.clockSeqAndNode[1] = 0x9a;
+	 uuid.clockSeqAndNode[0] = 0x66;*/
 
 	task_t* user = prepare_static_userspace_task((uintptr_t) &_userpayload,
 			(uintptr_t) &_userpayload_end, "SYSTEM DAEMON",
@@ -185,20 +185,20 @@ void entry_main_task() {
 
 	// 47b57610-925b-11e2-9e96-0800200c9a66
 	/*uuid.timeLow = 0x47b57610;
-	uuid.timeMid = 0x925b;
-	uuid.timeHiAndVersion = 0x11e2;
-	uuid.clockSeqAndNode[7] = 0x9e;
-	uuid.clockSeqAndNode[6] = 0x96;
-	uuid.clockSeqAndNode[5] = 0x08;
-	uuid.clockSeqAndNode[4] = 0x00;
-	uuid.clockSeqAndNode[3] = 0x20;
-	uuid.clockSeqAndNode[2] = 0x0c;
-	uuid.clockSeqAndNode[1] = 0x9a;
-	uuid.clockSeqAndNode[0] = 0x66;*/
+	 uuid.timeMid = 0x925b;
+	 uuid.timeHiAndVersion = 0x11e2;
+	 uuid.clockSeqAndNode[7] = 0x9e;
+	 uuid.clockSeqAndNode[6] = 0x96;
+	 uuid.clockSeqAndNode[5] = 0x08;
+	 uuid.clockSeqAndNode[4] = 0x00;
+	 uuid.clockSeqAndNode[3] = 0x20;
+	 uuid.clockSeqAndNode[2] = 0x0c;
+	 uuid.clockSeqAndNode[1] = 0x9a;
+	 uuid.clockSeqAndNode[0] = 0x66;*/
 
-	task_t* sampleuser = prepare_static_userspace_task((uintptr_t) &_samplepayload,
-			(uintptr_t) &_samplepayload_end, "SAMPLE TRUSTLET",
-			"7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");
+	task_t* sampleuser = prepare_static_userspace_task(
+			(uintptr_t) &_samplepayload, (uintptr_t) &_samplepayload_end,
+			"SAMPLE TRUSTLET", "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");
 	init_userspace_task(sampleuser);
 
 	main_info("TASK UUID: %s", "47b57610-925b-11e2-9e96-0800200c9a66");
@@ -222,74 +222,99 @@ void entry_main_task() {
 
 	main_debug("KERNEL ...");
 
-	// prepare payload ...
-	uint32_t vpayload_end = (uint32_t) &payload_end;
-	uint32_t vpayload = (uint32_t) &payload;
-	uint32_t payload_size = vpayload_end - vpayload;
+	 // prepare payload ...
+	 uint32_t vpayload_end = (uint32_t) &payload_end;
+	 uint32_t vpayload = (uint32_t) &payload;
+	 uint32_t payload_size = vpayload_end - vpayload;
 
-	uintptr_t vpayload_ptr = map_phys_mem((uintptr_t) 0x70008000, payload_size,
-			AP_SVC_RW_USR_NO, 1, 1, 0);
+	 uintptr_t vpayload_ptr = map_phys_mem((uintptr_t) 0x70008000, payload_size,
+	 AP_SVC_RW_USR_NO, 1, 1, 0);
 
-	if (vpayload_ptr == NULL ) {
-		kpanic();
+	 if (vpayload_ptr == NULL ) {
+	 kpanic();
+	 }
+
+	 uint8_t* src = (uint8_t*) vpayload;
+	 uint8_t* dst = (uint8_t*) vpayload_ptr;
+
+	 main_debug("Copying kernel form 0x%x to 0x%x (p 0x%x)", src, dst,
+	 v_to_p(dst));
+
+	 for (uint32_t i = 0; i < payload_size; i++) {
+	 dst[i] = src[i];
+	 }
+
+	 main_debug("ATAGS ...");
+
+	 uintptr_t vatag_ptr = map_phys_mem((uintptr_t) 0x70000000,
+	 SMALL_PAGE_SIZE - 1, AP_SVC_RW_USR_NO, 1, 1, 0);
+
+	 if (vatag_ptr == NULL ) {
+	 kpanic();
+	 }
+	 vatag_ptr += 0x40;
+	 dst = (uint8_t*) vatag_ptr;
+
+	 atag_generate_nonsecure((uintptr_t) dst, "", 0, 0);
+	 main_info("Setup ATAGS:");
+	 atag_dump((struct atag*) dst);
+	 kdumpMem(dst, 100);
+
+	 //src = vdtb;
+
+	 //main_debug( "Copying ATAGS to 0x%x (p 0x%x)", dst, v_to_p(dst));
+
+	 //uint32_t* value = 0xC0008000;
+
+	 main_info("%s PREPARE PAYLOAD [DONE] %s", SEPERATOR, SEPERATOR);
+
+	 task_t* task = create_kernel_task(SVC_MODE, NONSECURE);
+
+	 if (task == NULL ) {
+	 main_error("Failed to create nonsecure task");
+	 kpanic();
+	 }
+
+	 task->context.r[1] = hal_get_platform()->sys_id;
+	 task->context.r[2] = 0x70000100;
+	 task->context.pc = 0x70008000;
+
+	 task_set_name(task, "NONSECURE_LINUX");
+
+	 add_task(task);
+
+	 set_nonsecure_task(task);
+
+/*
+	decision = 'n';
+
+	while (decision != 'a' && decision != 'l') {
+
+		kprintf("\nSelect Guest (a ... Android, l ... Linux): ");
+
+		decision = getchar();
 	}
 
-	uint8_t* src = (uint8_t*) vpayload;
-	uint8_t* dst = (uint8_t*) vpayload_ptr;
+	task_t* task = NULL;
 
-	main_debug("Copying kernel form 0x%x to 0x%x (p 0x%x)", src, dst,
-			v_to_p(dst));
-
-	for (uint32_t i = 0; i < payload_size; i++) {
-		dst[i] = src[i];
+	if(decision == 'a') {
+		kprintf("\nLoading Android ...\n");
+		task = load_android();
+	} else {
+		kprintf("\nLoading Linux ...\n");
+		task = load_linux();
 	}
-
-	main_debug("ATAGS ...");
-
-	uintptr_t vatag_ptr = map_phys_mem((uintptr_t) 0x70000000,
-			SMALL_PAGE_SIZE - 1, AP_SVC_RW_USR_NO, 1, 1, 0);
-
-	if (vatag_ptr == NULL ) {
-		kpanic();
-	}
-	vatag_ptr += 0x40;
-	dst = (uint8_t*) vatag_ptr;
-
-	atag_generate_nonsecure((uintptr_t) dst);
-	//main_info("Setup ATAGS:");
-	//atag_dump((struct atag*) dst);
-
-	//src = vdtb;
-
-	//main_debug( "Copying ATAGS to 0x%x (p 0x%x)", dst, v_to_p(dst));
-
-	//uint32_t* value = 0xC0008000;
-
-	main_info("%s PREPARE PAYLOAD [DONE] %s", SEPERATOR, SEPERATOR);
-
-	task_t* task = create_kernel_task(SVC_MODE, NONSECURE);
 
 	if (task == NULL ) {
-		main_error("Failed to create nonsecure task");
 		kpanic();
 	}
-
-	task->context.r[1] = hal_get_platform()->sys_id;
-	task->context.r[2] = 0x70000100;
-	task->context.pc = 0x70008000;
-
-	task_set_name(task, "NONSECURE_LINUX");
-
-	add_task(task);
-
-	set_nonsecure_task(task);
 
 	main_info("%s BOOT NONSECURE [DONE] %s", SEPERATOR, SEPERATOR);
 
 	kprintf("\nReady to start non-secure linux. Press any key to proceed.\n");
 
 	getchar();
-
+*/
 	get_current_task()->state = BLOCKED;
 
 	print_tasks();

@@ -15,10 +15,6 @@
 // Remove this define if __func__ not available!
 #define _FUNCTION_KEYWORD_
 
-#define UART_1_APITZ_OFFSET 0xBC000
-#define PHYSICAL_AIPSTZ_1_START 0x53F00000
-#define UART_BASE PHYSICAL_AIPSTZ_1_START + UART_1_APITZ_OFFSET
-
 void printA();
 
 typedef struct {
@@ -37,7 +33,7 @@ void dump_stack_trace();
 
 void kprintf(const char *s, ...);
 
-void init_serial();
+void init_serial(uint32_t sysid);
 
 void kprintf_ex(const char *s, ...);
 
@@ -46,6 +42,8 @@ void kpanic();
 void getSerial();
 
 int getchar();
+
+void mputchar(char c);
 
 void kprintHex(uint8_t* buffer, uint32_t size);
 
@@ -199,8 +197,8 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define mon_error(...) subsys_error(MON_TAG, __VA_ARGS__)
 #define mon_info(...) subsys_info(MON_TAG, __VA_ARGS__)
-//#define mon_debug(...) subsys_debug(MON_TAG, __VA_ARGS__)
-#define mon_debug(...) non_print_handler(MON_TAG, __VA_ARGS__)
+#define mon_debug(...) subsys_debug(MON_TAG, __VA_ARGS__)
+//#define mon_debug(...) non_print_handler(MON_TAG, __VA_ARGS__)
 
 // CMM
 

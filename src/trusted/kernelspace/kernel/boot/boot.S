@@ -11,6 +11,10 @@
 	.section .reset, "ax"
 	.code 32
 
+.macro debug_a
+		B	.
+.endm
+
 		//----------------------------------------------------------------------
 		// Standard prologue for the monitor service routines.
 		//
@@ -51,7 +55,6 @@ _reset:
 	// save boot information
 	MOV r6, r1
 	MOV r7, r2
-
 	// SYS stack
 	LDR r1, =svc_stack
 	//ADR r1, _reset
@@ -76,7 +79,7 @@ __setup_mmu:
 	LDR r1, =_code
 	SUB r0, r0, r1
 	MOV r0, r0, LSR #20
-	ADD r0, r0, #1
+	ADD r0, r0, #2
 	STR r0, __kernel_mb_size
 
 	// Clear TTBR1
