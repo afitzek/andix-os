@@ -55,14 +55,37 @@ _reset:
 	// save boot information
 	MOV r6, r1
 	MOV r7, r2
-	// SYS stack
+	// Stack setup
 	LDR r1, =svc_stack
 	//ADR r1, _reset
 	BIC	r0, r0, #MODE_BITS
 	ORR r0, r0, #SVC_MODE
 	MSR CPSR, r0
 	MOV sp, r1
-
+	// Find board information
+	ADR	r0, _reset
+	LDR r3, =__board_infos
+	LDR r4, __reset_addr
+	SUB r3, r3, r4
+	ADD r0, r0, r3
+	MOV r1, #0 // table position
+	B   __bi_search
+__stop:
+	B	__stop
+__bi_search:
+	LDR r2, __board_infos_size
+	CMP r1, r2
+	BGE __stop // board not supported stop ...
+	LDR r2, [r0, r1] // sysID
+	ADD r1, r1, #4
+	LDR r3, [r0, r1] // phys target
+	ADD r1, r1, #4
+	LDR r4, [r0, r1] // early io
+	ADD r1, r1, #4
+	CMP r2, r6
+	BNE __bi_search
+	STR r3, __phys_target_addr
+	STR r4, __phys_early_io
 __setup_mmu:
 	ADR	r0, _reset
 	STR r0, __phys_entry_addr
@@ -289,12 +312,13 @@ _no_handler:
 
 __phys_entry_addr:	.WORD	entry
 __phys_load_addr:	.WORD	0xA0000000
-__phys_target_addr:	.WORD	0xB0000000
+__phys_target_addr:	.WORD	0xAAAAAAAA //0xB0000000 // BOARD SPECIFIC
 __virt_load_addr:	.WORD	0xA0000000
-__phys_early_io:	.WORD	0x53F00000
+__phys_early_io:	.WORD	0xAAAAAAAA //0x53F00000 // BOARD SPECIFIC
 __reloc_ttbr1:		.WORD	0xA0000000
 __entry_addr:		.WORD	entry
 __kernel_b_size:	.WORD	0x0
+__board_infos_size:	.WORD	0x18
 __kernel_mb_size:	.WORD	0x0
 __reset_addr:		.WORD	_reset
 __undef_addr:		.WORD	_undef
@@ -305,6 +329,18 @@ __irq_addr:			.WORD	_irq
 __fiq_addr:			.WORD	_fiq
 __ttbr1_addr:		.WORD	__ttbr1
 //__ttbr0_addr:		.WORD	__ttbr0
+
+__board_infos:
+// IMX53 QSB board
+.WORD	0xcc9
+.WORD	0xB0000000
+.WORD	0x53F00000
+
+// VEXPRESS A9
+.WORD	0x8e0
+.WORD	0x80000000
+.WORD	0x10000000
+
 
 .global __reset_addr
 .global __undef_addr

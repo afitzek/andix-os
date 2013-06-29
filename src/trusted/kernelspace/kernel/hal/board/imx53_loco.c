@@ -125,3 +125,4 @@ static const hal_platform_t imx53_loco = {
 
 HAL_PLATFORM_REGISTER(imx53_loco)
 
+

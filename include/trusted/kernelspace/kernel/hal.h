@@ -101,6 +101,14 @@ struct hal_platform {
  */
 typedef struct hal_platform hal_platform_t;
 
+struct board_info {
+	uint32_t sys_id;
+	uint32_t phys_target;
+	uint32_t early_io;
+};
+
+typedef struct board_info board_info_t;
+
 /**
  * Initialize HAL system
  * @param sysid The system ID
@@ -198,6 +206,7 @@ uint32_t hal_probe(platform_device_t* dev);
 #define HAL_PLATFORM_REGISTER(_name)                            \
   __attribute__((section(".hal.platform.ptr")))                 \
   const hal_platform_t *const __hal_platform_##_name = &_name;
+
 
 /* \} group */
 
