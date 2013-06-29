@@ -17,6 +17,8 @@ doc: tz_kernel_doc tz_tee_runtime_doc
 .PHONY: pdfdoc
 pdfdoc: tz_kernel_pdfdoc tz_tee_runtime_pdfdoc
 
+qemu: tz_kernel_qemu
+
 ####
 # Tool Build targets
 ####
@@ -76,6 +78,12 @@ tz_kernel_pdfdoc:
 	$(start-build-pdfdoc-command) $(TZ_KERNEL)
 	$(sep-command)
 	@$(make-command) $(TZ_KERNEL_SRC) pdfdoc
+	$(sep-command)
+
+tz_kernel_qemu:
+	$(start-build-command) $(TZ_KERNEL)
+	$(sep-command)
+	@$(make-command) $(TZ_KERNEL_SRC) run_qemu
 	$(sep-command)
 
 ####

@@ -3,7 +3,11 @@ OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
 SECTIONS
 {
 	start = .; _start = .; __start = .;
+	#ifdef QEMU
+	.text 0xC0010000 : AT(0xB0010000) {
+	#else
 	.text 0xC0008000 : AT(0xB0008000) {
+	#endif
 		code = .; _code = .; __code = .;
 		*(.reset)
 		*(.text)

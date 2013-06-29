@@ -69,6 +69,11 @@ define arm-ld-command
 @$(ARMLD) $(LDFLAGS) -o $@ $^ $(LIBS)
 endef
 
+define arm-objcpy-command
+@echo [ARM-TZ] Make raw image: $@
+@$(ARMOBJCOPY) -O binary $^ $@
+endef
+
 define arm-cc-command
 @echo [ARM-TZ] Building: $@
 @$(ARMCC) $(CFLAGS) -c $< -o $@

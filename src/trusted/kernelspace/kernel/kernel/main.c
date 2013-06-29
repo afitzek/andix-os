@@ -29,7 +29,7 @@ extern uint32_t _rodata_end;
 extern uint32_t _bss;
 extern uint32_t _bss_end;
 extern uint32_t svc_stack;
-extern uint32_t __phys_load_addr;
+extern uint32_t __phys_target_addr;
 extern uint32_t __virt_load_addr;
 extern uint32_t __kernel_mb_size;
 extern uint32_t payload;
@@ -66,7 +66,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	uint32_t _mon_vect = (uint32_t) &__monitor_vector;
 	uint32_t* csu = (uint32_t*) 0x63F9C000;
 	uintptr_t csu_base;
-	uint32_t* v_load_addr = (uint32_t*)__virt_load_addr;
+	uint32_t* v_load_addr = (uint32_t*) __virt_load_addr;
 	clk_request_t clk_request;
 	//uint32_t i = 0;
 
@@ -157,7 +157,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 			(&dtb_end - &dtb) * 4);
 	main_debug("svc_stack: 0x%x", &svc_stack);
 	main_debug("virt addr: 0x%x", __virt_load_addr);
-	main_debug("phys addr: 0x%x", __phys_load_addr);
+	main_debug("phys addr: 0x%x", __phys_target_addr);
 	main_debug("k MB size: 0x%x", __kernel_mb_size);
 	main_debug("_end:      0x%x", &_end);
 
@@ -173,7 +173,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	main_debug("ATAGS @ physical 0x%x", atag_base);
 
-	//atag_base = map_atags((uintptr_t) atag_base);
+	atag_base = map_atags((uintptr_t) atag_base);
 
 	main_debug("ATAGS @ virtual 0x%x", atag_base);
 
@@ -201,6 +201,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	main_info("%s VIRTUAL MEMORY LAYOUT %s", SEPERATOR, SEPERATOR);
 
 	dump_kernel_mmu((uint32_t) &_code, (uint32_t) &_end);
+
+	dump_mmu_full();
 
 	main_info("%s VIRTUAL MEMORY LAYOUT [DONE] %s", SEPERATOR, SEPERATOR);
 
@@ -255,20 +257,23 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	enable_irq();
 	enable_fiq();
 
-	tzmem_init();
+	if (tzmem_init() != HAL_SUCCESS) {
+		main_info("No TZ memory controller booting anyway!");
+	} else {
 
-	tzmem_dump();
+		tzmem_dump();
 
-	if(pmm_protect_secure_mem() != 0) {
-		main_error("=====================================================");
-		main_error("CANNOT PERFORM SECURE BOOT!");
-		main_error("FAILED TO PROTECT ALL SECURE MEMORY!");
-		main_error("=====================================================");
-		kpanic();
+		if (pmm_protect_secure_mem() != 0) {
+			main_error("=====================================================");
+			main_error("CANNOT PERFORM SECURE BOOT!");
+			main_error("FAILED TO PROTECT ALL SECURE MEMORY!");
+			main_error("=====================================================");
+			kpanic();
+		}
+
+		tzmem_dump();
+
 	}
-
-	tzmem_dump();
-
 	main_info("%s HAL SYSTEM [DONE] %s", SEPERATOR, SEPERATOR);
 	// ========================================================================
 
@@ -287,7 +292,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	print_tasks();
 
-	main_info("Protected MEM 0x%x @ 0x%x", (*v_load_addr), __phys_load_addr);
+	main_info("Protected MEM 0x%x @ 0x%x", (*v_load_addr), __phys_target_addr);
 
 	switch_to_task(main_task);
 

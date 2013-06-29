@@ -12,6 +12,8 @@ doc/generated/**/*
 
 # Ignore temp joe files
 *~
+*.rld
+*.qld
 
 # Ignore eclipse files
 .project

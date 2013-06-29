@@ -256,12 +256,13 @@ void dump_mmu(uint32_t vstart, uint32_t vend, uint32_t* l1_tt) {
 	uint32_t idx_end = vend >> 20;
 	uint32_t l2idx = 0;
 
+	vmm_debug("Dumping Table @ 0x%x 0x%x -> 0x%x", l1_tt, vstart, vend);
+
 	if (vend <= vstart) {
 		return;
 	}
 	//uint32_t* l1_tt = p_to_v(get_kernel_table());
 
-	vmm_debug("Dumping Table @ 0x%x", l1_tt);
 
 	vmm_debug("  V START  ...    V END   ->   P START  ...     P END  ");
 

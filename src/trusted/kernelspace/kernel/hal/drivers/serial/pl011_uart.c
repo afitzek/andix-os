@@ -64,3 +64,10 @@ uint32_t pl011_uart_ioctl(platform_device_t *dev, uint32_t request,
 	return (HAL_E_IOCTL_REQ_NOT_AVAIL);
 }
 
+static const platform_driver_t pl011_uart_driver = { .probe = pl011_uart_probe,
+		.release = pl011_uart_release, .write = pl011_uart_write, .read =
+				pl011_uart_read, .ioctl = pl011_uart_ioctl, .driver = { .name =
+				PL011_UART_DRIVER_NAME, .driver_data = NULL } };
+
+HAL_DRIVER_REGISTER(pl011_uart_driver)
+

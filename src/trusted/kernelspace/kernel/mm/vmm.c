@@ -179,6 +179,7 @@ void init_vmm(struct atag* startTag) {
 	vmm_debug("Stack Memory:");
 	vmm_debug("virtual : 0x%x ... 0x%x", virt_smm_start, virt_smm_end);
 	vmm_debug("-----------------------------------");
+	pmm_dump();
 	vmm_debug("=========================================");
 }
 

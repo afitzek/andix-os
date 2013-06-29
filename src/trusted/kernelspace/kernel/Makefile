@@ -38,26 +38,44 @@ OPT_FLAGS = -Wall -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -mapcs
 
 ASFLAGS = $(OPT_FLAGS) -g -mcpu=cortex-a8
 CFLAGS = $(OPT_FLAGS) -DBUILD_DATE=\"$(BUILD_DATE)\" -DSHOW_MEM_LAYOUT -DBUILD_NUM=\"$(BUILD_NUM)\" -DVERSION=\"$(VERSION)\" -DUSER=\"$(USER)\" -DINFO -DDEBUG -DGITHASH=\"$(GITHASH)\" -DIMX53_LOCO -DAKERNEL -g -mcpu=cortex-a8 -nostdlib -nostdinc
-LDFLAGS = -T link.ld -nostdlib $(BUILD_NUMBER_LDFLAGS)
+LDFLAGS = -nostdlib $(BUILD_NUMBER_LDFLAGS)
 MKIMAGEARGS = -A arm -O linux -T kernel -a 0x70000000 -e 0x70008000 -n "ANDIX" -C none -d $(OUTDIR)andix.elfagain
+LDQEMUFLAGS = -DQEMU=1
+LDQEMUFALGS_FILE = -T link.qld
+LDREALFALGS_FILE = -T link.rld
+QEMUARGS = -M vexpress-a9 -kernel $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.bin_qemu -nographic -serial stdio -s -S -m 1024
+QEMUPATH = /home/andy/UNI/DiplArbeit/source/qemu-trustzone/arm-softmmu/qemu-system-arm
 
 .PHONY: all
 
 all:	getpayloads mkbuilddirs $(OUTDIR)uImage.bin
 
-$(OUTDIR)uImage.bin: $(OUTDIR)andix.elfagain $(OUTDIR)andix.symagain
+run_qemu: $(OUTDIR)andix_qemu.bin_qemu
+	$(QEMUPATH) $(QEMUARGS)
+
+$(OUTDIR)uImage.bin: $(OUTDIR)andix_qemu.bin_qemu $(OUTDIR)andix.elfagain $(OUTDIR)andix.symagain
 	@echo "GITHASH: $(GITHASH)"
 	@$(MKIMAGE) $(MKIMAGEARGS) $(OUTDIR)uImage.bin
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/kernel
 	@cp $(OUTDIR)uImage.bin $(ANDIX_DEPLOY_DIR)/tz/kernel/andix.img
+	@cp $(OUTDIR)andix_qemu.bin_qemu $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.bin_qemu
 
 $(OUTDIR)%.symagain: $(OUTDIR)%.elfagain
 	$(arm-sym-command)
 
-$(OUTDIR)%.elfagain:  $(OBJS) $(OUTDIR)symbol_table.o
-	$(arm-ld-command) $(LIBGCC_FILE)
+$(OUTDIR)%.bin: $(OUTDIR)%.elfagain
+	$(arm-objcpy-command)
 
-$(OUTDIR)symbol_table.o : $(OUTDIR)andix.mys
+$(OUTDIR)%.bin_qemu: $(OUTDIR)%.elfagain_qemu
+	$(arm-objcpy-command)
+
+$(OUTDIR)%.elfagain_qemu:  $(OBJS) $(OUTDIR)%.st
+	@$(ARMLD) $(LDQEMUFALGS_FILE) -o $@  $^ $(LIBGCC_FILE)
+	
+$(OUTDIR)%.elfagain:  $(OBJS) $(OUTDIR)%.st
+	@$(ARMLD) $(LDREALFALGS_FILE) -o $@  $^ $(LIBGCC_FILE)
+
+$(OUTDIR)%.st : $(OUTDIR)%.mys
 	@echo 
 	@echo Converting Symbol table: $@
 	@cp $(<) $(*).tmp
@@ -75,8 +93,13 @@ $(OUTDIR)symbol_table.o : $(OUTDIR)andix.mys
 %.sym: %.elf
 	$(arm-sym-command)
 
+$(OUTDIR)andix_qemu.elf:  $(OBJS) $(BUILD_NUMBER_FILE)
+	@$(ARMCC) -E -P -x c  $(LDQEMUFLAGS) -o link.qld link.ld
+	@$(ARMLD) $(LDQEMUFALGS_FILE) -o $@  $^ $(LIBGCC_FILE)
+
 $(OUTDIR)andix.elf:  $(OBJS) $(BUILD_NUMBER_FILE)
-	@$(ARMLD) $(LDFLAGS) -o $@  $^ $(LIBGCC_FILE)
+	@$(ARMCC) -E -P -x c  -o link.rld link.ld
+	@$(ARMLD) $(LDREALFALGS_FILE) -o $@  $^ $(LIBGCC_FILE)
 
 
 .PHONY: doc

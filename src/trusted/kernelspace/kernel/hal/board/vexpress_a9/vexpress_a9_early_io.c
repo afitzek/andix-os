@@ -16,18 +16,18 @@ void ve_a9_early_init() {
 }
 
 void ve_a9_early_putchar(uint8_t c) {
-	while ((__raw_readw((void*) ve_a9_early_ufr) & PL011_TX_FULL)!= 0){
+	while ((__raw_readl((void*) ve_a9_early_ufr) & PL011_TX_FULL)!= 0){
 		NOP;
 	}
-	__raw_writew(c, (void*) ve_a9_early_udr);
+	__raw_writel(c, (void*) ve_a9_early_udr);
 }
 
 uint8_t ve_a9_early_getchar() {
-	while ((__raw_readw((void*) ve_a9_early_ufr) & PL011_RX_EMPTY)!= 0){
+	while ((__raw_readl((void*) ve_a9_early_ufr) & PL011_RX_EMPTY)!= 0){
 		NOP;
 	}
 
-	uint8_t c = (__raw_readw((void*) ve_a9_early_udr) & 0xFF);
+	uint8_t c = (__raw_readl((void*) ve_a9_early_udr) & 0xFF);
 	return ((char) c);
 }
 

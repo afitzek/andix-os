@@ -210,9 +210,16 @@ DI: // Map IO 0x53F00000 -> 0x53F00000
 	SUB r3, r3, r4
 	ADD r0, r0, r3
 	//LDR r0, =0x70208000
-	LDR r1, =0x14FC
+	//LDR r1, =0x14FC
+	LDR r1, __phys_early_io
+	MOV r1, r1, LSR #18
 	ADD r0, r0, r1
 	LDR r1, __phys_early_io 			// early output ... physical addr
+	MOV r2, #0xFF
+	MOV r2, r2, LSL #4
+	ADD r2, #0xF
+	MOV r2, r2, LSL #20
+	AND r1, r1, r2
 	ADD	r1, r1, #0x02
 	ORR	r1, r1, #3 << 10
 	STR	r1, [r0], #4
@@ -338,8 +345,8 @@ __board_infos:
 
 // VEXPRESS A9
 .WORD	0x8e0
-.WORD	0x80000000
-.WORD	0x10000000
+.WORD	0x60010000
+.WORD	0x10009000
 
 
 .global __reset_addr
