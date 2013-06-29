@@ -373,6 +373,7 @@ int32_t map_kernel_sections(uint32_t start, uint32_t end, uint32_t vstart,
  */
 void unmap_virtual_phys_kern() {
 	uint32_t* l1_tt = p_to_v(get_kernel_table());
+	vmm_debug("Kernel L1 Table@ 0x%x", l1_tt);
 	uint32_t virtual_address = __phys_load_addr;
 	uint32_t l1_index = virtual_address >> 20; // Use upper 12 bits as index
 	uint32_t l1_index_end = l1_index + __kernel_mb_size;

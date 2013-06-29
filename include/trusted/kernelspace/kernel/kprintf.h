@@ -222,8 +222,8 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define vmm_error(...) subsys_error(VMM_TAG, __VA_ARGS__)
 #define vmm_info(...) subsys_info(VMM_TAG, __VA_ARGS__)
-//#define vmm_debug(...) subsys_debug(VMM_TAG, __VA_ARGS__)
-#define vmm_debug(...) non_print_handler(VMM_TAG, __VA_ARGS__)
+#define vmm_debug(...) subsys_debug(VMM_TAG, __VA_ARGS__)
+//#define vmm_debug(...) non_print_handler(VMM_TAG, __VA_ARGS__)
 
 // SMM
 

@@ -14,6 +14,7 @@
 extern uint32_t _end;
 extern uint32_t _code;
 extern uint32_t __phys_load_addr;
+extern uint32_t __phys_target_addr;
 extern uint32_t __virt_load_addr;
 
 uint8_t heap_init = 0;
@@ -56,7 +57,7 @@ uint32_t map_atags(uintptr_t phys) {
 	vmm_debug("Mapping ATAGS @ 0x%x", section_description.vaddr);
 
 	if (map_kernel_memory(&section_description) != 0) {
-		kpanic();
+		return (virt_to_phys(phys));
 	}
 
 	return (section_description.vaddr + ((uint32_t) phys & 0xFFFFF));
@@ -248,7 +249,7 @@ void* v_to_p(void* ptr) {
  * @return the offset between kernel virtual and physical space
  */
 uint32_t getKernelVirtualOffset() {
-	return (__virt_load_addr - __phys_load_addr);
+	return (__virt_load_addr - __phys_target_addr);
 }
 
 /**

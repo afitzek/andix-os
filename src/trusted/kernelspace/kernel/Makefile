@@ -39,7 +39,7 @@ OPT_FLAGS = -Wall -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -mapcs
 ASFLAGS = $(OPT_FLAGS) -g -mcpu=cortex-a8
 CFLAGS = $(OPT_FLAGS) -DBUILD_DATE=\"$(BUILD_DATE)\" -DSHOW_MEM_LAYOUT -DBUILD_NUM=\"$(BUILD_NUM)\" -DVERSION=\"$(VERSION)\" -DUSER=\"$(USER)\" -DINFO -DDEBUG -DGITHASH=\"$(GITHASH)\" -DIMX53_LOCO -DAKERNEL -g -mcpu=cortex-a8 -nostdlib -nostdinc
 LDFLAGS = -T link.ld -nostdlib $(BUILD_NUMBER_LDFLAGS)
-MKIMAGEARGS = -A arm -O linux -T kernel -a 0xB0000000 -e 0xB0008000 -n "ANDIX" -C none -d $(OUTDIR)andix.elfagain
+MKIMAGEARGS = -A arm -O linux -T kernel -a 0x70000000 -e 0x70008000 -n "ANDIX" -C none -d $(OUTDIR)andix.elfagain
 
 .PHONY: all
 

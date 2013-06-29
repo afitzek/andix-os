@@ -78,10 +78,24 @@ __setup_mmu:
 	LDR r0, =_end
 	LDR r1, =_code
 	SUB r0, r0, r1
+	STR r0, __kernel_b_size
 	MOV r0, r0, LSR #20
 	ADD r0, r0, #2
 	STR r0, __kernel_mb_size
-
+/*	ADR r0, __entry_reloc
+	LDR r3, __phys_load_addr
+	LDR r4, __phys_target_addr
+	CMP r3, r4
+	BGE __load_ge
+	SUB r3, r4, r3
+	ADD r0, r0, r3
+	B   __reloc_go_off
+__load_ge:
+	SUB r3, r3, r4
+	SUB r0, r0, r3
+__reloc_go_off:
+	BX	r0
+__entry_reloc:*/
 	// Clear TTBR1
 	ADR	r0, _reset
 	LDR r3, __ttbr1_addr
@@ -123,7 +137,7 @@ DCC:
 	MOV r1, r1, LSR #18
 	ADD r0, r0, r1
 	//ADD r0, r0, #12288				// start of 0xC0000000
-	LDR r1, __phys_load_addr 			// physical addr 0x7....
+	LDR r1, __phys_target_addr 			// physical addr 0x7....
 	ADD	r1, r1, #0x02
 	ORR	r1, r1, #3 << 10
 	// r1 = entry value str to current r0! 512 times
@@ -151,7 +165,7 @@ DR: // Create 1:1 mapping 70000000 -> B0000000
 	MOV r1, r1, LSR #18
 	ADD r0, r0, r1
 	//ADD r0, r0, #11264
-	LDR r1, __phys_load_addr 			// physical addr
+	LDR r1, __phys_target_addr 			// physical addr
 	ADD	r1, r1, #0x02
 	ORR	r1, r1, #3 << 10
 	// r1 = entry value str to current r0! 512 times
@@ -175,10 +189,25 @@ DI: // Map IO 0x53F00000 -> 0x53F00000
 	//LDR r0, =0x70208000
 	LDR r1, =0x14FC
 	ADD r0, r0, r1
-	LDR r1, =0x53F00000 			// early output ... physical addr
+	LDR r1, __phys_early_io 			// early output ... physical addr
 	ADD	r1, r1, #0x02
 	ORR	r1, r1, #3 << 10
 	STR	r1, [r0], #4
+	// relocate to target memory
+__start_reloc:
+	// Check reloc conditions
+	LDR r0, __phys_load_addr
+	LDR r1, __phys_target_addr
+	LDR r2, __kernel_b_size
+	//CMP	r0, r1
+	//BGE	__done_reloc
+__reloc_copy:
+	// Perform copy ...
+	LDR     r3, [r0], #4
+    STR     r3, [r1], #4
+    SUBS    r2, r2, #4
+    BNE     __reloc_copy
+__done_reloc:
 	//ADR	r0, __ttbr0
 	//SUB r0, r0, #40960			// start of TTBR0
 	ADR	r0, _reset
@@ -186,14 +215,22 @@ DI: // Map IO 0x53F00000 -> 0x53F00000
 	LDR r4, __reset_addr
 	SUB r3, r3, r4
 	ADD r0, r0, r3
+	LDR r1, __phys_load_addr
+	LDR r2, __phys_target_addr
+	SUB r2, r2, r1
+	ADD r0, r0, r2
 	MCR p15, 0, r0, c2, c0, 0
 	//ADR	r0, __ttbr1
 	//SUB r0, r0, #24576			// start of TTBR1
-	ADR	r0, _reset
+	/*ADR	r0, _reset
 	LDR r3, __ttbr1_addr
 	LDR r4, __reset_addr
 	SUB r3, r3, r4
 	ADD r0, r0, r3
+	LDR r1, __phys_load_addr
+	LDR r2, __phys_target_addr
+	SUB r2, r2, r1
+	ADD r0, r0, r2*/
 	MCR p15, 0, r0, c2, c0, 1
 	MOV r0, #1
 	MCR p15, 0, r0, c2, c0, 2
@@ -246,13 +283,18 @@ _no_handler:
 .global __phys_entry_addr
 .global __entry_addr
 .global __phys_load_addr
+.global __phys_target_addr
 .global __virt_load_addr
 .global __kernel_mb_size
 
 __phys_entry_addr:	.WORD	entry
 __phys_load_addr:	.WORD	0xA0000000
+__phys_target_addr:	.WORD	0xB0000000
 __virt_load_addr:	.WORD	0xA0000000
+__phys_early_io:	.WORD	0x53F00000
+__reloc_ttbr1:		.WORD	0xA0000000
 __entry_addr:		.WORD	entry
+__kernel_b_size:	.WORD	0x0
 __kernel_mb_size:	.WORD	0x0
 __reset_addr:		.WORD	_reset
 __undef_addr:		.WORD	_undef

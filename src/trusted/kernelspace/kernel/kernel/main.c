@@ -173,7 +173,7 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	main_debug("ATAGS @ physical 0x%x", atag_base);
 
-	atag_base = map_atags((uintptr_t) atag_base);
+	//atag_base = map_atags((uintptr_t) atag_base);
 
 	main_debug("ATAGS @ virtual 0x%x", atag_base);
 
