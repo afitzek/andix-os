@@ -43,15 +43,14 @@ MKIMAGEARGS = -A arm -O linux -T kernel -a 0x70000000 -e 0x70008000 -n "ANDIX" -
 LDQEMUFLAGS = -DQEMU=1
 LDQEMUFALGS_FILE = -T link.qld
 LDREALFALGS_FILE = -T link.rld
-QEMUARGS = -M vexpress-a9 -kernel $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.bin_qemu -nographic -serial stdio -s -S -m 1024
-QEMUPATH = /home/andy/UNI/DiplArbeit/source/qemu-trustzone/arm-softmmu/qemu-system-arm
+QEMUARGS = -M vexpress-a9 -kernel $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.bin_qemu -nographic -s -S -m 1024
 
 .PHONY: all
 
 all:	getpayloads mkbuilddirs $(OUTDIR)uImage.bin
 
 run_qemu: $(OUTDIR)andix_qemu.bin_qemu
-	$(QEMUPATH) $(QEMUARGS)
+	$(TZ_QEMU) $(QEMUARGS)
 
 $(OUTDIR)uImage.bin: $(OUTDIR)andix_qemu.bin_qemu $(OUTDIR)andix.elfagain $(OUTDIR)andix.symagain
 	@echo "GITHASH: $(GITHASH)"

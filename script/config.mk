@@ -29,4 +29,6 @@ PERL := $(shell which perl)
 
 DOC := $(shell which doxygen)
 
+TZ_QEMU := /home/andy/UNI/DiplArbeit/andix/extern/qemu-trustzone/arm-softmmu/qemu-system-arm
+
 MKIMAGE := /home/andy/UNI/DiplArbeit/source/u-boot/tools/mkimage

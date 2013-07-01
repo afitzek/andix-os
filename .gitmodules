@@ -1,0 +1,3 @@
+[submodule "extern/qemu-trustzone"]
+	path = extern/qemu-trustzone
+	url = https://github.com/jowinter/qemu-trustzone.git
