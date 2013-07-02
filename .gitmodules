@@ -1,3 +1,6 @@
 [submodule "extern/qemu-trustzone"]
 	path = extern/qemu-trustzone
 	url = https://github.com/jowinter/qemu-trustzone.git
+[submodule "extern/embtoolkit.git"]
+	path = extern/embtoolkit.git
+	url = git://git.embtoolkit.org/embtoolkit.git
