@@ -32,8 +32,8 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 ###############################################################################
 
-LIBGCC_FILE = $(ARM_TOOLCHAIN_LIB_DIR)libgcc.a
-
+#LIBGCC_FILE = $(ARM_TOOLCHAIN_LIB_DIR)libgcc.a
+LIBGCC_FILE = 
 OPT_FLAGS = -Wall -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -mapcs-frame -mapcs-stack-check
 
 ASFLAGS = $(OPT_FLAGS) -g -mcpu=cortex-a8
