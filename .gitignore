@@ -17,6 +17,7 @@ doc/generated/**/*
 *~
 *.rld
 *.qld
+*.OS
 
 # Ignore eclipse files
 .project

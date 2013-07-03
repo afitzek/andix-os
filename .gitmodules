@@ -4,3 +4,15 @@
 [submodule "extern/embtoolkit.git"]
 	path = extern/embtoolkit.git
 	url = git://git.embtoolkit.org/embtoolkit.git
+[submodule "extern/llvm"]
+	path = extern/llvm
+	url = https://github.com/llvm-mirror/llvm.git
+[submodule "extern/binutils"]
+	path = extern/binutils
+	url = https://gnu.googlesource.com/binutils
+[submodule "extern/compiler-rt"]
+	path = extern/compiler-rt
+	url = https://github.com/llvm-mirror/compiler-rt.git
+[submodule "extern/clang"]
+	path = extern/clang
+	url = https://github.com/llvm-mirror/clang.git
