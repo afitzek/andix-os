@@ -199,9 +199,8 @@ typedef struct atag atag_t;
 /**
  * Setup ATAGS for rich OS
  * @param start memory start address
- * @param cmdline boot command line
  */
-void atag_generate_nonsecure(uintptr_t start, const char* cmdline,
+void atag_generate_nonsecure(uintptr_t start,
 		uint32_t rdstart, uint32_t size);
 
 /**
@@ -236,6 +235,16 @@ struct atag* atag_get_current();
  * @return the current atags
  */
 struct atag* atag_copy(struct atag* startTag);
+
+/**
+ * Extracts cmd line from atags
+ */
+const char* atag_get_cmdline(struct atag* startTag);
+
+/**
+ * Generates guest cmd line for guest atags
+ */
+const char* atag_get_guest_cmdline(struct atag* startTag);
 
 // ===================================================================
 // Internal atag functions

@@ -44,10 +44,11 @@ struct atag* atag_get_current() {
 	return (cur_atags);
 }
 
-void atag_generate_nonsecure(uintptr_t start, const char* cmdline,
+void atag_generate_nonsecure(uintptr_t start,
 		uint32_t rdstart, uint32_t rdsize) {
 	atag_setup_core(start);
 	atag_setup_revision();
+	char* cmdline = atag_get_guest_cmdline(atag_get_current());
 	list* pos = NULL;
 	list* next = NULL;
 	list* phys_mem = pmm_get_mem_list();
@@ -60,15 +61,41 @@ void atag_generate_nonsecure(uintptr_t start, const char* cmdline,
 			}
 		}
 	}
+
 	if (cmdline != NULL ) {
 		atag_setup_cmdline(cmdline);
+		kfree((uintptr_t)cmdline);
 	}
-	if(rdstart != 0) {
+	if (rdstart != 0) {
 		atag_setup_initrd(rdstart, rdsize);
 	}
 	//atag_setup_mem(0x70000000, 0x20000000); // TODO: We should generate this
 	//atag_setup_mem(0xC0000000, 0x10000000); // TODO: We should generate this
 	atag_setup_end();
+}
+
+const char* atag_get_cmdline(struct atag* startTag) {
+	struct atag* atag = startTag;
+	uint8_t* ptr = (uint8_t*) startTag;
+	do {
+		if (atag->hdr.tag == ATAG_CMDLINE) {
+			return ((const char*)atag->u.cmdline.cmdline);
+		}
+		ptr = (uint8_t*) atag;
+		atag = (struct atag*) (ptr + (atag->hdr.size * 4));
+	} while (atag->hdr.tag != ATAG_NONE);
+	return (NULL);
+}
+
+const char* atag_get_guest_cmdline(struct atag* startTag) {
+	const char* cmdline = atag_get_cmdline(startTag);
+	char* ncmdline = NULL;
+	if(cmdline != NULL) {
+		ncmdline = kmalloc(strlen(cmdline) + 1);
+		strncpy(ncmdline, cmdline, strlen(cmdline) + 1);
+		// TODO: could be used for andix parameters ...
+	}
+	return (ncmdline);
 }
 
 void atag_dump(struct atag* startTag) {

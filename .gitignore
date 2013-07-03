@@ -3,6 +3,9 @@
 build
 build/**/*
 
+toolchain
+toolchain/**/*
+
 # Ignore deploy dir
 deploy
 deploy/**/*
