@@ -8,6 +8,8 @@ cd ../../projects/compiler-rt
 git checkout release_33
 cd $ROOT
 cd build/llvm
+CC=$(which gcc)
+CXX=$(which g++)
 if [ ! -e Makefile ]; then
   echo "configuring LLVM+CLANG"
   ../../extern/llvm/configure --target=arm-none-eabi --enable-interwork --prefix=$ROOT/toolchain
