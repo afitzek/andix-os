@@ -255,7 +255,7 @@ void entry_main_task() {
 	 vatag_ptr += 0x40;
 	 dst = (uint8_t*) vatag_ptr;
 
-	 atag_generate_nonsecure((uintptr_t) dst, "", 0, 0);
+	 atag_generate_nonsecure((uintptr_t) dst, 0, 0);
 	 main_info("Setup ATAGS:");
 	 atag_dump((struct atag*) dst);
 	 kdumpMem(dst, 100);

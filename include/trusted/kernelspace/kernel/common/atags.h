@@ -270,6 +270,21 @@ void atag_setup_core(uintptr_t address);
 void atag_setup_mem(uint32_t start, uint32_t len);
 
 /**
+ * Setup the revision atag
+ */
+void atag_setup_revision();
+
+/**
+ * Setup init ramdisk atag
+ */
+void atag_setup_initrd(uint32_t start, uint32_t size);
+
+/**
+ * Setup cmdline atag
+ */
+void atag_setup_cmdline(const char * line);
+
+/**
  * Setup a none atag for finish the current ATAG params (internal structure)
  *
  * Don't call this out of atag_generate_nonsecure!

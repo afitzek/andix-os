@@ -12,7 +12,7 @@ CC=$(which gcc)
 CXX=$(which g++)
 if [ ! -e Makefile ]; then
   echo "configuring LLVM+CLANG"
-  ../../extern/llvm/configure --target=arm-none-eabi --enable-interwork --prefix=$ROOT/toolchain
+  ../../extern/llvm/configure --enable-targets=arm --target=arm-none-eabi --enable-interwork --prefix=$ROOT/toolchain
 fi
 echo "building LLVM+CLANG"
 make

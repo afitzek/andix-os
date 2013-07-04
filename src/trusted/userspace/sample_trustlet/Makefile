@@ -34,7 +34,7 @@ ANDIXRUNTIME = $(ANDIX_DEPLOY_DIR)/libandix.a
 
 ASFLAGS = -g -mcpu=cortex-a8
 CFLAGS = -I $(ANDIX_INC_COMMON) -I $(ARM_NEWLIB_INC_DIR) -I $(TZ_USER_TEE_INC) -I $(ARM_POLARSSL_INC_DIR) -I $(TZ_USER_C_INC) -I $(TZ_USER_SAMPLE_INC) -g -mcpu=cortex-a8
-LDFLAGS = -static -L$(ANDIX_DEPLOY_DIR)/tz/lib
+LDFLAGS = -L$(ANDIX_DEPLOY_DIR)/tz/lib --nostdlib
 
 all: mkbuilddirs $(OUTDIR)sample.bin
 
