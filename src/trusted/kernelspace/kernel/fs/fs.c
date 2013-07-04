@@ -397,7 +397,7 @@ int32_t fs_write(cfs_t* handle, void* buf, uint32_t count) {
 			goto cleanup;
 		}
 
-		uint32_t read_ret = ree_read(handle->fd, (void*) &blk,
+		int32_t read_ret = ree_read(handle->fd, (void*) &blk,
 				sizeof(cfs_blk_t));
 
 		if (read_ret < 0) {

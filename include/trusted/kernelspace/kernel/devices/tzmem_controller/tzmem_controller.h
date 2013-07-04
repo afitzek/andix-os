@@ -54,7 +54,7 @@ int32_t tzmem_init();
  * @param size The size of the memory area
  * @return HAL_*
  */
-int32_t tzmem_lock(uintptr_t* paddr, uint32_t size);
+int32_t tzmem_lock(uintptr_t paddr, uint32_t size);
 
 /**
  * Lock physical memory from nonsecure world

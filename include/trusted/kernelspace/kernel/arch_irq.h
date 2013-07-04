@@ -18,4 +18,6 @@ void disable_fiq();
 
 uint32_t get_cpsr();
 
+void send_fiq_irq_to_monitor();
+
 #endif /* ARCH_IRQ_H_ */

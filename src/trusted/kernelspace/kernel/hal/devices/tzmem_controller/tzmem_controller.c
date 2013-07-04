@@ -24,7 +24,7 @@ int32_t tzmem_init() {
 	return (HAL_E_INVALID_DEV);
 }
 
-int32_t tzmem_lock(uintptr_t* paddr, uint32_t size) {
+int32_t tzmem_lock(uintptr_t paddr, uint32_t size) {
 	tz_mem_ioparam_t param;
 	if (tzmem_dev == NULL ) {
 		hal_error("NO TZMEM Controller available!");

@@ -12,7 +12,8 @@
 #include <client_error_constants.h>
 
 // Data types
-
+#ifndef ANDIX_TYPES
+#define ANDIX_TYPES
 /**
  * a 32-bit unsigned integer
  */
@@ -27,7 +28,7 @@ typedef unsigned short uint16_t;
  * an 8-bit unsigned integer
  */
 typedef unsigned char  uint8_t;
-
+#endif
 /**
  * an unsigned integer large enough to hold the size of an object in memory
  */

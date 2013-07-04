@@ -48,7 +48,7 @@ void atag_generate_nonsecure(uintptr_t start,
 		uint32_t rdstart, uint32_t rdsize) {
 	atag_setup_core(start);
 	atag_setup_revision();
-	char* cmdline = atag_get_guest_cmdline(atag_get_current());
+	const char* cmdline = atag_get_guest_cmdline(atag_get_current());
 	list* pos = NULL;
 	list* next = NULL;
 	list* phys_mem = pmm_get_mem_list();
@@ -91,7 +91,11 @@ const char* atag_get_guest_cmdline(struct atag* startTag) {
 	const char* cmdline = atag_get_cmdline(startTag);
 	char* ncmdline = NULL;
 	if(cmdline != NULL) {
-		ncmdline = kmalloc(strlen(cmdline) + 1);
+		ncmdline = (char*) kmalloc(strlen(cmdline) + 1);
+		if(ncmdline == NULL) {
+			atag_error("Out of memory!");
+			kpanic();
+		}
 		strncpy(ncmdline, cmdline, strlen(cmdline) + 1);
 		// TODO: could be used for andix parameters ...
 	}

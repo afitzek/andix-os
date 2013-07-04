@@ -9,14 +9,14 @@
 #include <common/typedefs.h>
 #include <platform/platform.h>
 
-void *memset(void *s, int c, int n) {
+/*void *memset(void *s, int c, unsigned int n) {
 	uint8_t *d = s;
 
 	while (n--)
 		*(d++) = c;
 
 	return (s);
-}
+}*/
 
 uint8_t is_kernel_addr(uint32_t value) {
 	if(value >= 0x80000000) {

@@ -57,7 +57,7 @@ uint32_t map_atags(uintptr_t phys) {
 	vmm_debug("Mapping ATAGS @ 0x%x", section_description.vaddr);
 
 	if (map_kernel_memory(&section_description) != 0) {
-		return (virt_to_phys(phys));
+		return ((uint32_t)virt_to_phys(phys));
 	}
 
 	return (section_description.vaddr + ((uint32_t) phys & 0xFFFFF));

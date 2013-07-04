@@ -19,7 +19,8 @@
 #include <common/queue.h>
 
 uint32_t getCPSR();
-void *memset(void *s, int c, int n);
+void *memset(void *s, int c, unsigned int n);
+void *memmove(void *d, const void *s, unsigned int n);
 char* getModeString(uint32_t cpsr);
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))

@@ -19,6 +19,7 @@
 #include <platform/vector_debug.h>
 #include <devices/interrupt_controller/interrupt_controller.h>
 #include <devices/tzmem_controller/tzmem_controller.h>
+#include <arch_irq.h>
 
 #ifdef SHOW_MEM_LAYOUT
 extern uint32_t _data;
@@ -60,14 +61,10 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 
 	uint32_t atag_base = atagparam;
 
-	uint32_t cp15 = 0xFFFFFFFF;
 	uint32_t vectors = 0xFFFFFFFF;
 	uint32_t _svc_vect = (uint32_t) &__svc_vector;
 	uint32_t _mon_vect = (uint32_t) &__monitor_vector;
-	uint32_t* csu = (uint32_t*) 0x63F9C000;
-	uintptr_t csu_base;
 	uint32_t* v_load_addr = (uint32_t*) __virt_load_addr;
-	clk_request_t clk_request;
 	//uint32_t i = 0;
 
 	// ========================================================================

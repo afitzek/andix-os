@@ -34,9 +34,9 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 LIBGCC_FILE = $(ARM_TOOLCHAIN_LIB_DIR)libgcc.a
 #LIBGCC_FILE = 
-OPT_FLAGS = -Wall -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -mapcs-frame -mapcs-stack-check
+OPT_FLAGS = -Wall -std=gnu99 -O1 -I$(TZ_KERNEL_INC) -I$(ANDIX_INC_COMMON) -nostdlib -mfloat-abi=softfp -mcpu=cortex-a9
 
-ASFLAGS = -g -mcpu=cortex-a8
+ASFLAGS = -g -mcpu=cortex-a8 -mfloat-abi=softfp
 CFLAGS = $(OPT_FLAGS) -DBUILD_DATE=\"$(BUILD_DATE)\" -DSHOW_MEM_LAYOUT -DBUILD_NUM=\"$(BUILD_NUM)\" -DVERSION=\"$(VERSION)\" -DUSER=\"$(USER)\" -DINFO -DDEBUG -DGITHASH=\"$(GITHASH)\" -DIMX53_LOCO -DAKERNEL -g -mcpu=cortex-a8 -nostdlib -nostdinc
 LDFLAGS = -nostdlib $(BUILD_NUMBER_LDFLAGS)
 MKIMAGEARGS = -A arm -O linux -T kernel -a 0x70000000 -e 0x70008000 -n "ANDIX" -C none -d $(OUTDIR)andix.elfagain
@@ -121,14 +121,14 @@ pdfdoc: doc
 
 .PHONY: getpayloads
 getpayloads:
-	cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/manager.bin $(realpath $(TOP))/payload/manager.bin
-	cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/sample.bin $(realpath $(TOP))/payload/sample.bin
-	touch $(realpath $(TOP))/payload/userpayload.S
-	touch $(realpath $(TOP))/payload/samplepayload.S
-	touch $(realpath $(TOP))/payload/payload.S
-	touch $(realpath $(TOP))/payload/android_payload.S
-	touch $(realpath $(TOP))/payload/android_payload_rd.S
-	touch $(realpath $(TOP))/kernel/main.c
+	@cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/manager.bin $(realpath $(TOP))/payload/manager.bin
+	@cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/sample.bin $(realpath $(TOP))/payload/sample.bin
+	@touch $(realpath $(TOP))/payload/userpayload.S
+	@touch $(realpath $(TOP))/payload/samplepayload.S
+	@touch $(realpath $(TOP))/payload/payload.S
+	@touch $(realpath $(TOP))/payload/android_payload.S
+	@touch $(realpath $(TOP))/payload/android_payload_rd.S
+	@touch $(realpath $(TOP))/kernel/main.c
 
 .PHONY: mkbuilddirs		
 mkbuilddirs:
