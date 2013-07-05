@@ -24,7 +24,10 @@
 
 #define SWI_SYSD_INSTALL   0xA1
 
-static inline unsigned int __swi_1(unsigned int call, unsigned int arg0)
+#define forceinline __inline__ __attribute__((always_inline))
+#define ensure_forceinline __attribute__((always_inline))
+
+forceinline static unsigned int __swi_1(unsigned int call, unsigned int arg0)
 {
   register unsigned int __call __asm__("ip") = call;
   register unsigned int __arg0 __asm__("r0") = arg0;
@@ -36,7 +39,7 @@ static inline unsigned int __swi_1(unsigned int call, unsigned int arg0)
   return (__arg0);
 }
 
-static inline unsigned int __swi_2(unsigned int call, unsigned int arg0, unsigned int arg1)
+forceinline static unsigned int __swi_2(unsigned int call, unsigned int arg0, unsigned int arg1)
 {
   register unsigned int __call __asm__("ip") = call;
   register unsigned int __arg0 __asm__("r0") = arg0;
@@ -50,7 +53,7 @@ static inline unsigned int __swi_2(unsigned int call, unsigned int arg0, unsigne
   return (__arg0);
 }
 
-static inline unsigned int __swi_3(unsigned int call, unsigned int arg0, unsigned int arg1,
+forceinline static unsigned int __swi_3(unsigned int call, unsigned int arg0, unsigned int arg1,
 		unsigned int arg2)
 {
   register unsigned int __call __asm__("ip") = call;
@@ -67,7 +70,7 @@ static inline unsigned int __swi_3(unsigned int call, unsigned int arg0, unsigne
   return (__arg0);
 }
 
-static inline unsigned int __swi_4(unsigned int call, unsigned int arg0, unsigned int arg1,
+forceinline static unsigned int __swi_4(unsigned int call, unsigned int arg0, unsigned int arg1,
 		unsigned int arg2, unsigned int arg3)
 {
   register unsigned int __call __asm__("ip") = call;

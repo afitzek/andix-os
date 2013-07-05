@@ -18,26 +18,28 @@
 
 void setup_mode_stacks();
 
-static void inline setFIQSP(uintptr_t sp) {
+forceinline static void setFIQSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x11 \n"
 			"MOV sp, %0 \n"
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
 
-static void inline setIRQSP(uintptr_t sp) {
+forceinline static void setIRQSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x12 \n"
 			"MOV sp, %0 \n"
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
-static void inline setSVCSP(uintptr_t sp) {
+
+forceinline static void setSVCSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x13 \n"
 			"MOV sp, %0 \n"
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
-static uint32_t inline getSVCSP() {
+
+forceinline static uint32_t getSVCSP() {
 	uint32_t sp;
 	asm volatile(
 			"CPSID aif, #0x13 \n"
@@ -47,14 +49,14 @@ static uint32_t inline getSVCSP() {
 	return (sp);
 }
 
-static void inline setABTSP(uintptr_t sp) {
+forceinline static void setABTSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x17 \n"
 			"MOV sp, %0 \n"
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
 
-static uint32_t inline getABTSP() {
+forceinline static uint32_t getABTSP() {
 	uint32_t sp;
 	asm volatile(
 			"CPSID aif, #0x17 \n"
@@ -63,21 +65,21 @@ static uint32_t inline getABTSP() {
 	return (sp);
 }
 
-static void inline setUNDSP(uintptr_t sp) {
+forceinline static void setUNDSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x1B \n"
 			"MOV sp, %0 \n"
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
 
-static void inline setSYSSP(uintptr_t sp) {
+forceinline static void setSYSSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x1F \n"
 			"MOV sp, %0 \n"
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
 
-static uint32_t inline getSYSSP() {
+forceinline static uint32_t getSYSSP() {
 	uint32_t sp;
 	asm volatile(
 			"CPSID aif, #0x1F \n"
@@ -86,14 +88,14 @@ static uint32_t inline getSYSSP() {
 	return (sp);
 }
 
-static void inline setMONSP(uintptr_t sp) {
+forceinline static void setMONSP(uintptr_t sp) {
 	asm volatile(
 			"CPSID aif, #0x16 \n"
 			"MOV sp, %0 \n"
 			"CPS #0x13":: "r" (sp):"memory", "cc");
 }
 
-static uint32_t inline getMONSP() {
+forceinline static uint32_t getMONSP() {
 	uint32_t sp;
 	asm volatile(
 			"CPSID aif, #0x16 \n"
@@ -103,23 +105,23 @@ static uint32_t inline getMONSP() {
 	return (sp);
 }
 
-static void inline gotoSVCMode() {
+forceinline static void gotoSVCMode() {
 	asm volatile("CPSID aif, #0x13");
 }
 
-static void inline gotoUSRMode() {
+forceinline static void gotoUSRMode() {
 	asm volatile("CPSID aif, #0x10");
 }
 
-static void inline gotoABTMode() {
+forceinline static void gotoABTMode() {
 	asm volatile("CPSID aif, #0x17");
 }
 
-static void inline gotoMONMode() {
+forceinline static void gotoMONMode() {
 	asm volatile("CPSID aif, #0x16");
 }
 
-static uint32_t inline getSVCFPIntoAbt() {
+forceinline static uint32_t getSVCFPIntoAbt() {
 	uint32_t fp;
 	__asm__ __volatile__(
 			"CPSID aif, #0x13 \n"
@@ -128,7 +130,7 @@ static uint32_t inline getSVCFPIntoAbt() {
 	return (fp);
 }
 
-static uint32_t inline getSYSFPIntoAbt() {
+forceinline static uint32_t getSYSFPIntoAbt() {
 	uint32_t fp;
 	__asm__ __volatile__(
 			"CPSID aif, #0x1F \n"
@@ -137,7 +139,7 @@ static uint32_t inline getSYSFPIntoAbt() {
 	return (fp);
 }
 
-static uint32_t inline getMONFPIntoAbt() {
+forceinline static uint32_t getMONFPIntoAbt() {
 	uint32_t fp;
 	__asm__ __volatile__(
 			"CPSID aif, #0x16 \n"

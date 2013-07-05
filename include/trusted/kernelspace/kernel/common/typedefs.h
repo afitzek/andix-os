@@ -34,6 +34,8 @@ typedef uint64_t*			uint64ptr_t;
 typedef int64_t*			int64ptr_t;
 #endif
 
+#define forceinline __inline__ __attribute__((always_inline))
+#define ensure_forceinline __attribute__((always_inline))
 
 #ifndef NULL
 #define NULL ((void *)0)
