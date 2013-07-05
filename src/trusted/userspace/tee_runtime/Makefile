@@ -35,8 +35,8 @@ POLAR_NAME = libpolarssl.a
 ANDIXC_FILE = $(ANDIX_DEPLOY_DIR)/tz/lib/$(ANDIXC_NAME)
 POLAR_FILE = $(ARM_POLARSSL_LIB_DIR)/$(POLAR_NAME)
 
-ASFLAGS = -g -mcpu=cortex-a8
-CFLAGS = -I $(TZ_USER_C_INC) -I $(TZ_USER_TEE_INC) -I $(ARM_NEWLIB_INC_DIR) -I $(ARM_POLARSSL_INC_DIR) -g -mcpu=cortex-a8
+ASFLAGS = -g -mcpu=cortex-a8  -mfloat-abi=soft
+CFLAGS = -I $(TZ_USER_C_INC) -I $(TZ_USER_TEE_INC) -I $(ARM_NEWLIB_INC_DIR) -I $(ARM_POLARSSL_INC_DIR) -g -mcpu=cortex-a8 -mfloat-abi=soft
 LDFLAGS = -nostdlib
 
 all: mkbuilddirs $(OUTDIR)libandix.a

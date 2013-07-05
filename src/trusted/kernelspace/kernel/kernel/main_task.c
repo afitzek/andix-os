@@ -16,7 +16,7 @@
 #include <loader.h>
 #include <mm/mm.h>
 #include <fs/fs.h>
-#include <polarssl/sha1.h>
+#include <tropicssl/sha1.h>
 #include <tee/tee.h>
 
 extern uint32_t payload;

@@ -9,10 +9,9 @@
 #include <fs/fs.h>
 #include <common.h>
 #include <fs/ree_fs.h>
-#include <polarssl/md.h>
-#include <polarssl/aes.h>
-#include <polarssl/pbkdf2.h>
-#include <polarssl/sha2.h>
+#include <tropicssl/aes.h>
+#include <tropicssl/sha2.h>
+#include <tropicssl/pbkdf2.h>
 #include <devices/random/random.h>
 
 uint8_t* secret_value;
@@ -48,10 +47,7 @@ uint8_t __fs_decrypt_and_verify(cfs_blk_t *cfs, uint8_t* key, uint32_t klen,
 	memcpy(iv, cfs->iv, 16);
 
 	// set decryption key
-	if (aes_setkey_dec(&aes_ctx, derkey, 256) != 0) {
-		crypto_fs_error("Failed to setting dec key");
-		return (-1);
-	}
+	aes_setkey_dec(&aes_ctx, derkey, 256);
 
 	// reset sha context
 	memset(&sha_ctx, 0, sizeof(sha_ctx));
@@ -69,11 +65,8 @@ uint8_t __fs_decrypt_and_verify(cfs_blk_t *cfs, uint8_t* key, uint32_t klen,
 	}
 
 	// decrypt data
-	if (aes_crypt_cbc(&aes_ctx, AES_DECRYPT, sizeof(cfs_data_t), iv,
-			(uint8_t*) &(cfs->data.blk), (uint8_t*) outputdata) != 0) {
-		crypto_fs_error("Block decryption failed!");
-		return (-1);
-	}
+	aes_crypt_cbc(&aes_ctx, AES_DECRYPT, sizeof(cfs_data_t), iv,
+			(uint8_t*) &(cfs->data.blk), (uint8_t*) outputdata);
 
 	// reset sha context
 	memset(&sha_ctx, 0, sizeof(sha_ctx));
@@ -118,18 +111,11 @@ uint8_t __fs_encrypt_and_sign(cfs_blk_t *cfs, uint8_t* key, uint32_t klen,
 	memcpy(iv, cfs->iv, 16);
 
 	// set encryption key
-	if (aes_setkey_enc(&aes_ctx, derkey, 256) != 0) {
-		crypto_fs_error("Failed to setting enc key");
-		return (-1);
-	}
+	aes_setkey_enc(&aes_ctx, derkey, 256);
 
 	// encrypt data
-	if (aes_crypt_cbc(&aes_ctx, AES_ENCRYPT, sizeof(cfs_data_t), iv,
-			(uint8_t*) inputdata, (uint8_t*) &(cfs->data.blk)) != 0) {
-		crypto_fs_error("Block encryption failed!");
-		return (-1);
-	}
-
+	aes_crypt_cbc(&aes_ctx, AES_ENCRYPT, sizeof(cfs_data_t), iv,
+			(uint8_t*) inputdata, (uint8_t*) &(cfs->data.blk));
 	// reset hash context
 	memset(&sha_ctx, 0, sizeof(sha_ctx));
 
@@ -144,9 +130,6 @@ uint8_t __fs_encrypt_and_sign(cfs_blk_t *cfs, uint8_t* key, uint32_t klen,
 }
 
 void fs_set_secret(uint8_t* secret, uint32_t len) {
-	md_context_t ctx;
-	const md_info_t *mdinfo = md_info_from_type(POLARSSL_MD_SHA256);
-
 	uint32_t udid = getUDID();
 	secret_value = (uint8_t*) kmalloc(32);
 
@@ -155,9 +138,7 @@ void fs_set_secret(uint8_t* secret, uint32_t len) {
 		kpanic();
 	}
 
-	md_init_ctx(&ctx, mdinfo);
-	pbkdf2_hmac(&ctx, secret, len, (uint8_t*) &udid, 4, 8096, 32, secret_value);
-	md_free_ctx(&ctx);
+	pbkdf2_sha256_hmac(secret, len, (uint8_t*) &udid, 4, 8096, 32, secret_value);
 
 	secret_length = 32;
 

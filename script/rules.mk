@@ -76,7 +76,6 @@ endef
 
 define arm-cc-command
 @echo [ARM-TZ] Building: $@
-#@$(ARMCC) $(CFLAGS) -c $< -o $@
 @$(ARMCC) $(CFLAGS) -c $< -S -o $<.OS
 @$(ARMRAS) $(ASFLAGS) -c $<.OS -o $@
 @rm $<.OS
@@ -84,7 +83,6 @@ endef
 
 define arm-as-command
 @echo [ARM-TZ] Building: $@
-#@$(ARMCC) $(CFLAGS) -c $< -o $@
 @$(ARMCC) $(CFLAGS) -c $< -S -o $<.OS
 @$(ARMRAS) $(ASFLAGS) -c $<.OS -o $@
 @rm $<.OS
