@@ -33,7 +33,7 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 ANDIXRUNTIME = $(ANDIX_DEPLOY_DIR)/libandix.a
 
 ASFLAGS = -g -mcpu=cortex-a8  -mfloat-abi=soft
-CFLAGS = -I $(ANDIX_INC_COMMON) -I $(ARM_NEWLIB_INC_DIR) -I $(TZ_USER_TEE_INC) -I $(ARM_POLARSSL_INC_DIR) -I $(TZ_USER_C_INC) -I $(TZ_USER_MANAGER_INC) -g -mcpu=cortex-a8  -mfloat-abi=soft
+CFLAGS = -I $(ANDIX_INC_COMMON) -I $(ARM_NEWLIB_INC_DIR) -I $(TZ_USER_TEE_INC) -I $(ARM_TROPICSSL_INC_DIR) -I $(TZ_USER_C_INC) -I $(TZ_USER_MANAGER_INC) -g -mcpu=cortex-a8  -mfloat-abi=soft
 LDFLAGS = -static -L$(ANDIX_DEPLOY_DIR)/tz/lib
 
 all: mkbuilddirs $(OUTDIR)manager.bin

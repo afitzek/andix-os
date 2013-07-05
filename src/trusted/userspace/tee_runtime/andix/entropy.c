@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <polarssl/entropy.h>
 #include <fcntl.h>
 
 int platform_pseudo_entropy( void *data,
@@ -18,13 +17,13 @@ int platform_pseudo_entropy( void *data,
 	(*olen) = 0;
 
 	if(fd <= 0)
-		return (POLARSSL_ERR_ENTROPY_SOURCE_FAILED);
+		return (-1);
 
 	ret  = read(fd, output, len);
 
 	if(ret != len) {
 		close(fd);
-		return (POLARSSL_ERR_ENTROPY_SOURCE_FAILED);
+		return (-1);
 	}
 
 	close(fd);

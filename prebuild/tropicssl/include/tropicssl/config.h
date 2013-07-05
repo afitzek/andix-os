@@ -36,13 +36,8 @@
  * or disable features selectively, and reduce the global
  * memory footprint.
  */
-/**
- * changed by Andreas Fitzek to compile in ANDIX kernelspace 2013
- */
 #ifndef TROPICSSL_CONFIG_H
 #define TROPICSSL_CONFIG_H
-
-#include <common/andixTropicSSL.h>
 
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE 1
@@ -95,9 +90,8 @@
 /*
  * Uncomment this macro to store the AES tables in ROM.
  *
- **/
 #define TROPICSSL_AES_ROM_TABLES
-
+ */
 
 /*
  * Module:  library/aes.c
@@ -145,7 +139,7 @@
  *
  * This module enabled the following cipher suites:
  */
-//#define TROPICSSL_CAMELLIA_C
+#define TROPICSSL_CAMELLIA_C
 
 /*
  * Module:  library/certs.c
@@ -184,7 +178,7 @@
  *      SSL_EDH_RSA_DES_168_SHA
  *      SSL_EDH_RSA_AES_256_SHA
  */
-//#define TROPICSSL_DHM_C
+#define TROPICSSL_DHM_C
 
 /*
  * Module:  library/havege.c

@@ -31,27 +31,27 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 ###############################################################################
 
 ANDIXC_NAME = libandixC.a
-POLAR_NAME = libpolarssl.a
+TROPIC_NAME = libtropicssl.a
 ANDIXC_FILE = $(ANDIX_DEPLOY_DIR)/tz/lib/$(ANDIXC_NAME)
-POLAR_FILE = $(ARM_POLARSSL_LIB_DIR)/$(POLAR_NAME)
+TROPIC_FILE = $(ARM_TROPICSSL_LIB_DIR)/$(TROPIC_NAME)
 
 ASFLAGS = -g -mcpu=cortex-a8  -mfloat-abi=soft
-CFLAGS = -I $(TZ_USER_C_INC) -I $(TZ_USER_TEE_INC) -I $(ARM_NEWLIB_INC_DIR) -I $(ARM_POLARSSL_INC_DIR) -g -mcpu=cortex-a8 -mfloat-abi=soft
+CFLAGS = -I $(TZ_USER_C_INC) -I $(TZ_USER_TEE_INC) -I $(ARM_NEWLIB_INC_DIR) -I $(ARM_TROPICSSL_INC_DIR) -g -mcpu=cortex-a8 -mfloat-abi=soft
 LDFLAGS = -nostdlib
 
 all: mkbuilddirs $(OUTDIR)libandix.a
 
 $(OUTDIR)libandix.a: $(OBJS)
 	@mkdir -p $(OUTDIR)tmp/mylib
-	@mkdir -p $(OUTDIR)tmp/polar
+	@mkdir -p $(OUTDIR)tmp/tropic
 	@cp $(ANDIXC_FILE) $(OUTDIR)tmp/mylib/
-	@cp $(POLAR_FILE) $(OUTDIR)tmp/polar/
+	@cp $(TROPIC_FILE) $(OUTDIR)tmp/tropic/
 	@echo Extracting AndixC: $(ANDIXC_NAME)
 	@cd $(OUTDIR)tmp/mylib/; $(ARMAR) xo $(ANDIXC_NAME)
-	@echo Extrating POLAR SSL: $(POLAR_NAME)
-	@cd $(OUTDIR)tmp/polar/; $(ARMAR) xo $(POLAR_NAME)
+	@echo Extrating Tropic SSL: $(TROPIC_NAME)
+	@cd $(OUTDIR)tmp/tropic/; $(ARMAR) xo $(TROPIC_NAME)
 	@echo Building Runtime archiv
-	@$(ARMAR) rcs $@ $^ $(OUTDIR)tmp/mylib/*.o $(OUTDIR)tmp/polar/*.o
+	@$(ARMAR) rcs $@ $^ $(OUTDIR)tmp/mylib/*.o $(OUTDIR)tmp/tropic/*.o
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/lib
 	@cp $(OUTDIR)libandix.a $(ANDIX_DEPLOY_DIR)/tz/lib
 	@rm -rf tmp

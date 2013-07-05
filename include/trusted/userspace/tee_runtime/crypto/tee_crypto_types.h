@@ -14,11 +14,6 @@
  *	\{
  */
 
-#include <polarssl/md.h>
-#include <polarssl/cipher.h>
-#include <polarssl/rsa.h>
-#include <polarssl/pbkdf2.h>
-
 /**
  * Operation Mode
  */
@@ -48,9 +43,7 @@ typedef struct {
 } TEE_OperationInfo;
 
 struct __TEE_OperationHandle {
-	//TODO: Polar Handle proxy
-	TEE_OperationInfo info;
-	md_context_t* md_context;
+
 };
 
 typedef struct __TEE_OperationHandle* TEE_OperationHandle;

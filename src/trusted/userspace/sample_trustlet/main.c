@@ -7,13 +7,9 @@
 
 #include <trustlets/sample_trustlet.h>
 #include <tee_internal_api.h>
-#include <polarssl/aes.h>
-#include <polarssl/entropy.h>
-#include <polarssl/entropy_poll.h>
-#include <polarssl/ctr_drbg.h>
-#include <polarssl/pbkdf2.h>
-#include <polarssl/md.h>
-#include <polarssl/sha2.h>
+#include <tropicssl/aes.h>
+#include <tropicssl/pbkdf2.h>
+#include <tropicssl/sha2.h>
 #include <sample_internal.h>
 #include <fcntl.h>
 #include <swi.h>
@@ -53,16 +49,12 @@ void printIVKey(uint8_t* iv) {
 TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 	// TODO: create new key
 	keystore_t store;
-	ctr_drbg_context ctr_drbg;
-	entropy_context entropy;
 	aes_context aes;
 	char *pers = PBKDF2_SALT;
 	int ret;
 	uint8_t iv[16];
 	uint8_t masterkey[AES_KEY_SIZE_BYTES];
 	uint8_t userkey[AES_KEY_SIZE_BYTES];
-	md_context_t md_ctx;
-	const md_info_t* md_info;
 	char key_file_name[20];
 	char input[INPUT_SIZE];
 	int fd;
@@ -79,13 +71,6 @@ TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 		return (TEE_ERROR_BAD_PARAMETERS);
 	}
 
-	// Initialize md context
-	md_info = md_info_from_type(POLARSSL_MD_SHA256);
-
-	md_init_ctx(&md_ctx, md_info);
-
-	printf("MD context initialized!\n");
-
 	// Open key file
 	memset(key_file_name, 0, 20);
 
@@ -95,7 +80,6 @@ TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 
 	if (fd < 0) {
 		printf("Failed to open file key\n");
-		md_free_ctx(&md_ctx);
 		return (TEEC_ERROR_GENERIC);
 	}
 
@@ -116,7 +100,7 @@ TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 	printf("------------------------------\n");
 
 	// Generate aes key to encrypt real key
-	pbkdf2_hmac(&md_ctx, input, strlen(input), pers, strlen(pers),
+	pbkdf2_sha256_hmac(input, strlen(input), pers, strlen(pers),
 			PBKDF2_ITERATIONS, AES_KEY_SIZE_BYTES, userkey);
 
 	// Encrypt master key with derived key
@@ -138,7 +122,6 @@ TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 	write(fd, &store, sizeof(keystore_t));
 
 	close(fd);
-	md_free_ctx(&md_ctx);
 	return (TEEC_SUCCESS);
 }
 
@@ -149,16 +132,11 @@ TEE_Result read_key(const char* file, uint8_t* decryptedKey, uint32_t keyID) {
 	char input[INPUT_SIZE];
 	int tries = 0;
 	int ok = 0;
-	md_context_t md_ctx;
-	const md_info_t* md_info;
 	uint8_t masterkey[AES_KEY_SIZE_BYTES];
 	uint8_t userkey[AES_KEY_SIZE_BYTES];
 	uint8_t keyhash[HASH_BYTES];
 	char *pers = PBKDF2_SALT;
 	aes_context aes;
-
-	// Initialize md context
-	md_info = md_info_from_type(POLARSSL_MD_SHA256);
 
 	fd = open(file, O_RDONLY);
 
@@ -188,10 +166,8 @@ TEE_Result read_key(const char* file, uint8_t* decryptedKey, uint32_t keyID) {
 		read(0, input, INPUT_SIZE);
 		printf("------------------------------\n");
 
-		md_init_ctx(&md_ctx, md_info);
-
 		// Generate aes key to encrypt real key
-		pbkdf2_hmac(&md_ctx, input, strlen(input), pers, strlen(pers),
+		pbkdf2_sha256_hmac(input, strlen(input), pers, strlen(pers),
 				PBKDF2_ITERATIONS, AES_KEY_SIZE_BYTES, userkey);
 
 		// Decrypt master key with derived key
@@ -209,16 +185,13 @@ TEE_Result read_key(const char* file, uint8_t* decryptedKey, uint32_t keyID) {
 			printf("Stored plain Key: \n");
 			printAESKey(decryptedKey);
 */
-			md_free_ctx(&md_ctx);
 			return (TEEC_SUCCESS);
 		}
 
 		tries++;
 		if (tries > 3) {
-			md_free_ctx(&md_ctx);
 			return (TEEC_ERROR_SECURITY);
 		}
-		md_free_ctx(&md_ctx);
 	}
 
 	return (TEEC_ERROR_SECURITY);
@@ -299,12 +272,8 @@ TEE_Result sample_encrypt(uint32_t paramTypes, TEE_Param params[4]) {
 		// Encrypt payload
 		aes_setkey_enc(&aes, masterkey, AES_KEY_SIZE_BITS);
 
-		if (aes_crypt_cbc(&aes, AES_ENCRYPT, params[1].memref.size, iv,
-				params[1].memref.buffer, enc_data) != 0) {
-			printf("aes_crypt_cbc failed\n");
-			free(enc_data);
-			return (TEEC_ERROR_GENERIC);
-		}
+		aes_crypt_cbc(&aes, AES_ENCRYPT, params[1].memref.size, iv,
+				params[1].memref.buffer, enc_data);
 
 		memcpy(pack->data, enc_data, pack->datasize);
 /*
@@ -391,94 +360,6 @@ TEE_Result sample_decrypt(uint32_t paramTypes, TEE_Param params[4]) {
 	}
 
 	return (res);
-}
-
-TEE_Result test_entropy() {
-	entropy_context entropy;
-	ctr_drbg_context ctr_drbg;
-	int ret;
-	uint8_t iv[16];
-	size_t olen;
-	uint8_t key[AES_KEY_SIZE_BYTES];
-	uint8_t userkey[AES_KEY_SIZE_BYTES];
-	char *pers = "aes_trustlet_example";
-
-	memset(iv, 0, 16);
-	memset(key, 0, AES_KEY_SIZE_BYTES);
-
-	printf("platform_entropy_poll\n");
-
-	platform_pseudo_entropy(NULL, key, AES_KEY_SIZE_BYTES, &olen);
-
-	printf("Generated random KEY:\n");
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
-			key[11], key[12], key[13], key[14], key[15]);
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
-			key[11], key[12], key[13], key[14], key[15]);
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[16], key[17],
-			key[18], key[19], key[20], key[21], key[22], key[23]);
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[24], key[25],
-			key[26], key[27], key[28], key[29], key[30], key[31]);
-
-	printf("entropy_init\n");
-
-	entropy_init(&entropy);
-
-	//entropy_update_manual(&entropy, pers, strlen(pers));
-
-	printf("entropy_add_source\n");
-
-	entropy_add_source(&entropy, &platform_pseudo_entropy, NULL,
-			ENTROPY_MIN_PLATFORM);
-
-	printf("ctr_drbg_init\n");
-
-	if ((ret = ctr_drbg_init(&ctr_drbg, entropy_func, &entropy,
-			(unsigned char *) pers, strlen(pers))) != 0) {
-		printf(" failed! ctr_drbg_init returned -0x%04x\n", -ret);
-		return (TEEC_ERROR_GENERIC);
-	}
-
-	printf("ctr_drbg_random\n");
-
-	if ((ret = ctr_drbg_random(&ctr_drbg, iv, 16)) != 0) {
-		printf(" failed! ctr_drbg_random returned -0x%04x\n", -ret);
-		return (TEEC_ERROR_GENERIC);
-	}
-
-	printf("ctr_drbg_random\n");
-
-	if ((ret = ctr_drbg_random(&ctr_drbg, key, AES_KEY_SIZE_BYTES)) != 0) {
-		printf(" failed! ctr_drbg_random returned -0x%04x\n", -ret);
-		return (TEEC_ERROR_GENERIC);
-	}
-
-	printf("Generated random IV:\n");
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", iv[0], iv[1], iv[2],
-			iv[3], iv[4], iv[5], iv[6], iv[7]);
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", iv[8], iv[9], iv[10],
-			iv[11], iv[12], iv[13], iv[14], iv[15]);
-
-	printf("Generated random KEY:\n");
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
-			key[11], key[12], key[13], key[14], key[15]);
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[8], key[9], key[10],
-			key[11], key[12], key[13], key[14], key[15]);
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[16], key[17],
-			key[18], key[19], key[20], key[21], key[22], key[23]);
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", key[24], key[25],
-			key[26], key[27], key[28], key[29], key[30], key[31]);
-
-	return (TEEC_SUCCESS);
 }
 
 void TA_CreateEntryPoint() {
