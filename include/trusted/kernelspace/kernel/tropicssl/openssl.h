@@ -41,6 +41,11 @@
 #ifndef TROPICSSL_OPENSSL_H
 #define TROPICSSL_OPENSSL_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/aes.h>
 #include <tropicssl/md5.h>
 #include <tropicssl/rsa.h>
@@ -170,5 +175,7 @@ inline int RSA_private_encrypt(int size, unsigned char *input,
 	else
 		return -1;
 }
+
+/* \} group */
 
 #endif /* openssl.h */

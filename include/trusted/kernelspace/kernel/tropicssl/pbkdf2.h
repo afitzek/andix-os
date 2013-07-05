@@ -38,21 +38,59 @@
 #ifndef PBKDF2_H_
 #define PBKDF2_H_
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/sha1.h>
 #include <tropicssl/sha2.h>
 #include <common.h>
 
+/**
+ * PBKDF2 Implementation using SHA1
+ * @param password The password
+ * @param plen The password len
+ * @param salt The salt
+ * @param slen The salt len
+ * @param iteration_count Iteration count
+ * @param key_length The key len
+ * @param output The output key
+ */
 int pbkdf2_sha1_hmac(const unsigned char *password, size_t plen,
                  const unsigned char *salt, size_t slen,
                  unsigned int iteration_count,
                  uint32_t key_length, unsigned char *output);
 
+/**
+ * PBKDF2 Implementation using SHA256
+ * @param password The password
+ * @param plen The password len
+ * @param salt The salt
+ * @param slen The salt len
+ * @param iteration_count Iteration count
+ * @param key_length The key len
+ * @param output The output key
+ */
 int pbkdf2_sha256_hmac(const unsigned char *password, size_t plen,
 		const unsigned char *salt, size_t slen, unsigned int iteration_count,
 		int32_t key_length, unsigned char *output);
 
+/**
+ * PBKDF2 Implementation using SHA224
+ * @param password The password
+ * @param plen The password len
+ * @param salt The salt
+ * @param slen The salt len
+ * @param iteration_count Iteration count
+ * @param key_length The key len
+ * @param output The output key
+ */
 int pbkdf2_sha224_hmac(const unsigned char *password, size_t plen,
 		const unsigned char *salt, size_t slen, unsigned int iteration_count,
 		uint32_t key_length, unsigned char *output);
+
+
+/* \} group */
 
 #endif /* PBKDF2_H_ */

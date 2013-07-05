@@ -39,16 +39,76 @@
 #ifndef UMM_H_
 #define UMM_H_
 
+/**
+ * \addtogroup umm
+ *	\{
+ */
+
 #include <task/task.h>
 
+/**
+ * Create a new page directory
+ */
 uintptr_t create_page_directory(uintptr_t* ptd);
+
+/**
+ * Maps initail user stack to virtual page directory
+ * @param vptd The virtual page directory
+ */
 void map_initial_user_stack(uintptr_t vptd);
+
+/**
+ * Unmaps memory from task
+ * @param vaddr The virutal address
+ * @param size The size
+ * @param task The task
+ */
 void unmap_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task);
+
+/**
+ * Map memory to task
+ * @param paddr The physical address
+ * @param size The size
+ * @param task The task
+ */
 uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task);
+
+/**
+ * Frees a mapped page from task
+ * @param page Address on the page
+ * @param task The task
+ */
 void free_task_mapped_page(void* page, task_t *task);
+
+/**
+ * Allocates mapped pages in the task vm
+ * @param numpages The number of pages
+ * @param task The task
+ */
 void* allocate_task_mapped_page_frames(uint32_t numpages, task_t *task);
+
+/**
+ * Maps memory to userspace vptd
+ * @param vptd The virtual page directory
+ * @param section The memory info section
+ */
 void map_user_memory(uintptr_t vptd, kernel_mem_info_t *section);
+
+/**
+ * Allocates mapped memory to task
+ * @param size The size of the mapped memory
+ * @param task The task
+ */
 uint8_t* allocate_map_mem_to_task(uint32_t size, task_t* task);
+
+/**
+ * Fress memory from task
+ * @param vaddr The virtual address
+ * @param size The size to free
+ * @param task The task
+ */
 void free_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task);
+
+/* \} group */
 
 #endif /* UMM_H_ */

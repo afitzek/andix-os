@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_SSL_H
 #define TROPICSSL_SSL_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <time.h>
 
 #include <tropicssl/net.h>
@@ -545,4 +550,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
+
 #endif				/* ssl.h */

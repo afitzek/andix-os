@@ -39,6 +39,51 @@
 #ifndef TASK_TEE_H_
 #define TASK_TEE_H_
 
+/**
+ * \addtogroup teetask
+ *	\{
+ */
+
+/**
+ * TEE release memory handler
+ */
+uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation);
+
+/**
+ * TEE register memory handler
+ */
+uint32_t tee_register_mem(TZ_TEE_REGISTER_MEM* operation);
+
+/**
+ * TEE initialize context handler
+ */
+uint32_t tee_init_context(TZ_TEE_INIT_CTX* operation) ;
+
+/**
+ * TEE finalize context handler
+ */
+uint32_t tee_finalize_context(TZ_TEE_FIN_CTX* operation);
+
+/**
+ * TEE open session handler
+ */
+uint32_t tee_open_session(TZ_TEE_OPEN_SESSION* operation, TZ_TEE_SPACE* tee);
+
+/**
+ * TEE close session handler
+ */
+uint32_t tee_close_session(TZ_TEE_CLOSE_SESSION* operation, TZ_TEE_SPACE* tee);
+
+/**
+ * TEE invoke handler
+ */
+uint32_t tee_invoke(TZ_TEE_INVOKE_CMD* operation, TZ_TEE_SPACE* tee);
+
+/**
+ * Entry of tee task
+ */
 void tee_task_entry();
+
+/* \} group */
 
 #endif /* TASK_TEE_H_ */

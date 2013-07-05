@@ -52,6 +52,11 @@
 #ifndef TROPICSSL_BN_MUL_H
 #define TROPICSSL_BN_MUL_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/config.h>
 
 #if defined(TROPICSSL_HAVE_ASM)
@@ -730,5 +735,5 @@
 
 #endif /* C (generic)  */
 #endif /* C (longlong) */
-
+/* \} group */
 #endif /* bn_mul.h */

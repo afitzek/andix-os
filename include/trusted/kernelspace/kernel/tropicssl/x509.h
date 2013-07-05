@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_X509_H
 #define TROPICSSL_X509_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/rsa.h>
 
 #define TROPICSSL_ERR_ASN1_OUT_OF_DATA                      -0x0014
@@ -312,4 +317,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
+
 #endif				/* x509.h */

@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_BASE64_H
 #define TROPICSSL_BASE64_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #define TROPICSSL_ERR_BASE64_BUFFER_TOO_SMALL               -0x0010
 #define TROPICSSL_ERR_BASE64_INVALID_CHARACTER              -0x0012
 
@@ -92,4 +97,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+/* \} group */
 #endif				/* base64.h */

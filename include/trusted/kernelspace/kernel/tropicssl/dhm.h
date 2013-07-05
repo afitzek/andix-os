@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_DHM_H
 #define TROPICSSL_DHM_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/bignum.h>
 
 #define TROPICSSL_ERR_DHM_BAD_INPUT_DATA                    -0x0480
@@ -148,4 +153,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif

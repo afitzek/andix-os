@@ -39,6 +39,11 @@
 #ifndef TROPICSSL_PADLOCK_H
 #define TROPICSSL_PADLOCK_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/aes.h>
 
 #if (defined(__GNUC__) && defined(__i386__))
@@ -102,4 +107,7 @@ extern "C" {
 }
 #endif
 #endif				/* HAVE_X86  */
+
+/* \} group */
+
 #endif				/* padlock.h */

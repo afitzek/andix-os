@@ -39,14 +39,56 @@
 #ifndef SWI_NEWLIB_H_
 #define SWI_NEWLIB_H_
 
+/**
+ * \addtogroup swi
+ *	\{
+ */
+
+/**
+ * FStat swi call
+ */
 int32_t swi_fstat(int file);
+
+/**
+ * lseek swi call
+ */
 int32_t swi_lseek(int32_t file, uint32_t ptr, int32_t dir);
+
+/**
+ * write swi call
+ */
 int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size);
+
+/**
+ * read swi call
+ */
 int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size);
+
+/**
+ * heapend swi call
+ */
 uint32_t swi_heapend();
+
+/**
+ * close swi call
+ */
 int32_t swi_close(int file);
+
+/**
+ * open swi call
+ */
 int32_t swi_open(char *name, int flags, int mode);
+
+/**
+ * sbrk swi call
+ */
 int32_t swi_sbrk(int32_t incr);
+
+/**
+ * get pid swi call
+ */
 uint32_t swi_get_pid();
+
+/* \} group */
 
 #endif /* SWI_NEWLIB_H_ */

@@ -40,6 +40,11 @@
 #define TROPICSSL_TIMING_H
 
 /**
+ * \addtogroup crypto
+ *	\{
+ */
+
+/**
  * \brief          timer structure
  */
 struct hr_time {
@@ -80,4 +85,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
+
 #endif				/* timing.h */

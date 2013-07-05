@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_HAVEGE_H
 #define TROPICSSL_HAVEGE_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #define COLLECT_SIZE 1024
 
 /**
@@ -72,4 +77,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif				/* havege.h */

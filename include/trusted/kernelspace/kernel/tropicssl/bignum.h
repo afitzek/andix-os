@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_BIGNUM_H
 #define TROPICSSL_BIGNUM_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 //#include <stdio.h>
 
 #define TROPICSSL_ERR_MPI_FILE_IO_ERROR                     -0x0002
@@ -376,4 +381,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+/* \} group */
 #endif				/* bignum.h */

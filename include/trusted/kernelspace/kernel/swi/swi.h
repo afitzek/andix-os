@@ -47,6 +47,11 @@
 #include <swi/swi_secure.h>
 #include <platform/vector_debug.h>
 
+/**
+ * \addtogroup swi
+ *	\{
+ */
+
 #define	SEEK_SET	0
 #define	SEEK_CUR	1
 #define	SEEK_END	2
@@ -64,6 +69,11 @@
 #define SWI_SECURE_SET_UUID 0x82
 #define SWI_GET_RAND 0x83
 
+/**
+ * Dispatch swi method
+ */
 void dispatch_swi(uint32_t swi, cpu_state_t* cpu);
+
+/* \} group */
 
 #endif /* SWI_H_ */

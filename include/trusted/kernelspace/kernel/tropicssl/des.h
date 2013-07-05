@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_DES_H
 #define TROPICSSL_DES_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #define DES_ENCRYPT     1
 #define DES_DECRYPT     0
 
@@ -171,4 +176,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif				/* des.h */

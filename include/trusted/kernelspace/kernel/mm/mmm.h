@@ -42,7 +42,10 @@
 #include <common/typedefs.h>
 #include <kprintf.h>
 
-// Mapable memory manager
+/**
+ * \addtogroup mmm
+ *	\{
+ */
 
 /**
  * Initialize mapable memory
@@ -91,5 +94,7 @@ uint32_t mmm_get_end_addr();
  * @return 0 if not in mmm space, -1 if in space but not mapped, 1 if in space and mapped
  */
 uint8_t mmm_is_mem_addr(uintptr_t vaddr);
+
+/* \} group */
 
 #endif /* MMM_H_ */

@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_AES_H
 #define TROPICSSL_AES_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #define AES_ENCRYPT     1
 #define AES_DECRYPT     0
 
@@ -128,4 +133,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif				/* aes.h */

@@ -42,8 +42,10 @@
 #include <common/typedefs.h>
 #include <kprintf.h>
 
-// Stack memory manager
-
+/**
+ * \addtogroup smm
+ *	\{
+ */
 /**
  * Initialize stack memory manager
  * @param virt_start The virtual start address
@@ -92,7 +94,12 @@ uint32_t smm_get_end_addr();
  */
 uint8_t smm_is_mem_addr(uintptr_t vaddr);
 
-
+/**
+ * Maps stack memory of size
+ * @param size the stack size
+ */
 uintptr_t map_stack_mem(uint32_t size);
+
+/* \} group */
 
 #endif /* MMM_H_ */

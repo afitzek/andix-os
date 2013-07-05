@@ -42,6 +42,10 @@
 #include <common/typedefs.h>
 #include <communication_types.h>
 #include <task/task.h>
+/**
+ * \addtogroup service
+ *	\{
+ */
 
 typedef struct {
 	uint8_t ready;
@@ -49,10 +53,31 @@ typedef struct {
 	TZ_CTLR_SPACE* ctrl_space;
 } service_request;
 
+/**
+ * Request the service task to process the request space
+ */
 void service_do_request(TZ_CTLR_SPACE* space);
+
+/**
+ * Add request to request queue
+ */
 void service_add_request(service_request* request);
+
+/**
+ * Gets request from queue
+ */
 service_request* service_get_request();
+
+/**
+ * Entry point of service task
+ */
 void service_entry();
+
+/**
+ * Set service pre task
+ */
 void service_pre(task_t* task);
+
+/* \} group */
 
 #endif /* SERVICE_H_ */

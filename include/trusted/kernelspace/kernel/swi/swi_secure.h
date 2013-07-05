@@ -39,6 +39,12 @@
 #ifndef SWI_SECURE_H_
 #define SWI_SECURE_H_
 
+
+/**
+ * \addtogroup swi
+ *	\{
+ */
+
 typedef uint32_t			ta_rpc_command;
 
 #define TA_INVALID			0x00
@@ -68,7 +74,16 @@ typedef struct
 	uint32_t		result;
 } TA_RPC;
 
+/**
+ * Set uuid of task
+ */
 void swi_set_uuid(TASK_UUID* uuid);
+
+/**
+ * Gets tee rpc request
+ */
 void swi_get_secure_request(TA_RPC* rpc);
+
+/* \} group */
 
 #endif /* SWI_SECURE_H_ */

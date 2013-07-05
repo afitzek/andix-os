@@ -39,6 +39,11 @@
 #define TROPICSSL_SHA1_H
 
 /**
+ * \addtogroup crypto
+ *	\{
+ */
+
+/**
  * \brief          SHA-1 context structure
  */
 typedef struct {
@@ -138,4 +143,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
+
 #endif				/* sha1.h */

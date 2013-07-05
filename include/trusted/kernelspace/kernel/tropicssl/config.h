@@ -42,6 +42,11 @@
 #ifndef TROPICSSL_CONFIG_H
 #define TROPICSSL_CONFIG_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <common/andixTropicSSL.h>
 
 #ifndef _CRT_SECURE_NO_DEPRECATE
@@ -331,5 +336,7 @@
  * Caller:
  */
 #define TROPICSSL_XTEA_C
+
+/* \} group */
 
 #endif /* config.h */

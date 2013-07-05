@@ -39,6 +39,11 @@
 #define TROPICSSL_ARC4_H
 
 /**
+ * \addtogroup crypto
+ *	\{
+ */
+
+/**
  * \brief          ARC4 context structure
  */
 typedef struct {
@@ -79,4 +84,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif				/* arc4.h */

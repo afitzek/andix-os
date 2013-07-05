@@ -36,6 +36,11 @@
 #ifndef TROPICSSL_CAMELLIA_H
 #define TROPICSSL_CAMELLIA_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #define CAMELLIA_ENCRYPT     1
 #define CAMELLIA_DECRYPT     0
 
@@ -128,4 +133,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+/* \} group */
 #endif				/* camellia.h */

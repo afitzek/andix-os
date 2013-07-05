@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_CERTS_H
 #define TROPICSSL_CERTS_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,4 +59,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif				/* certs.h */

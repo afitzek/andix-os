@@ -42,7 +42,10 @@
 #include <kprintf.h>
 #include <common/list.h>
 
-// Physical memory manager
+/**
+ * \addtogroup pmm
+ *	\{
+ */
 
 #define MEM_TYPE_SECURE 	(1)
 #define MEM_TYPE_UNSECURE 	(0)
@@ -112,5 +115,7 @@ void pmm_free_page(void* page);
  * @return 0 on success -1 on failure
  */
 int32_t pmm_protect_secure_mem();
+
+/* \} group */
 
 #endif /* PMM_H_ */

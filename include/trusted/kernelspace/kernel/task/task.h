@@ -42,6 +42,11 @@
 #include <monitor/monitor.h>
 #include <common.h>
 
+/**
+ * \addtogroup task
+ *	\{
+ */
+
 #define TASKNAME_SIZE 50
 
 #define PROCESS_TASK "NS_PROCESSOR"
@@ -108,6 +113,9 @@ typedef struct {
 
 #define USER_START_MAPPED_MEM 0x70001000
 
+/**
+ * Entry point of idle task
+ */
 void idle_task_entry();
 
 /**
@@ -115,44 +123,186 @@ void idle_task_entry();
  */
 void entry_main_task();
 
+/**
+ * Initialize task system
+ */
 void init_task();
+
+/**
+ * Get current task
+ */
 task_t* get_current_task();
+
+/**
+ * Get current task id
+ */
 tid_t get_current_task_id();
+
+/**
+ * Sets current task
+ */
 void set_current_task(task_t* task);
+
+/**
+ * Creates new kernel task
+ */
 task_t* create_kernel_task(uint32_t mode, EXEC_CONTEXT_t context);
+
+/**
+ * Sets nonsecure cp access
+ */
 void nonsecure_set_cp_access(uint32_t cp);
+
+/**
+ * Sets the name of a task
+ */
 void task_set_name(task_t* task, char* name);
+
+/**
+ * Parse UUID from in to uuid
+ */
 int uuid_parse(const char *in, TASK_UUID* uuid);
 
+/**
+ * Sets the idle task
+ */
 void set_idle_task(task_t* task);
+
+/**
+ * Early task initailization
+ */
 void init_early_task();
+
+/**
+ * Sets the nonsecure task
+ */
 void set_nonsecure_task(task_t* task);
+
+/**
+ * Gets the nonsecure task
+ */
 task_t* get_nonsecure_task();
 
+/**
+ * Add task to task lsit
+ */
 void add_task(task_t* task);
+
+/**
+ * Remove task from task list
+ */
 void rem_task(task_t* task);
+
+/**
+ * Get task by id
+ */
 task_t* get_task_by_id(tid_t tid);
+
+/**
+ * Get task by name
+ */
 task_t* get_task_by_name(char* name);
+
+/**
+ * Get task by uuid
+ */
 task_t* get_task_by_uuid(TASK_UUID* uuid);
+
+/**
+ * Gets next ready task
+ */
 task_t* task_get_next_ready();
 
+/**
+ * Sets uuid empty
+ */
 void set_uuid_emtpy(TASK_UUID *uuid);
+/**
+ * Copies UUID
+ */
 void cpy_uuid(TASK_UUID *dst, TASK_UUID *src);
+
+/**
+ * Checks if uuid is empty
+ */
 uint8_t is_uuid_empty(TASK_UUID *uuid);
+
+/**
+ * Match uuids
+ */
 uint8_t match_uuids(TASK_UUID *a, TASK_UUID *b);
+
+/**
+ * Print available tasks
+ */
 void print_tasks();
 
+/**
+ * Initialize a new userspace task
+ */
 void init_userspace_task(task_t* task);
+
+/**
+ * Prepares userspace task from elf memory block
+ * @param start The start address
+ * @param end The end address
+ * @param name THe name of the new task
+ * @param uuid_string The uuid of the new task
+ */
 task_t* prepare_static_userspace_task(uintptr_t start, uintptr_t end,
 		char* name, char* uuid_string);
 
+
+/* \} group */
+
+/**
+ * \addtogroup process
+ *	\{
+ */
+
+/**
+ * Entry point for kernel process task
+ */
 void process_entry();
 
+/* \} group */
+
+/**
+ * \addtogroup task
+ *	\{
+ */
+
+/**
+ * Adds file handle to task
+ */
 void task_add_fhandle(task_t* task, task_file_handle_t* hdl);
+
+/**
+ * Gets file handle from task and fd
+ */
 task_file_handle_t* task_get_fhandle(task_t* task, int32_t fd);
+
+/**
+ * Gets next file file descriptor from task
+ */
 int32_t task_get_next_fd(task_t* task);
+
+/**
+ * Removes file handle from task
+ */
 void task_rem_fhandle(task_t* task, task_file_handle_t* hdl);
+
+/**
+ * Sets the system daemon task
+ */
 void set_sysd_task(task_t* task);
+
+
+/**
+ * Gets the system daemon task
+ */
 task_t* get_sysd_task();
+
+/* \} group */
 
 #endif /* TASK_H_ */

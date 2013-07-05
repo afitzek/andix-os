@@ -38,6 +38,11 @@
 #ifndef SSL_DEBUG_H
 #define SSL_DEBUG_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/config.h>
 #include <tropicssl/ssl.h>
 
@@ -93,4 +98,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+/* \} group */
 #endif				/* debug.h */

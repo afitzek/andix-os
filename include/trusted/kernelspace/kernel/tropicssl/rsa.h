@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_RSA_H
 #define TROPICSSL_RSA_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #include <tropicssl/bignum.h>
 
 #define TROPICSSL_ERR_RSA_BAD_INPUT_DATA                    -0x0400
@@ -298,4 +303,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
+
 #endif				/* rsa.h */

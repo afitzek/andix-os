@@ -36,6 +36,11 @@
 #ifndef TROPICSSL_XTEA_H
 #define TROPICSSL_XTEA_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #define XTEA_ENCRYPT     1
 #define XTEA_DECRYPT     0
 
@@ -80,4 +85,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
+
 #endif				/* xtea.h */

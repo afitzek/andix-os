@@ -39,6 +39,10 @@
 #ifndef MMU_H_
 #define MMU_H_
 
+/**
+ * \addtogroup mmu
+ *	\{
+ */
 
 /**
  * Gets the smallest boundary of virtual memory which is mapped
@@ -51,15 +55,68 @@
  */
 void vmm_get_virt_block_size(uintptr_t vtable, uint32_t addr, uintptr_t start, uintptr_t end);
 
+/**
+ * Unmap virtual address from kernel memory
+ * @param vaddr the virtual address to unmap
+ */
 void unmap_kernel_memory(uint32_t vaddr);
+
+/**
+ * Unmap virtual address from page directory
+ * @param vaddr the virtual address to unmap
+ * @param vpd the virtual address to the page directory
+ */
 void unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd);
+
+/**
+ * Map memory to kernel
+ * @param section the memory information
+ */
 int32_t map_kernel_memory(kernel_mem_info_t *section);
+
+/**
+ * Maps memory from start to end to kernel starting at vstart
+ * Memory template is in section
+ * @param start physical start address
+ * @param end physical end address
+ * @param vstart virtual start address
+ * @param section the memory information
+ */
 int32_t map_kernel_sections(uint32_t start, uint32_t end, uint32_t vstart,
 		kernel_mem_info_t *section);
+
+/**
+ * Dump page directory from vstart to vend from l1_tt
+ * @param vstart The virtual start address
+ * @param vend The virtual end address
+ * @param l1_tt The first level page directory
+ */
 void dump_mmu(uint32_t vstart, uint32_t vend, uint32_t* l1_tt);
+
+/**
+ * Dump kernel page directory from vstart to vend
+ * @param vstart The virtual start address
+ * @param vend The virtual end address
+ */
 void dump_kernel_mmu(uint32_t vstart, uint32_t vend);
+
+/**
+ * Dump full kernel page directory
+ */
 void dump_mmu_full();
+
+/**
+ * Unmaps boot 1:1 mapping of kernel code
+ */
 void unmap_virtual_phys_kern();
+
+/**
+ * Maps memory section into page directory (vtable)
+ * @param vtable The virtual page directory
+ * @param section the memory information
+ */
 int32_t map_memory_v(uintptr_t vtable, kernel_mem_info_t *section);
+
+/* \} group */
 
 #endif /* MMU_H_ */

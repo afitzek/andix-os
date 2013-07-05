@@ -39,6 +39,11 @@
 #define TROPICSSL_MD2_H
 
 /**
+ * \addtogroup crypto
+ *	\{
+ */
+
+/**
  * \brief          MD2 context structure
  */
 typedef struct {
@@ -136,4 +141,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif				/* md2.h */

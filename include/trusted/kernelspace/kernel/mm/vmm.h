@@ -45,6 +45,11 @@
 #include <mm/mmm.h>
 #include <cache.h>
 
+/**
+ * \addtogroup vmm
+ *	\{
+ */
+
 #define AP_SVC_NO_USR_NO 0x0
 #define AP_SVC_RW_USR_NO 0x1
 #define AP_SVC_RW_USR_RO 0x2
@@ -249,5 +254,6 @@ uint32_t vmm_get_kernel_heap_end_addr();
  */
 uint8_t vmm_is_kernel_heap_mem_addr(uintptr_t vaddr);
 
+/* \} group */
 
 #endif /* VMM_H_ */

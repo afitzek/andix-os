@@ -38,6 +38,11 @@
 #ifndef TROPICSSL_NET_H
 #define TROPICSSL_NET_H
 
+/**
+ * \addtogroup crypto
+ *	\{
+ */
+
 #define TROPICSSL_ERR_NET_UNKNOWN_HOST                      -0x0F00
 #define TROPICSSL_ERR_NET_SOCKET_FAILED                     -0x0F10
 #define TROPICSSL_ERR_NET_CONNECT_FAILED                    -0x0F20
@@ -133,4 +138,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+/* \} group */
 #endif				/* net.h */
