@@ -16,3 +16,6 @@
 [submodule "extern/clang"]
 	path = extern/clang
 	url = https://github.com/llvm-mirror/clang.git
+[submodule "extern/tropicssl"]
+	path = extern/tropicssl
+	url = git://gitorious.org/tropicssl/tropicssl.git
