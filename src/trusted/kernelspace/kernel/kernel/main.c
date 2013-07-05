@@ -99,30 +99,36 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	// Show Copyright information
 	main_info("");
 	main_info("      ANDIX is an ARM TrustZone monitor operating system.");
-	main_info(
-			"      Copyright (C) 2013  Andreas Fitzek <andreas.fitzek[at]iaik.tugraz.at>");
-	main_info("");
-	main_info(
-			"      This system is free software: you can redistribute it and/or modify");
-	main_info(
-			"      it under the terms of the GNU General Public License as published by");
-	main_info(
-			"      the Free Software Foundation, either version 3 of the License, or");
-	main_info("      (at your option) any later version.");
-	main_info("");
-	main_info(
-			"      This program is distributed in the hope that it will be useful,");
-	main_info(
-			"      but WITHOUT ANY WARRANTY; without even the implied warranty of");
-	main_info(
-			"      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
-	main_info("      GNU General Public License for more details.");
-	main_info("");
-	main_info(
-			"      You should have received a copy of the GNU General Public License");
-	main_info(
-			"      along with this program.  If not, see <http://www.gnu.org/licenses/>.");
-	main_info("");
+	main_info("      ");
+	main_info("      Copyright (c) 2012-2013, Andreas Fitzek");
+	main_info("      All rights reserved.");
+	main_info("      ");
+	main_info("      Redistribution and use in source and binary forms, ");
+	main_info("      with or without modification, are permitted provided ");
+	main_info("      that the following conditions are met:");
+	main_info("      Redistributions of source code must retain the above ");
+	main_info("      copyright notice, this list of conditions and the following ");
+	main_info("      disclaimer. Redistributions in binary form must reproduce ");
+	main_info("      the above copyright notice, this list of conditions and ");
+	main_info("      the following disclaimer in the documentation and/or ");
+	main_info("      other materials provided with the distribution. ");
+	main_info("      Neither the name of the nor the names of its contributors");
+	main_info("      may be used to endorse or promote products derived from ");
+	main_info("      this software without specific prior written permission. ");
+	main_info("      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND ");
+	main_info("      CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, ");
+	main_info("      INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF ");
+	main_info("      MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE ");
+	main_info("      DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ");
+	main_info("      CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, ");
+	main_info("      SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT ");
+	main_info("      NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; ");
+	main_info("      LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) ");
+	main_info("      HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN ");
+	main_info("      CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE ");
+	main_info("      OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS ");
+	main_info("      SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.");
+	main_info("      ");
 	main_info(
 			"============================================================================");
 
