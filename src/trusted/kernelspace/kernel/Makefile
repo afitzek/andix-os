@@ -43,7 +43,7 @@ MKIMAGEARGS = -A arm -O linux -T kernel -a 0x70000000 -e 0x70008000 -n "ANDIX" -
 LDQEMUFLAGS = -DQEMU=1
 LDQEMUFALGS_FILE = -T link.qld
 LDREALFALGS_FILE = -T link.rld
-QEMUARGS = -M vexpress-a9 -kernel $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.bin_qemu -nographic -s -S -m 1024
+QEMUARGS = -M vexpress-a9 -kernel $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.bin_qemu -m 1024 -append "console=ttyAMA0 root=/dev/nfs rootwait ip=dhcp nfsroot=10.0.2.2:/srv/nfsroot,v3,tcp,port=2049,mountport=2049 mem=768M nohz=off console=tty0" -serial stdio
 
 .PHONY: all
 
@@ -58,6 +58,8 @@ $(OUTDIR)uImage.bin: $(OUTDIR)andix_qemu.bin_qemu $(OUTDIR)andix.elfagain $(OUTD
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/kernel
 	@cp $(OUTDIR)uImage.bin $(ANDIX_DEPLOY_DIR)/tz/kernel/andix.img
 	@cp $(OUTDIR)andix_qemu.bin_qemu $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.bin_qemu
+	@cp $(OUTDIR)andix.elfagain $(ANDIX_DEPLOY_DIR)/tz/kernel/andix.elfagain
+	@cp $(OUTDIR)andix_qemu.elf $(ANDIX_DEPLOY_DIR)/tz/kernel/andix_qemu.elf
 
 $(OUTDIR)%.symagain: $(OUTDIR)%.elfagain
 	$(arm-sym-command)
