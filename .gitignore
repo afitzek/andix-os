@@ -1,4 +1,6 @@
 
+script/build-number.txt
+
 # Ignore build dir
 build
 build/**/*
