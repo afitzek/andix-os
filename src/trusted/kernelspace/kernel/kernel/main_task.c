@@ -243,7 +243,7 @@ void entry_main_task() {
 	//aes_self_test(1);
 
 	//DEBUG_STOP;
-
+/*
 	print_tasks();
 
 	main_info("%s BOOT NONSECURE %s", SEPERATOR, SEPERATOR);
@@ -314,8 +314,8 @@ void entry_main_task() {
 	 add_task(task);
 
 	 set_nonsecure_task(task);
+*/
 
-/*
 	decision = 'n';
 
 	while (decision != 'a' && decision != 'l') {
@@ -344,7 +344,7 @@ void entry_main_task() {
 	kprintf("\nReady to start non-secure linux. Press any key to proceed.\n");
 
 	getchar();
-*/
+
 	get_current_task()->state = BLOCKED;
 
 	print_tasks();

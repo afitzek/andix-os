@@ -46,7 +46,7 @@ extern uint32_t payload_and_rd;
 extern uint32_t payload_and_rd_end;
 
 
-#define ANDROID_RD_LOCATION 0x70600000
+#define ANDROID_RD_LOCATION 0x71D00000
 #define ANDROID_BOOTARGS "console=ttymxc0,115200 di1_primary video=mxcdi1fb:GBR24,VGA-XGA vga init=/init androidboot.console=ttymxc0 cgroup_disable=debug"
 
 task_t* load_android() {
