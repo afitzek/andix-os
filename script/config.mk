@@ -30,13 +30,9 @@ ARM_NORM_PREFIX := arm-linux-gnueabihf-
 #ARM_NORM_PREFIX := arm-linux-gnueabi-
 #ARM_NORM_TOOLCHAIN_LIB_DIR := /home/andy/apps/CodeSourcery_ARM_EABI_2012/lib/gcc/arm-none-eabi/4.6.3/
 
-# IMX KERNEL
-#LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/3rdParty/imx-devel/KERNEL
+LINUX_KERNEL_DIR := $(ANDIX_DIR)/../linux-linaro-tracking/
 # QEMU KERNEL
-LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/linaro-kernel/linux-linaro-tracking
 # QEMU ANDROID KERNEL 
-#LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/android/linux-linaro-3.4-2012.05-1
-
 
 PERL := $(shell which perl)
 
@@ -45,4 +41,4 @@ DOC := $(shell which doxygen)
 
 TZ_QEMU := $(ANDIX_DIR)/qemu/bin/qemu-system-arm
 
-MKIMAGE := /home/andy/UNI/DiplArbeit/source/u-boot/tools/mkimage
+MKIMAGE := /usr/bin/mkimage
