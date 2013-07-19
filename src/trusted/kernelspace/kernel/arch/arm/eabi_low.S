@@ -28,7 +28,7 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **/
-
+#ifdef __clang__
 	.global	__aeabi_memset
 	.global	__aeabi_memset4
 	.global	__aeabi_memset8
@@ -230,3 +230,4 @@ memmove:
 	ldmfd	sp!, {fp}
 	bx	lr
 	.size	__aeabi_memmove, .-__aeabi_memmove
+#endif

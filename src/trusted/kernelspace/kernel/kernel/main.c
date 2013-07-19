@@ -257,6 +257,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	//wdog_init();
 
 	send_fiq_irq_to_monitor();
+	unlock_nsacr();
+	unlock_aux();
 	enable_irq();
 	enable_fiq();
 

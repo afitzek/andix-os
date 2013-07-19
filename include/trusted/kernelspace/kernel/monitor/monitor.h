@@ -86,7 +86,7 @@ typedef struct {
     uint32_t sys_lr;
 } mon_sys_context_t;
 
-static inline uint32_t __smc_1(uint32_t call, uint32_t arg0)
+static forceinline uint32_t __smc_1(uint32_t call, uint32_t arg0)
 {
   register uint32_t __call __asm__("ip") = call;
   register uint32_t __arg0 __asm__("r0") = arg0;
@@ -98,7 +98,7 @@ static inline uint32_t __smc_1(uint32_t call, uint32_t arg0)
   return (__arg0);
 }
 
-static inline uint32_t __smc_2(uint32_t call, uint32_t arg0, uint32_t arg1)
+static forceinline uint32_t __smc_2(uint32_t call, uint32_t arg0, uint32_t arg1)
 {
   register uint32_t __call __asm__("ip") = call;
   register uint32_t __arg0 __asm__("r0") = arg0;
@@ -112,7 +112,7 @@ static inline uint32_t __smc_2(uint32_t call, uint32_t arg0, uint32_t arg1)
   return (__arg0);
 }
 
-static inline uint32_t __smc_3(uint32_t call, uint32_t arg0, uint32_t arg1,
+static forceinline uint32_t __smc_3(uint32_t call, uint32_t arg0, uint32_t arg1,
                                uint32_t arg2)
 {
   register uint32_t __call __asm__("ip") = call;
@@ -129,7 +129,7 @@ static inline uint32_t __smc_3(uint32_t call, uint32_t arg0, uint32_t arg1,
   return (__arg0);
 }
 
-static inline uint32_t __smc_4(uint32_t call, uint32_t arg0, uint32_t arg1,
+static forceinline uint32_t __smc_4(uint32_t call, uint32_t arg0, uint32_t arg1,
                                uint32_t arg2, uint32_t arg3)
 {
   register uint32_t __call __asm__("ip") = call;

@@ -217,6 +217,8 @@ task_t* create_user_task(uint8_t* usr, uint32_t size) {
 
 	loader_debug("PD: 0x%x v 0x%x", task->userPD, task->vuserPD);
 
+	dump_mmu(0x0, 0x7FFFFFFF, task->vuserPD);
+
 	map_initial_user_stack(vptd);
 
 	task->trustlet_state = NEW;

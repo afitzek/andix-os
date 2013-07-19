@@ -39,14 +39,17 @@
 #include <common/typedefs.h>
 #include <platform/platform.h>
 
-/*void *memset(void *s, int c, unsigned int n) {
+
+#ifndef __clang__
+void *memset(void *s, int c, unsigned int n) {
 	uint8_t *d = s;
 
 	while (n--)
 		*(d++) = c;
 
 	return (s);
-}*/
+}
+#endif
 
 uint8_t is_kernel_addr(uint32_t value) {
 	if(value >= 0x80000000) {

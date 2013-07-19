@@ -77,6 +77,18 @@ void send_fiq_irq_to_monitor() {
 			:: "r"(__scr));
 }
 
+void unlock_nsacr() {
+	register unsigned int __scr = 0x70C00;
+	__asm__ __volatile__ ("MCR p15, 0, %0, c1, c1, 2\n"
+			:: "r"(__scr));
+}
+
+void unlock_aux() {
+	register unsigned int __scr = 0x7FFE2;
+	__asm__ __volatile__ ("MCR p15, 0, %0, c1, c0, 1\n"
+			:: "r"(__scr));
+}
+
 unsigned int get_scr() {
 	register unsigned int __scr __asm__("r0") = 0;
 	__asm__ __volatile__ ("MRC  p15, 0, %0, c1, c1, 0\n"

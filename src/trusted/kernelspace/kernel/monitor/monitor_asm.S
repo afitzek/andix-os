@@ -70,7 +70,7 @@ __mon_no_handler:
 		// Standard prologue for the monitor service routines.
 		//
 .macro iaik_msr_prologue pc_arm_adjust=#0
-        SRSDB sp!, #ABT_MODE
+        SRSDB sp!, #MON_MODE
         STMFD sp!, {r0-r12}           /* Save monitor core context */
 
         MRC   p15, 0, r0, c1, c1, 0   /* Read secure configuration register */
@@ -139,13 +139,14 @@ __mon_smc_handler:
 .global __mon_data_ab
 __mon_data_ab:
 	SUB    lr, lr, #8
-	iaik_msr_prologue #8
-
+	mon_save_context #8
+	MCR 	p15, 0, r0, c7, c10, 4 // DSB
+	MCR 	p15, 0, r0, c7, c10, 5 // DMB
 	MOV r0, sp
-	BL	pDA
-	B	.
-
-	iaik_msr_epilogue
+	BL	mon_DA
+	MCR 	p15, 0, r0, c7, c10, 4 // DSB
+	MCR 	p15, 0, r0, c7, c10, 5 // DMB
+	mon_restore_context
 
 __mon_irq_handler:
 	SUB    lr, lr, #4

@@ -231,7 +231,7 @@ typedef struct atag atag_t;
  * @param start memory start address
  */
 void atag_generate_nonsecure(uintptr_t start,
-		uint32_t rdstart, uint32_t size);
+		uint32_t rdstart, uint32_t size, const char* cmdl);
 
 /**
  * Print ATAGS starting at startTag

@@ -75,10 +75,13 @@ struct atag* atag_get_current() {
 }
 
 void atag_generate_nonsecure(uintptr_t start,
-		uint32_t rdstart, uint32_t rdsize) {
+		uint32_t rdstart, uint32_t rdsize, const char* cmdl) {
 	atag_setup_core(start);
 	atag_setup_revision();
 	const char* cmdline = atag_get_guest_cmdline(atag_get_current());
+	if(cmdline == NULL) {
+		cmdline = cmdl;
+	}
 	list* pos = NULL;
 	list* next = NULL;
 	list* phys_mem = pmm_get_mem_list();

@@ -479,3 +479,92 @@ void setup_mon_stacks() {
 	//mon_debug("Setup Monitor stack @ 0x%x p 0x%x", mon_stack_addr, v_to_p(mon_stack_addr));
 }
 
+void mon_DA(mon_context_t* context) {
+
+	uint32_t s_dfsr = 0xFFFFFFFF;
+	uint32_t s_dfar = 0xFFFFFFFF;
+
+	uint32_t n_dfsr = 0xFFFFFFFF;
+	uint32_t n_dfar = 0xFFFFFFFF;
+
+	uint32_t clr = 0;
+	uint32_t n_vector = 0;
+
+	uint32_t status = 0;
+
+	kprintf_ex("\n");
+	mon_info("====== INTERRUPT ========");
+	mon_info("WARNING MONITOR DATA ABORT");
+	gotoSecure();
+
+	__asm__ __volatile__("MRC   p15, 0, %0, c5, c0, 0": "=r" (s_dfsr)::"memory");
+	__asm__ __volatile__("MRC   p15, 0, %0, c6, c0, 0": "=r" (s_dfar)::"memory");
+
+	gotoNSecure();
+
+	__asm__ __volatile__("MRC   p15, 0, %0, c5, c0, 0": "=r" (n_dfsr)::"memory");
+	__asm__ __volatile__("MRC   p15, 0, %0, c6, c0, 0": "=r" (n_dfar)::"memory");
+
+	__asm__ __volatile__("MCR   p15, 0, %0, c5, c0, 0":: "r" (s_dfsr):"memory");
+	__asm__ __volatile__("MCR   p15, 0, %0, c6, c0, 0":: "r" (s_dfar):"memory");
+
+	gotoSecure();
+
+	mon_info("Moved S-DFAR to N-DFAR etc.");
+	mon_info("S-DFAR: 0x%x S-DFSR: 0x%x", s_dfar, s_dfsr);
+	mon_info("N-DFAR: 0x%x N-DFSR: 0x%x", n_dfar, n_dfsr);
+
+	status = (s_dfsr & DFSR_STATUS)
+			| ((s_dfsr & DFSR_STATUS_1)>> 6)|((s_dfsr & DFSR_SD)>> 7);
+
+	mon_info("STATUS: %s [%x]", get_da_status(status), status);
+
+	mon_info("Failed to %s 0x%x @ INSTR: 0x%x",
+			((s_dfsr & DFSR_RW) >> 11) ? "write to" : "read from", s_dfar,
+			context->pc);
+
+	mon_info("DFSR: 0x%x  STAT: 0x%x  DFAR: 0x%x", s_dfsr, status, s_dfar);
+
+	mon_info("  RW: %x (%c)  SD (AXI): %x  DOMAIN: 0x%x",
+			((s_dfsr & DFSR_RW) >> 11), ((s_dfsr & DFSR_RW) >> 11) ? 'W' : 'R',
+			((s_dfsr & DFSR_SD) >> 12), ((s_dfsr & DFSR_DOMAIN) >> 4));
+
+	mon_info("Register dump:");
+
+	dump_mon_context(context);
+
+	gotoNSecure();
+
+	// MRC p15, 0, <Rd>, c1, c0, 0 wenn bit 13 -> FFFF0000
+	__asm__ __volatile__("MRC   p15, 0, %0, c1, c0, 0": "=r" (clr)::"memory");
+
+	// read MRC p15, 0, <Rd>, c12, c0, 0 ->
+	__asm__ __volatile__("MRC   p15, 0, %0, c12, c0, 0": "=r" (n_vector)::"memory");
+
+	gotoSecure();
+
+	mon_info("NonSecure Vector: 0x%x", n_vector);
+
+	restoreABT(context->pc+8, context->cpsr);
+
+	if(CHECK_BIT(clr, 13)) {
+		n_vector = 0xFFFF0000;
+	}
+
+	n_vector += 0x10;
+
+	mon_info("NonSecure Vector done: 0x%x", n_vector);
+
+	context->pc = n_vector;
+
+	context->cpsr = ABT_MODE | PSR_I | PSR_A;
+
+	if(CHECK_BIT(clr, 30)) {
+		context->cpsr |= PSR_T;
+	}
+
+	mon_info("====== INTERRUPT ========");
+}
+
+
+

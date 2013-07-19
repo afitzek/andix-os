@@ -50,4 +50,8 @@ uint32_t get_cpsr();
 
 void send_fiq_irq_to_monitor();
 
+void unlock_nsacr();
+
+void unlock_aux();
+
 #endif /* ARCH_IRQ_H_ */

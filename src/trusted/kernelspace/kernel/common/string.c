@@ -78,7 +78,8 @@ char * strncpy(char * destination, const char * source, size_t num) {
 	return (destination);
 }
 
-/*void* memcpy(void* dest, const void* src, size_t count) {
+#ifndef __clang__
+void* memcpy(void* dest, const void* src, size_t count) {
         uint8_t* dst8 = (uint8_t*)dest;
         uint8_t* src8 = (uint8_t*)src;
 
@@ -86,7 +87,8 @@ char * strncpy(char * destination, const char * source, size_t num) {
             *dst8++ = *src8++;
         }
         return (dest);
-}*/
+}
+#endif
 
 int strncmp(const char * str1, const char * str2, size_t num){
 	if (num == 0)

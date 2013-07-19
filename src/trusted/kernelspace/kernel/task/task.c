@@ -284,7 +284,7 @@ task_t* create_kernel_task(uint32_t mode, EXEC_CONTEXT_t context) {
 		task->kernelSP = (uint32_t) map_stack_mem(0x4000);
 		task->kernelStartSP = task->kernelSP;
 	} else {
-		task->context.scr = SCR_NS | SCR_EA | SCR_FIQ | SCR_FW;
+		task->context.scr = SCR_NS | SCR_EA | SCR_FIQ | SCR_FW | SCR_AW; //
 	}
 
 	// Clear standard registers
