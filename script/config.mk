@@ -36,6 +36,7 @@ LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/linaro-kernel/linux-linaro-trackin
 PERL := $(shell which perl)
 
 DOC := $(shell which doxygen)
+#DOC := /home/andy/apps/doxygen_git/bin/doxygen
 
 TZ_QEMU := $(ANDIX_DIR)/qemu/bin/qemu-system-arm
 
