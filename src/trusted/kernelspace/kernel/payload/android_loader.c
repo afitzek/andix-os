@@ -47,7 +47,9 @@ extern uint32_t payload_and_rd_end;
 
 
 #define ANDROID_RD_LOCATION 0x71D00000
-#define ANDROID_BOOTARGS "console=ttymxc0,115200 di1_primary video=mxcdi1fb:GBR24,VGA-XGA vga init=/init androidboot.console=ttymxc0 jtag=on mem=768M"
+#define ANDROID_BOOTARGS_VGA "console=ttymxc0,115200 di1_primary video=mxcdi1fb:GBR24,VGA-XGA vga init=/init androidboot.console=ttymxc0 jtag=on mem=768M"
+#define ANDROID_BOOTARGS_LVDS "console=ttymxc0,115200 di0_primary video=mxcdi0fb:RGB666,XGA ldb=di0 init=/init androidboot.console=ttymxc0 jtag=on mem=768M"
+
 
 task_t* load_android() {
 	// prepare payload ...
@@ -85,7 +87,7 @@ task_t* load_android() {
 	uint8_t* dst = (uint8_t*) vatag_ptr;
 
 	atag_generate_nonsecure((uintptr_t) dst,
-			ANDROID_RD_LOCATION, android_ramdisk_size, ANDROID_BOOTARGS);
+			ANDROID_RD_LOCATION, android_ramdisk_size, ANDROID_BOOTARGS_LVDS);
 
 	main_info("%s PREPARE PAYLOAD [DONE] %s", SEPERATOR, SEPERATOR);
 
