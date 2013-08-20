@@ -509,7 +509,6 @@ void mon_DA(mon_context_t* context) {
 	// non secure
 
 	// translate s_dfar to physical location
-
 	uintptr_t phy_s_dfar = virt_ns_to_phys((uintptr_t)s_dfar);
 
 	// check for protected memory access

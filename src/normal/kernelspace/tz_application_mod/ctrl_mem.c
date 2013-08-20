@@ -168,7 +168,7 @@ int poll_ctrl_task_to_s() {
 }
 
 int check_process_is_root() {
-	kuid_t euid = current_euid();
+	uid_t euid = current_euid();
 	if (euid == 0) {
 		return (1);
 	}
