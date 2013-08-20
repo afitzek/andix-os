@@ -43,12 +43,12 @@ tee_list_t* tee_memories;
 int tee_memory_init() {
 	tee_memories = (tee_list_t*) kmalloc(sizeof(tee_list_t), GFP_KERNEL);
 
-	if (tee_memories == NULL) {
+	if (tee_memories == NULL ) {
 		printk(KERN_ERR "tee_memory_init: Out of memory");
 		return (-1);
 	}
 
-	tee_list_init(tee_memories, NULL);
+	tee_list_init(tee_memories, NULL );
 
 	return (0);
 }
@@ -61,18 +61,19 @@ tee_shared_memory* tee_memory_add(tee_context* ctx) {
 
 	tee_shared_memory* mem_with_id = NULL;
 
-	if (mem == NULL) {
+	if (mem == NULL ) {
 		printk(KERN_ERR "tee_memory_add: Out of memory");
-		return (NULL);
+		return (NULL );
 	}
 
 	do {
 		get_random_bytes(&id, sizeof(id));
 		mem_with_id = tee_memory_find_by_id(id);
-	} while (mem_with_id != NULL);
+	} while (mem_with_id != NULL );
 
 	mem->id = id;
 	mem->ctx = ctx;
+	mem->state = 0;
 
 	tee_list_add(tee_memories, (void*) mem);
 
@@ -81,9 +82,9 @@ tee_shared_memory* tee_memory_add(tee_context* ctx) {
 
 void tee_memory_free(tee_shared_memory* mem) {
 	tee_list_t* entry = NULL;
-	if (mem != NULL) {
+	if (mem != NULL ) {
 		entry = tee_list_find_data(tee_memories, (void*) mem);
-		if (entry != NULL) {
+		if (entry != NULL ) {
 			tee_list_remove(entry);
 		}
 		kfree((void*) mem);
@@ -96,7 +97,7 @@ tee_shared_memory* tee_memory_find_by_id(uint32_t id) {
 	tee_shared_memory* mem;
 	list_for_each_safe(pos, next, tee_memories)
 	{
-		if (pos->data != NULL) {
+		if (pos->data != NULL ) {
 			mem = (tee_shared_memory*) pos->data;
 			if (mem != NULL && mem->id == id) {
 				break;
@@ -114,7 +115,7 @@ tee_shared_memory* tee_memory_find_by_tzid(uint32_t tzid) {
 	tee_shared_memory* mem;
 	list_for_each_safe(pos, next, tee_memories)
 	{
-		if (pos->data != NULL) {
+		if (pos->data != NULL ) {
 			mem = (tee_shared_memory*) pos->data;
 			if (mem != NULL && mem->tz_id == tzid) {
 				break;
@@ -132,7 +133,7 @@ tee_shared_memory* tee_memory_find_by_ctx(tee_context* ctx) {
 	tee_shared_memory* mem;
 	list_for_each_safe(pos, next, tee_memories)
 	{
-		if (pos->data != NULL) {
+		if (pos->data != NULL ) {
 			mem = (tee_shared_memory*) pos->data;
 			if (mem != NULL && mem->ctx == ctx) {
 				break;
@@ -150,7 +151,7 @@ tee_shared_memory* tee_memory_find_by_paddr(void* paddr) {
 	tee_shared_memory* mem;
 	list_for_each_safe(pos, next, tee_memories)
 	{
-		if (pos->data != NULL) {
+		if (pos->data != NULL ) {
 			mem = (tee_shared_memory*) pos->data;
 			if (mem != NULL && mem->com_paddr == paddr) {
 				break;
@@ -161,3 +162,23 @@ tee_shared_memory* tee_memory_find_by_paddr(void* paddr) {
 
 	return (mem);
 }
+
+int tee_memory_check_state(tee_shared_memory* mem, int state_param) {
+	if (mem != NULL ) {
+		return (CHECK_BIT(mem->state, state_param));
+	}
+	return (0);
+}
+
+void tee_memory_set_state(tee_shared_memory* mem, int state_param) {
+	if (mem != NULL ) {
+		SET_BIT(mem->state, state_param);
+	}
+}
+
+void tee_memory_clear_state(tee_shared_memory* mem, int state_param) {
+	if (mem != NULL ) {
+		CLEAR_BIT(mem->state, state_param);
+	}
+}
+

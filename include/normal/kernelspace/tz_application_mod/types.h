@@ -45,4 +45,11 @@
 #define PAGE_SHIFT      12
 #endif
 
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+#define SET_BIT(var,pos) ((var) |= (1 << (pos)))
+#define CLEAR_BIT(var,pos) ((var) &= (~(1) << (pos)))
+#define TOGGLE_BIT(var,pos) ((var) ^= (1 << pos))
+
+
+
 #endif /* TYPES_H_ */

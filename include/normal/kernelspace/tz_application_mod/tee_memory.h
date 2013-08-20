@@ -41,8 +41,9 @@
 #include <tz_application_mod/tee_context.h>
 #include <tz_application_mod/types.h>
 
-#define TEE_MEM_STATE_UNMAPPED		(0)
-#define TEE_MEM_STATE_READY			(1)
+#define TEE_MEM_STATE_MAPPED		(0)
+#define TEE_MEM_STATE_TEMP			(1)
+
 
 typedef struct {
 	uint32_t id;
@@ -63,5 +64,8 @@ tee_shared_memory* tee_memory_find_by_id(uint32_t id);
 tee_shared_memory* tee_memory_find_by_tzid(uint32_t tzid);
 tee_shared_memory* tee_memory_find_by_ctx(tee_context* ctx);
 tee_shared_memory* tee_memory_find_by_paddr(void* paddr);
+int tee_memory_check_state(tee_shared_memory* mem, int state_param);
+void tee_memory_set_state(tee_shared_memory* mem, int state_param);
+void tee_memory_clear_state(tee_shared_memory* mem, int state_param);
 
 #endif /* TEE_MEMORY_H_ */

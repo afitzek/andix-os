@@ -500,6 +500,21 @@ void mon_DA(mon_context_t* context) {
 	__asm__ __volatile__("MRC   p15, 0, %0, c5, c0, 0": "=r" (s_dfsr)::"memory");
 	__asm__ __volatile__("MRC   p15, 0, %0, c6, c0, 0": "=r" (s_dfar)::"memory");
 
+	if((context->scr & 1) == 0) {
+		// secure
+		mon_error("DATA ABORT FROM SECURE WORLD!");
+		dump_mon_context(context);
+		kpanic();
+	}
+	// non secure
+
+	// translate s_dfar to physical location
+
+	uintptr_t phy_s_dfar = virt_ns_to_phys((uintptr_t)s_dfar);
+
+	// check for protected memory access
+	pmm_stop_on_protected_mem((uint32_t)phy_s_dfar);
+
 	gotoNSecure();
 
 	__asm__ __volatile__("MRC   p15, 0, %0, c5, c0, 0": "=r" (n_dfsr)::"memory");

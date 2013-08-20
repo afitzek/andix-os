@@ -116,6 +116,13 @@ void pmm_free_page(void* page);
  */
 int32_t pmm_protect_secure_mem();
 
+/**
+ * Stops the system if addr is in protected memory region
+ *
+ * @param addr The physical memory address
+ */
+void pmm_stop_on_protected_mem(uint32_t addr);
+
 /* \} group */
 
 #endif /* PMM_H_ */

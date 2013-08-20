@@ -163,7 +163,8 @@ int tee_mem_reg_pre(TZ_TEE_SPACE* com_mem) {
 	mem->user_addr = (void*) com_mem->params.regMem.paddr;
 	mem->size = com_mem->params.regMem.size;
 	mem->flags = com_mem->params.regMem.flags;
-	mem->state = TEE_MEM_STATE_UNMAPPED;
+	tee_memory_clear_state(mem, TEE_MEM_STATE_MAPPED);
+	//mem->state = TEE_MEM_STATE_UNMAPPED;
 	mem->com_vaddr = kmalloc(com_mem->params.regMem.size, GFP_KERNEL);
 
 	if (mem->com_vaddr == NULL ) {
@@ -203,7 +204,8 @@ int tee_mem_reg_post(TZ_TEE_SPACE* com_mem) {
 		return (TEE_EVENT_RET_ERROR);
 	}
 
-	mem->state = TEE_MEM_STATE_READY;
+	//mem->state = TEE_MEM_STATE_READY;
+	tee_memory_set_state(mem, TEE_MEM_STATE_MAPPED);
 	mem->tz_id = com_mem->params.regMem.memid;
 	com_mem->params.regMem.memid = mem->id;
 
@@ -296,6 +298,11 @@ int tee_translate_parameter_to_tz(TEECOM_Operation* operation, uint32_t *result)
 					operation->params[pidx].value.a,
 					operation->params[pidx].value.b);
 			break;
+		case TEEC_MEMREF_TEMP_INOUT:
+		case TEEC_MEMREF_TEMP_INPUT:
+		case TEEC_MEMREF_TEMP_OUTPUT:
+			//TODO
+			break;
 		case TEEC_MEMREF_PARTIAL_INOUT:
 		case TEEC_MEMREF_PARTIAL_INPUT:
 		case TEEC_MEMREF_PARTIAL_OUTPUT:
@@ -307,12 +314,14 @@ int tee_translate_parameter_to_tz(TEECOM_Operation* operation, uint32_t *result)
 				(*result) = TEEC_ERROR_BAD_PARAMETERS;
 				return (TEE_EVENT_RET_ERROR);
 			}
-			if (copy_from_user(mem->com_vaddr, mem->user_addr, mem->size)
-					!= 0) {
-				printk(KERN_ERR "tee_translate_parameter_to_tz: "
-						"failed to copy from user");
-				(*result) = TEEC_ERROR_COMMUNICATION;
-				return (TEE_EVENT_RET_ERROR);
+			if (paramType != TEEC_MEMREF_PARTIAL_OUTPUT) {
+				if (copy_from_user(mem->com_vaddr, mem->user_addr, mem->size)
+						!= 0) {
+					printk(KERN_ERR "tee_translate_parameter_to_tz: "
+							"failed to copy from user");
+					(*result) = TEEC_ERROR_COMMUNICATION;
+					return (TEE_EVENT_RET_ERROR);
+				}
 			}
 			invalidate_clean(mem->com_vaddr, mem->size);
 			operation->params[pidx].memref.memid = mem->tz_id;

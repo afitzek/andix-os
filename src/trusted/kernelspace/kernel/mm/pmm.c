@@ -183,6 +183,26 @@ int32_t pmm_protect_secure_mem() {
 	return (0);
 }
 
+void pmm_stop_on_protected_mem(uint32_t addr) {
+	uint32_t hal_res = 0;
+		list* pos;
+		list* next;
+		list_for_each_safe(pos, next, physical_mem_list)
+		{
+			phys_mem_area* area = (phys_mem_area*) pos->data;
+			if (area) {
+				if(area->type == MEM_TYPE_SECURE) {
+					if(area->pstart >= addr && area->pend <= addr) {
+						pmm_error("ACCESS TO PROTECTED MEMORY DETECTED!");
+						pmm_error("STOP");
+						kpanic(); // TODO: use watchdog to reset system ...
+					}
+				}
+
+			}
+		}
+}
+
 void* pmm_allocate_page(void) {
 	int i = 0;
 	int j = 0;
