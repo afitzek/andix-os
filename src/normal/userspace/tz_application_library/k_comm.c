@@ -78,6 +78,14 @@ int processParameters(TEEC_Operation* source, TEECOM_Operation* target) {
 					source->params[pidx].value.b;
 			//printf("Processing parameters %d done\n", pidx);
 			break;
+		case TEEC_MEMREF_TEMP_INPUT:
+		case TEEC_MEMREF_TEMP_OUTPUT:
+		case TEEC_MEMREF_TEMP_INOUT:
+			target->params[pidx].tmpref.buffer =
+					source->params[pidx].tmpref.buffer;
+			target->params[pidx].tmpref.size =
+					source->params[pidx].tmpref.size;
+			break;
 		case TEEC_MEMREF_PARTIAL_INOUT:
 		case TEEC_MEMREF_PARTIAL_INPUT:
 		case TEEC_MEMREF_PARTIAL_OUTPUT:

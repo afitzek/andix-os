@@ -42,6 +42,8 @@
 #define TZ_ENCRYPT	(0x11)
 #define TZ_DECRYPT	(0x21)
 
+#define TZ_TMP_TEST	(0x90)
+
 #define TRUSTLET_UUID "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5"
 
 typedef struct {

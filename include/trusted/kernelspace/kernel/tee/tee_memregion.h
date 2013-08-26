@@ -49,6 +49,16 @@ typedef struct {
 } tee_mapped_mem;
 
 typedef struct {
+	uint32_t	_id;
+	uint32_t	paddr;
+	uint32_t	vaddr;
+	uint32_t	size;
+	tid_t		task_id;
+	uint32_t	uaddr;
+	tee_context* context;
+} tee_temp_memory;
+
+typedef struct {
 	uint32_t _id;
 	tee_context* context;
 	uint32_t	flags;
@@ -64,6 +74,9 @@ void tee_memory_destroy(tee_memory* memory);
 tee_memory* tee_memory_find(uint32_t id);
 tee_memory* tee_memory_find_by_ctx(tee_context* context);
 uint32_t	tee_memory_map_to_task(task_t *task, tee_memory* memory);
+void tee_tmp_mem_free(tee_temp_memory* mem);
+tee_temp_memory* tee_tmp_find_by_vaddr_and_task(uint32_t vaddr, tid_t tid);
+tee_temp_memory* tee_tmp_mem_create(void);
 
 
 #endif /* TEE_MEMREGION_H_ */

@@ -45,6 +45,62 @@
 #include <mm/mm.h>
 #include <scheduler.h>
 
+tee_temp_memory* swi_map_tee_temp_ref(TEEC_TmpMemoryReference* tmp,
+		uint32_t paramType, task_t* task) {
+	if (!is_valid_nonsecure_ram_addr(tmp->buffer)) {
+		return (NULL );
+	}
+
+	// map to kernel
+	tee_temp_memory* mem = tee_tmp_mem_create();
+
+	if (mem == NULL ) {
+		tee_error("Out of memory");
+		return (NULL );
+	}
+
+	mem->paddr = tmp->buffer;
+	mem->size = tmp->size;
+	mem->task_id = task->tid;
+	mem->vaddr = map_phys_mem(mem->paddr, mem->size, AP_SVC_RW_USR_NO, 0, 0, 0);
+	mem->uaddr = allocate_map_mem_to_task(mem->size, task);
+
+	if (mem->uaddr == NULL ) {
+		tee_error("Out of memory");
+		return (NULL );
+	}
+
+	if (paramType == TEEC_MEMREF_TEMP_INOUT
+			|| paramType == TEEC_MEMREF_TEMP_INPUT) {
+		// this only works if task == current task!!
+		memcpy(mem->uaddr, mem->vaddr, mem->size);
+	}
+
+	return (mem);
+}
+
+void swi_unmap_tee_temp_ref(tee_temp_memory* mem, uint32_t paramType,
+		task_t* task) {
+	uint32_t freed;
+	if (paramType == TEEC_MEMREF_TEMP_INOUT
+			|| paramType == TEEC_MEMREF_TEMP_OUTPUT) {
+		// this only works if task == current task!!
+		memcpy(mem->vaddr, mem->uaddr, mem->size);
+	}
+
+	free_mem_from_task(mem->uaddr, mem->size, task);
+
+	freed = 0;
+
+	while (freed < mem->size) {
+		unmap_kernel_memory((uint32_t) mem->vaddr);
+		mem->vaddr += SMALL_PAGE_SIZE;
+		freed += SMALL_PAGE_SIZE;
+	}
+
+	tee_tmp_mem_free(mem);
+}
+
 int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) {
 	int pidx = 0;
 	uint32_t paramType = 0;
@@ -53,6 +109,7 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 	uint32_t freed;
 	uint8_t* v_mem_addr;
 	tee_memory* memory = NULL;
+	tee_temp_memory* tmpmem = NULL;
 	if (comOp->valid == 1) {
 		rpc->paramTypes = comOp->paramTypes;
 		for (pidx = 0; pidx < 4; pidx++) {
@@ -69,6 +126,29 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 						comOp->params[pidx].value.b);
 				rpc->tee_param[pidx].value.a = comOp->params[pidx].value.a;
 				rpc->tee_param[pidx].value.b = comOp->params[pidx].value.b;
+				break;
+			case TEEC_MEMREF_TEMP_INOUT:
+			case TEEC_MEMREF_TEMP_INPUT:
+			case TEEC_MEMREF_TEMP_OUTPUT:
+
+				// check ram addr
+				// map to kernel
+				// allocate task mem
+				// copy
+
+				tmpmem = swi_map_tee_temp_ref(&comOp->params[pidx].tmpref,
+						paramType, task);
+
+				if (tmpmem == NULL ) {
+					return (TEEC_ERROR_COMMUNICATION);
+				}
+
+				rpc->tee_param[pidx].memref.buffer = tmpmem->uaddr;
+				rpc->tee_param[pidx].memref.size = tmpmem->size;
+
+				//comOp->params[pidx].tmpref.buffer
+				//rpc->tee_param[pidx].memref.buffer;
+				//rpc->tee_param[pidx].memref.size;
 				break;
 			case TEEC_MEMREF_PARTIAL_INOUT:
 			case TEEC_MEMREF_PARTIAL_INPUT:
@@ -144,12 +224,12 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 		task_t* task) {
 	int pidx = 0;
 	uint32_t paramType = 0;
-	//uint32_t paddr;
+	uint32_t paddr;
 	uint32_t size = 0;
 	uint32_t freed;
 	uint8_t* v_mem_addr;
 	tee_memory* memory = NULL;
-
+	tee_temp_memory* tmpmem = NULL;
 	if (comOp->valid == 1) {
 		for (pidx = 0; pidx < 4; pidx++) {
 			paramType = TEE_PARAM_TYPE_GET(comOp->paramTypes, pidx);
@@ -162,6 +242,23 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 			case TEEC_VALUE_INOUT:
 				comOp->params[pidx].value.a = rpc->tee_param[pidx].value.a;
 				comOp->params[pidx].value.b = rpc->tee_param[pidx].value.b;
+				break;
+			case TEEC_MEMREF_TEMP_INOUT:
+			case TEEC_MEMREF_TEMP_INPUT:
+			case TEEC_MEMREF_TEMP_OUTPUT:
+
+				tmpmem = tee_tmp_find_by_vaddr_and_task(
+						(uint32_t)rpc->tee_param[pidx].memref.buffer,
+						task->tid);
+
+				if (tmpmem == NULL ) {
+					tee_error("Failed to find memory with @ %x",
+							paddr);
+					return (TEEC_ERROR_BAD_PARAMETERS);
+				}
+
+				swi_unmap_tee_temp_ref(tmpmem, paramType, task);
+
 				break;
 			case TEEC_MEMREF_PARTIAL_INOUT:
 			case TEEC_MEMREF_PARTIAL_INPUT:

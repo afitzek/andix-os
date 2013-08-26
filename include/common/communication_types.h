@@ -190,6 +190,12 @@ typedef struct {
 	uint32_t	offset;
 } TEEC_MemRefParameter;
 
+typedef struct
+{
+	void* buffer;
+	uint32_t size;
+} TEEC_TmpMemoryReference;
+
 typedef struct {
 	uint32_t	a;
 	uint32_t	b;
@@ -197,6 +203,7 @@ typedef struct {
 
 typedef union {
 	TEEC_MemRefParameter memref;
+	TEEC_TmpMemoryReference tmpref;
 	TEEC_ValueParameter	value;
 } TEEC_Paramter;
 

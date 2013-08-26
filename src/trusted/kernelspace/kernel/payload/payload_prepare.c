@@ -39,7 +39,7 @@
 
 int32_t payload_load_data(void* vdata, void* pdest, uint32_t size) {
 	uintptr_t vpayload_ptr = map_phys_mem((uintptr_t) pdest, size,
-			AP_SVC_RW_USR_NO, 1, 1, 0);
+			AP_SVC_RW_USR_NO, 0, 0, 0);
 
 	if (vpayload_ptr == NULL) {
 		return (-1);
@@ -55,7 +55,7 @@ int32_t payload_load_data(void* vdata, void* pdest, uint32_t size) {
 		dst[i] = src[i];
 	}
 
-	kdumpMem(dst, 128);
+	//kdumpMem(dst, 128);
 
 	unmap_memory(vpayload_ptr, size);
 

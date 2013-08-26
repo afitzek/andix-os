@@ -138,16 +138,16 @@ TEE_Result sample_new_key(uint32_t paramTypes, TEE_Param params[4]) {
 
 	aes_crypt_cbc(&aes, AES_ENCRYPT, AES_KEY_SIZE_BYTES, iv, masterkey,
 			store.crypted_key);
-/*
-	printf("Stored IV: \n");
-	printIVKey(store.crypted_iv);
+	/*
+	 printf("Stored IV: \n");
+	 printIVKey(store.crypted_iv);
 
-	printf("Stored encrypted Key: \n");
-	printAESKey(store.crypted_key);
+	 printf("Stored encrypted Key: \n");
+	 printAESKey(store.crypted_key);
 
-	printf("Stored plain Key: \n");
-	printAESKey(masterkey);
-*/
+	 printf("Stored plain Key: \n");
+	 printAESKey(masterkey);
+	 */
 	// store generated key to file
 	write(fd, &store, sizeof(keystore_t));
 
@@ -182,13 +182,13 @@ TEE_Result read_key(const char* file, uint8_t* decryptedKey, uint32_t keyID) {
 	}
 
 	close(fd);
-/*
-	printf("Stored IV: \n");
-	printIVKey(store.crypted_iv);
+	/*
+	 printf("Stored IV: \n");
+	 printIVKey(store.crypted_iv);
 
-	printf("Stored encrypted Key: \n");
-	printAESKey(store.crypted_key);
-*/
+	 printf("Stored encrypted Key: \n");
+	 printAESKey(store.crypted_key);
+	 */
 	while (1) {
 		memset(input, 0, INPUT_SIZE);
 		printf("Please enter PIN key [%u]: \n", keyID);
@@ -211,10 +211,10 @@ TEE_Result read_key(const char* file, uint8_t* decryptedKey, uint32_t keyID) {
 
 		if (memcmp(keyhash, store.hash, HASH_BYTES) == 0) {
 			memcpy(decryptedKey, masterkey, AES_KEY_SIZE_BYTES);
-/*
-			printf("Stored plain Key: \n");
-			printAESKey(decryptedKey);
-*/
+			/*
+			 printf("Stored plain Key: \n");
+			 printAESKey(decryptedKey);
+			 */
 			return (TEEC_SUCCESS);
 		}
 
@@ -283,22 +283,22 @@ TEE_Result sample_encrypt(uint32_t paramTypes, TEE_Param params[4]) {
 			printf("malloc for enc data failed!\n");
 			return (TEEC_ERROR_OUT_OF_MEMORY);
 		}
-/*
-		printf("Plaintext to encrypt:\n");
-		ptr = params[1].memref.buffer;
+		/*
+		 printf("Plaintext to encrypt:\n");
+		 ptr = params[1].memref.buffer;
 
-		for (ptrlen = 0; ptrlen < params[1].memref.size; ptrlen = ptrlen + 16) {
-			if (ptrlen == 0) {
-				ptr = params[1].memref.buffer;
-			} else {
-				ptr = ptr + 16;
-			}
-			printIVKey(ptr);
-		}
+		 for (ptrlen = 0; ptrlen < params[1].memref.size; ptrlen = ptrlen + 16) {
+		 if (ptrlen == 0) {
+		 ptr = params[1].memref.buffer;
+		 } else {
+		 ptr = ptr + 16;
+		 }
+		 printIVKey(ptr);
+		 }
 
-		printf("Generated random IV:\n");
-		printIVKey(iv);
-*/
+		 printf("Generated random IV:\n");
+		 printIVKey(iv);
+		 */
 		// Encrypt payload
 		aes_setkey_enc(&aes, masterkey, AES_KEY_SIZE_BITS);
 
@@ -306,20 +306,20 @@ TEE_Result sample_encrypt(uint32_t paramTypes, TEE_Param params[4]) {
 				params[1].memref.buffer, enc_data);
 
 		memcpy(pack->data, enc_data, pack->datasize);
-/*
-		ptr = pack->data;
+		/*
+		 ptr = pack->data;
 
-		printf("Encrypted Data:\n");
+		 printf("Encrypted Data:\n");
 
-		for (ptrlen = 0; ptrlen < params[1].memref.size; ptrlen = ptrlen + 16) {
-			if (ptrlen == 0) {
-				ptr = pack->data;
-			} else {
-				ptr = ptr + 16;
-			}
-			printIVKey(ptr);
-		}
-*/
+		 for (ptrlen = 0; ptrlen < params[1].memref.size; ptrlen = ptrlen + 16) {
+		 if (ptrlen == 0) {
+		 ptr = pack->data;
+		 } else {
+		 ptr = ptr + 16;
+		 }
+		 printIVKey(ptr);
+		 }
+		 */
 		printf("Encryption done!\n");
 		free(enc_data);
 
@@ -411,6 +411,41 @@ void TA_CloseSessionEntryPoint(void* sessionContext) {
 	printf("SAMPLE-TRUSTLET: SESSION CLOSED!\n");
 }
 
+TEE_Result test_tmp(uint32_t paramTypes, TEE_Param params[4]) {
+	if (paramTypes != TEE_PARAM_TYPES(
+			TEEC_MEMREF_TEMP_INOUT, // key_id [in]
+			TEEC_MEMREF_TEMP_INPUT,// plain blob [in]
+			TEEC_MEMREF_TEMP_OUTPUT,// crypt_pack_t [out]
+			TEEC_NONE)) {
+		printf("SAMPLE-TRUSTLET: Bad Parameters\n");
+		/* Bad parameter types */
+		return (TEE_ERROR_BAD_PARAMETERS);
+	}
+
+	if (params[1].memref.size != params[2].memref.size) {
+		printf("SAMPLE-TRUSTLET: Size differs\n");
+		/* Bad parameter types */
+		return (TEE_ERROR_BAD_PARAMETERS);
+	}
+
+	unsigned char* sbuffer = params[0].memref.buffer;
+	unsigned char* dbuffer = params[0].memref.buffer;
+	int i = 0;
+
+	for (i = 0; i < params[0].memref.size; i++) {
+		dbuffer[i] = ~(sbuffer[i]);
+	}
+
+	sbuffer = params[1].memref.buffer;
+	dbuffer = params[2].memref.buffer;
+
+	for (i = 0; i < params[1].memref.size; i++) {
+		dbuffer[i] = ~(sbuffer[i]);
+	}
+
+	return (TEE_SUCCESS);
+}
+
 TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext,
 		__uint32_t_ commandID, __uint32_t_ paramTypes, TEE_Param params[4]) {
 
@@ -424,6 +459,8 @@ TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext,
 		return (sample_encrypt(paramTypes, params));
 	case TZ_DECRYPT:
 		return (sample_decrypt(paramTypes, params));
+	case TZ_TMP_TEST:
+		return (test_tmp(paramTypes, params));
 	default:
 		return (TEE_ERROR_NOT_SUPPORTED);
 	}

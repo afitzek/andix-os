@@ -68,4 +68,8 @@ int tee_memory_check_state(tee_shared_memory* mem, int state_param);
 void tee_memory_set_state(tee_shared_memory* mem, int state_param);
 void tee_memory_clear_state(tee_shared_memory* mem, int state_param);
 
+tee_shared_memory* tee_tmp_mem_add(tee_context* ctx);
+void tee_tmp_mem_free(tee_shared_memory* mem);
+tee_shared_memory* tee_tmp_memory_find_by_paddr(void* paddr);
+
 #endif /* TEE_MEMORY_H_ */

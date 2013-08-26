@@ -68,7 +68,7 @@ task_t* load_linux() {
 	atag_generate_nonsecure((uintptr_t) dst, 0, 0, NULL);
 	main_info("Setup ATAGS:");
 	atag_dump((struct atag*) dst);
-	kdumpMem(dst, 100);
+	//kdumpMem(dst, 100);
 
 	//src = vdtb;
 

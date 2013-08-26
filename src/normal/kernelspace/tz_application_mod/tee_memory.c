@@ -40,6 +40,8 @@
 
 tee_list_t* tee_memories;
 
+tee_list_t* tee_tmp_memories;
+
 int tee_memory_init() {
 	tee_memories = (tee_list_t*) kmalloc(sizeof(tee_list_t), GFP_KERNEL);
 
@@ -50,7 +52,44 @@ int tee_memory_init() {
 
 	tee_list_init(tee_memories, NULL );
 
+	tee_tmp_memories = (tee_list_t*) kmalloc(sizeof(tee_list_t), GFP_KERNEL);
+
+	if (tee_tmp_memories == NULL ) {
+		printk(KERN_ERR "tee_memory_init: Out of memory");
+		return (-1);
+	}
+
+	tee_list_init(tee_tmp_memories, NULL );
+
 	return (0);
+}
+
+tee_shared_memory* tee_tmp_mem_add(tee_context* ctx) {
+	tee_shared_memory* mem = (tee_shared_memory*) kmalloc(
+			sizeof(tee_shared_memory), GFP_KERNEL);
+
+	if (mem == NULL ) {
+		printk(KERN_ERR "tee_memory_add: Out of memory");
+		return (NULL );
+	}
+
+	mem->ctx = ctx;
+	mem->state = 0;
+
+	tee_list_add(tee_tmp_memories, mem);
+
+	return (mem);
+}
+
+void tee_tmp_mem_free(tee_shared_memory* mem) {
+	tee_list_t* entry = NULL;
+	if (mem != NULL ) {
+		entry = tee_list_find_data(tee_tmp_memories, (void*) mem);
+		if (entry != NULL ) {
+			tee_list_remove(entry);
+		}
+		kfree((void*) mem);
+	}
 }
 
 tee_shared_memory* tee_memory_add(tee_context* ctx) {
@@ -162,6 +201,25 @@ tee_shared_memory* tee_memory_find_by_paddr(void* paddr) {
 
 	return (mem);
 }
+
+tee_shared_memory* tee_tmp_memory_find_by_paddr(void* paddr) {
+	tee_list_t* pos;
+	tee_list_t* next;
+	tee_shared_memory* mem;
+	list_for_each_safe(pos, next, tee_tmp_memories)
+	{
+		if (pos->data != NULL ) {
+			mem = (tee_shared_memory*) pos->data;
+			if (mem != NULL && mem->com_paddr == paddr) {
+				break;
+			}
+			mem = NULL;
+		}
+	}
+
+	return (mem);
+}
+
 
 int tee_memory_check_state(tee_shared_memory* mem, int state_param) {
 	if (mem != NULL ) {

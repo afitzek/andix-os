@@ -286,7 +286,8 @@ int tee_mem_rel_post(TZ_TEE_SPACE* com_mem) {
 	return (TEE_EVENT_RET_SUCCESS);
 }
 
-int tee_translate_parameter_to_tz(TEECOM_Operation* operation, uint32_t *result) {
+int tee_translate_parameter_to_tz(TEECOM_Operation* operation, uint32_t *result,
+		tee_session* session) {
 	int pidx = 0;
 	uint32_t paramType;
 	tee_shared_memory* mem;
@@ -301,7 +302,41 @@ int tee_translate_parameter_to_tz(TEECOM_Operation* operation, uint32_t *result)
 		case TEEC_MEMREF_TEMP_INOUT:
 		case TEEC_MEMREF_TEMP_INPUT:
 		case TEEC_MEMREF_TEMP_OUTPUT:
-			//TODO
+			mem = tee_tmp_mem_add(session->ctx);
+			if (mem == NULL ) {
+				printk(KERN_ERR "tee_translate_parameter_to_tz: no such memory! %x",
+						operation->params[pidx].tmpref.buffer);
+				(*result) = TEEC_ERROR_BAD_PARAMETERS;
+				return (TEE_EVENT_RET_ERROR);
+			}
+
+			mem->size = operation->params[pidx].tmpref.size;
+			mem->user_addr = operation->params[pidx].tmpref.buffer;
+
+			mem->com_vaddr = kmalloc(mem->size, GFP_KERNEL);
+
+			if (mem->com_vaddr == NULL ) {
+				tee_tmp_mem_free(mem);
+				printk(KERN_ERR "tee_mem_reg_post: Out of memory");
+				(*result) = TEEC_ERROR_OUT_OF_MEMORY;
+				return (TEE_EVENT_RET_ERROR);
+			}
+
+			mem->com_paddr = (void*) virt_to_phys(mem->com_vaddr);
+
+			if (paramType != TEEC_MEMREF_TEMP_OUTPUT) {
+				if (copy_from_user(mem->com_vaddr, mem->user_addr, mem->size)
+						!= 0) {
+					printk(KERN_ERR "tee_translate_parameter_to_tz: "
+							"failed to copy from user");
+					(*result) = TEEC_ERROR_COMMUNICATION;
+					return (TEE_EVENT_RET_ERROR);
+				}
+			}
+
+			invalidate_clean(mem->com_vaddr, mem->size);
+
+			operation->params[pidx].tmpref.buffer = mem->com_paddr;
 			break;
 		case TEEC_MEMREF_PARTIAL_INOUT:
 		case TEEC_MEMREF_PARTIAL_INPUT:
@@ -339,6 +374,33 @@ int tee_translate_parameter_from_tz(TEECOM_Operation* operation,
 	for (pidx = 0; pidx < 4; pidx++) {
 		paramType = TEE_PARAM_TYPE_GET(operation->paramTypes, pidx);
 		switch (paramType) {
+		case TEEC_MEMREF_TEMP_INOUT:
+		case TEEC_MEMREF_TEMP_INPUT:
+		case TEEC_MEMREF_TEMP_OUTPUT:
+			mem = tee_tmp_memory_find_by_paddr(
+					operation->params[pidx].tmpref.buffer);
+			if (mem == NULL ) {
+				printk(KERN_ERR "tee_translate_parameter_from_tz: no such memory! %x",
+						operation->params[pidx].tmpref.buffer);
+				(*result) = TEEC_ERROR_BAD_PARAMETERS;
+				return (TEE_EVENT_RET_ERROR);
+			}
+			invalidate(mem->com_vaddr, mem->size);
+
+			if (paramType != TEEC_MEMREF_TEMP_INPUT) {
+				if (copy_to_user(mem->user_addr, mem->com_vaddr, mem->size)
+						!= 0) {
+					printk(KERN_ERR "tee_translate_parameter_from_tz: "
+							"failed to copy to user");
+					(*result) = TEEC_ERROR_COMMUNICATION;
+					return (TEE_EVENT_RET_ERROR);
+				}
+			}
+			operation->params[pidx].tmpref.buffer = mem->user_addr;
+			kfree(mem->com_vaddr);
+			tee_tmp_mem_free(mem);
+			mem = NULL;
+			break;
 		case TEEC_MEMREF_PARTIAL_INOUT:
 		case TEEC_MEMREF_PARTIAL_INPUT:
 		case TEEC_MEMREF_PARTIAL_OUTPUT:
@@ -351,11 +413,14 @@ int tee_translate_parameter_from_tz(TEECOM_Operation* operation,
 				return (TEE_EVENT_RET_ERROR);
 			}
 			invalidate(mem->com_vaddr, mem->size);
-			if (copy_to_user(mem->user_addr, mem->com_vaddr, mem->size) != 0) {
-				printk(KERN_ERR "tee_translate_parameter_from_tz: "
-						"failed to copy to user");
-				(*result) = TEEC_ERROR_COMMUNICATION;
-				return (TEE_EVENT_RET_ERROR);
+			if (paramType != TEEC_MEMREF_PARTIAL_INPUT) {
+				if (copy_to_user(mem->user_addr, mem->com_vaddr, mem->size)
+						!= 0) {
+					printk(KERN_ERR "tee_translate_parameter_from_tz: "
+							"failed to copy to user");
+					(*result) = TEEC_ERROR_COMMUNICATION;
+					return (TEE_EVENT_RET_ERROR);
+				}
 			}
 			operation->params[pidx].memref.memid = mem->id;
 			break;
@@ -389,7 +454,7 @@ int tee_session_open_pre(TZ_TEE_SPACE* com_mem) {
 
 	if (com_mem->params.openSession.operation.valid == 1) {
 		return (tee_translate_parameter_to_tz(
-				&com_mem->params.openSession.operation, &com_mem->ret));
+				&com_mem->params.openSession.operation, &com_mem->ret, session));
 	}
 
 	return (TEE_EVENT_RET_SUCCESS);
@@ -476,7 +541,7 @@ int tee_invoke_pre(TZ_TEE_SPACE* com_mem) {
 	com_mem->params.invokeCommand.session = session->tz_id;
 
 	return (tee_translate_parameter_to_tz(
-			&com_mem->params.invokeCommand.operation, &com_mem->ret));
+			&com_mem->params.invokeCommand.operation, &com_mem->ret, session));
 }
 
 int tee_invoke_post(TZ_TEE_SPACE* com_mem) {

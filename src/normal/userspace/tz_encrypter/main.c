@@ -204,6 +204,64 @@ int decrypt(TEEC_Context* ctx, TEEC_Session* session, unsigned int key,
 	return (res);
 }
 
+int test_tmp(TEEC_Context* ctx, TEEC_Session* session) {
+	unsigned char ba[100];
+	unsigned char bs[100];
+	unsigned char bd[100];
+	int i = 0;
+	unsigned char c;
+	TEEC_Operation operation;
+	TEEC_Result result;
+	uint32_t origin = 0;
+
+	for (i = 0; i < 100; i++) {
+		c = rand() % 256;
+		ba[i] = c;
+	}
+
+	for (i = 0; i < 100; i++) {
+		c = rand() % 256;
+		bs[i] = c;
+	}
+
+	printf("First MEM:");
+	printHexMem(ba, 100);
+
+	printf("Second MEM:");
+	printHexMem(bs, 100);
+
+	operation.params[0].tmpref.buffer = (void*) ba;
+	operation.params[0].tmpref.size = 100;
+	operation.params[1].tmpref.buffer = (void*) bs;
+	operation.params[1].tmpref.size = 100;
+	operation.params[2].tmpref.buffer = (void*) bd;
+	operation.params[2].tmpref.size = 100;
+
+	operation.paramTypes = TEEC_PARAM_TYPES(
+			TEEC_MEMREF_TEMP_INOUT,
+			TEEC_MEMREF_TEMP_INPUT,
+			TEEC_MEMREF_TEMP_OUTPUT,
+			TEEC_NONE);
+
+	result = TEEC_InvokeCommand(session, TZ_TMP_TEST, &operation, &origin);
+
+	if (result != TEEC_SUCCESS) {
+		printf("Failed to invoke command!\n");
+		report_error(origin, result);
+	}
+
+	printf("First MEM:");
+	printHexMem(ba, 100);
+
+	printf("Second MEM:");
+	printHexMem(bs, 100);
+
+	printf("Third MEM:");
+	printHexMem(bd, 100);
+
+	return 0;
+}
+
 void printHexMem(unsigned char* buffer, size_t size) {
 	size_t idx = 0;
 	printf("0x%08X:  ", idx);
@@ -367,6 +425,10 @@ int main(int argc, char* argv[]) {
 			printf("Exiting ....\n");
 
 			running = 0;
+		} else if (strcmp(command, "tmp") == 0) {
+			printf("Temp Test ....\n");
+
+			test_tmp(&ctx, &session);
 		} else {
 			printf("Unknown command (use h for help)\n");
 		}

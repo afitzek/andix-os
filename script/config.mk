@@ -33,9 +33,9 @@ ARM_NORM_PREFIX := arm-linux-gnueabihf-
 # IMX KERNEL
 #LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/3rdParty/imx-devel/KERNEL
 # QEMU KERNEL
-#LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/linaro-kernel/linux-linaro-tracking
+LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/linaro-kernel/linux-linaro-tracking
 # QEMU ANDROID KERNEL 
-LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/android/linux-linaro-3.4-2012.05-1
+#LINUX_KERNEL_DIR := /home/andy/UNI/DiplArbeit/android/linux-linaro-3.4-2012.05-1
 
 
 PERL := $(shell which perl)
