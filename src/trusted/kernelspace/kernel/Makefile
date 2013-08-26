@@ -125,8 +125,10 @@ pdfdoc: doc
 getpayloads:
 	@cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/manager.bin $(realpath $(TOP))/payload/manager.bin
 	@cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/sample.bin $(realpath $(TOP))/payload/sample.bin
+	@cp $(ANDIX_DEPLOY_DIR)/tz/trustlets/rsa.bin $(realpath $(TOP))/payload/rsa.bin
 	@touch $(realpath $(TOP))/payload/userpayload.S
 	@touch $(realpath $(TOP))/payload/samplepayload.S
+	@touch $(realpath $(TOP))/payload/rsapayload.S
 	@touch $(realpath $(TOP))/payload/payload.S
 	@touch $(realpath $(TOP))/payload/android_payload.S
 	@touch $(realpath $(TOP))/payload/android_payload_rd.S

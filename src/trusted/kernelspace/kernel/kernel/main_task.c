@@ -59,6 +59,8 @@ extern uint8_t _userpayload;
 extern uint8_t _userpayload_end;
 extern uint8_t _samplepayload;
 extern uint8_t _samplepayload_end;
+extern uint8_t _rsapayload;
+extern uint8_t _rsapayload_end;
 
 /**
  * Entrypoint for main kernel task
@@ -230,6 +232,11 @@ void entry_main_task() {
 			(uintptr_t) &_samplepayload, (uintptr_t) &_samplepayload_end,
 			"SAMPLE TRUSTLET", "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");
 	init_userspace_task(sampleuser);
+
+	task_t* rsatrustlet = prepare_static_userspace_task(
+			(uintptr_t) &_rsapayload, (uintptr_t) &_rsapayload_end,
+			"RSA TRUSTLET", "2b0c6603-ac6d-4817-a102-ebef1ae0f846");
+	init_userspace_task(rsatrustlet);
 
 	main_info("TASK UUID: %s", "47b57610-925b-11e2-9e96-0800200c9a66");
 	main_info("TASK UUID: %s", "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");

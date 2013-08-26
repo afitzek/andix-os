@@ -38,6 +38,10 @@ SECTIONS
 		samplepayload = .; _samplepayload = .; __samplepayload = .;
 		*(.samppayload);
 		samplepayload_end = .; _samplepayload_end = .; __samplepayload_end = .;
+		. = ALIGN(4);
+		rsapayload = .; _rsapayload = .; __rsapayload = .;
+		*(.rsapayload);
+		rsapayload_end = .; _rsapayload_end = .; __rsapayload_end = .;
     	. = ALIGN(4);
     	payload = .; _payload = .; __payload = .;
 		*(.payload);
