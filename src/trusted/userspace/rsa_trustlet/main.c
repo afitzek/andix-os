@@ -16,12 +16,6 @@
 
 #define INSECURE
 
-// TODO: Workaround because TEEC_MEMREF_TEMP_INPUT is not yet implemented
-#undef TEEC_MEMREF_TEMP_INPUT
-#define TEEC_MEMREF_TEMP_INPUT TEEC_MEMREF_WHOLE
-#undef TEEC_MEMREF_TEMP_OUTPUT
-#define TEEC_MEMREF_TEMP_OUTPUT TEEC_MEMREF_WHOLE
-
 #define MSG_ERROR "RSA Trustlet Error: "
 #define MSG_INFO "RSA Trustlet Info: "
 #define MSG_TROPIC_ERR "RSA Trustlet TropicSSL error "
@@ -330,7 +324,7 @@ TEE_Result TA_OpenSessionEntryPoint(__uint32_t_ paramTypes, TEE_Param params[4],
 	}
 	rsa_init(rsa, RSA_PKCS_V15, 0, f_rng_tropic_wrapper, NULL);
 	*sessionContext = rsa;
-	printf(MSG_INFO "SESSION OPENED!  with TEMP MEMREF workaround\n");
+	printf(MSG_INFO "SESSION OPENED!\n");
 	return TEE_SUCCESS;
 }
 

@@ -68,34 +68,20 @@ int newKey(char *keyfilename) {
 	TEEC_Operation op;
 	uint32_t origin = 0;
 	TEEC_Result ret;
-	TEEC_SharedMemory shmin;
 
 	printf("Creating new RSA key '%s'\n", keyfilename);
-	shmin.buffer = keyfilename;
-	shmin.size = strlen(keyfilename) + 1;
-	shmin.flags = 0;	// seem unused
-
-	ret = TEEC_RegisterSharedMemory(&ctx, &shmin);
-	report_on_error(origin, ret);
-	if (ret)
-		goto cleanup;
-
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE,	//keyfile
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,	//keyfile
 			TEEC_VALUE_INPUT,	// bit size
 			TEEC_VALUE_INPUT,	// public exponent
 			TEEC_NONE);
-	op.params[0].memref.offset = 0;
-	op.params[0].memref.parent = &shmin;
-	op.params[0].memref.size = shmin.size;
+	op.params[0].tmpref.buffer = keyfilename;
+	op.params[0].tmpref.size = strlen(keyfilename) + 1;
 
 	op.params[1].value.a = RSABITLEN;
 	op.params[2].value.a = 65537;
 
 	ret = TEEC_InvokeCommand(&session, TZ_RSA_NEW_KEY, &op, &origin);
 	report_on_error(origin, ret);
-
-	cleanup:
-	TEEC_ReleaseSharedMemory(&shmin);
 	return ret;
 }
 
@@ -103,31 +89,17 @@ int loadKey(char *keyfilename) {
 	TEEC_Operation op;
 	uint32_t origin = 0;
 	TEEC_Result ret;
-	TEEC_SharedMemory shmin;
 
 	printf("Loading RSA key '%s'\n", keyfilename);
-	shmin.buffer = keyfilename;
-	shmin.size = strlen(keyfilename) + 1;
-	shmin.flags = 0;	// seem unused
-
-	ret = TEEC_RegisterSharedMemory(&ctx, &shmin);
-	report_on_error(origin, ret);
-	if (ret)
-		goto cleanup;
-
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE,	//keyfile
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,	//keyfile
 			TEEC_NONE,
 			TEEC_NONE,
 			TEEC_NONE);
-	op.params[0].memref.offset = 0;
-	op.params[0].memref.parent = &shmin;
-	op.params[0].memref.size = shmin.size;
+	op.params[0].tmpref.buffer = keyfilename;
+	op.params[0].tmpref.size = strlen(keyfilename) + 1;
 
 	ret = TEEC_InvokeCommand(&session, TZ_RSA_LOAD_KEY, &op, &origin);
 	report_on_error(origin, ret);
-
-	cleanup:
-	TEEC_ReleaseSharedMemory(&shmin);
 	return ret;
 }
 
@@ -136,7 +108,6 @@ int applyKey(char *keyfilename, enum keyselect key) {
 	TEEC_Operation op;
 	uint32_t origin = 0;
 	TEEC_Result ret;
-	TEEC_SharedMemory shmin, shmout;
 	unsigned char inbuf[RSABYTELEN], outbuf[RSABYTELEN];
 	size_t inbytes;
 
@@ -165,29 +136,14 @@ int applyKey(char *keyfilename, enum keyselect key) {
 	printf("\nInput [%d]:\n", inbytes);
 	printHexMem(inbuf, RSABYTELEN);
 
-	shmin.buffer = inbuf;
-	shmout.buffer = outbuf;
-	shmin.size = shmout.size = RSABYTELEN;
-	shmin.flags = shmout.flags = 0;
-	ret = TEEC_RegisterSharedMemory(&ctx, &shmin);
-	report_on_error(origin, ret);
-	if (ret)
-		goto cleanup;
-	ret = TEEC_RegisterSharedMemory(&ctx, &shmout);
-	report_on_error(origin, ret);
-	if (ret)
-		goto cleanup;
-
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE,	//input
-			TEEC_MEMREF_WHOLE,	//output
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,	//input
+			TEEC_MEMREF_TEMP_OUTPUT,	//output
 			TEEC_NONE,
 			TEEC_NONE);
-	op.params[0].memref.offset = 0;
-	op.params[0].memref.parent = &shmin;
-	op.params[0].memref.size = shmin.size;
-	op.params[1].memref.offset = 0;
-	op.params[1].memref.parent = &shmout;
-	op.params[1].memref.size = shmout.size;
+	op.params[0].tmpref.buffer = inbuf;
+	op.params[0].tmpref.size = RSABYTELEN;
+	op.params[1].tmpref.buffer = outbuf;
+	op.params[1].tmpref.size = RSABYTELEN;
 
 	switch (key) {
 	case PUBLIC:
@@ -203,10 +159,6 @@ int applyKey(char *keyfilename, enum keyselect key) {
 
 	printf("\nOutput:\n");
 	printHexMem(outbuf, RSABYTELEN);
-
-	cleanup:
-	TEEC_ReleaseSharedMemory(&shmin);
-	TEEC_ReleaseSharedMemory(&shmout);
 	return ret;
 }
 
@@ -220,42 +172,24 @@ int getPubKey(char *keyfilename) {
 	TEEC_Operation op;
 	uint32_t origin = 0;
 	TEEC_Result ret;
-	TEEC_SharedMemory shmN, shmE;
 	unsigned char bufN[RSABYTELEN], bufE[RSABYTELEN];
 
 	ret = loadKey(keyfilename);
 	if (ret)
 		return ret;
-	printf("Loading key ok\n");
+	printf("Loading key ok. Waiting for input..\n");
 
-	shmN.buffer = bufN;
-	shmN.size = RSABYTELEN;
-	shmN.flags = 0;
 	memset(bufN, 0, RSABYTELEN);
-	shmE.buffer = bufE;
-	shmE.size = RSABYTELEN;
-	shmE.flags = 0;
 	memset(bufE, 0, RSABYTELEN);
 
-	ret = TEEC_RegisterSharedMemory(&ctx, &shmE);
-	report_on_error(origin, ret);
-	if (ret)
-		goto cleanup;
-	ret = TEEC_RegisterSharedMemory(&ctx, &shmN);
-	report_on_error(origin, ret);
-	if (ret)
-		goto cleanup;
-
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE,	//E
-			TEEC_MEMREF_WHOLE,	//N
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_OUTPUT,	//E
+			TEEC_MEMREF_TEMP_OUTPUT,	//N
 			TEEC_NONE,
 			TEEC_NONE);
-	op.params[0].memref.offset = 0;
-	op.params[0].memref.parent = &shmE;
-	op.params[0].memref.size = shmE.size;
-	op.params[1].memref.offset = 0;
-	op.params[1].memref.parent = &shmN;
-	op.params[1].memref.size = shmN.size;
+	op.params[0].tmpref.buffer = bufE;
+	op.params[0].tmpref.size = RSABYTELEN;
+	op.params[1].tmpref.buffer = bufN;
+	op.params[1].tmpref.size = RSABYTELEN;
 
 	ret = TEEC_InvokeCommand(&session, TZ_RSA_GET_PUBLIC_KEY, &op, &origin);
 	report_on_error(origin, ret);
@@ -265,10 +199,6 @@ int getPubKey(char *keyfilename) {
 		printf("N:\n");
 		printHexMem(bufN, RSABYTELEN);
 	}
-
-	cleanup:
-	TEEC_ReleaseSharedMemory(&shmE);
-	TEEC_ReleaseSharedMemory(&shmN);
 	return ret;
 }
 
@@ -276,31 +206,18 @@ int catKeyFile(char *keyfilename) {
 	TEEC_Operation op;
 	uint32_t origin = 0;
 	TEEC_Result ret;
-	TEEC_SharedMemory shmin;
 
 	printf("Loading RSA key '%s'\n", keyfilename);
-	shmin.buffer = keyfilename;
-	shmin.size = strlen(keyfilename) + 1;
-	shmin.flags = 0;	// seem unused
 
-	ret = TEEC_RegisterSharedMemory(&ctx, &shmin);
-	report_on_error(origin, ret);
-	if (ret)
-		goto cleanup;
-
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_WHOLE,	//keyfile
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,	//keyfile
 			TEEC_NONE,
 			TEEC_NONE,
 			TEEC_NONE);
-	op.params[0].memref.offset = 0;
-	op.params[0].memref.parent = &shmin;
-	op.params[0].memref.size = shmin.size;
+	op.params[0].tmpref.buffer = keyfilename;
+	op.params[0].tmpref.size = strlen(keyfilename) + 1;
 
 	ret = TEEC_InvokeCommand(&session, TZ_RSA_CAT_KEY, &op, &origin);
 	report_on_error(origin, ret);
-
-	cleanup:
-	TEEC_ReleaseSharedMemory(&shmin);
 	return ret;
 }
 
