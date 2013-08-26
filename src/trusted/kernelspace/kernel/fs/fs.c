@@ -494,14 +494,10 @@ int32_t fs_fstat(cfs_t* handle, fs_stat* buf) {
 	fs_info("State plain size: %d", stat.st_size);
 
 	uint32_t blk_count = stat.st_size / sizeof(cfs_blk_t);
-	--blk_count; //remove first block
-	uint32_t size = blk_count * CFS_BLK_SIZE;
+	uint32_t size = (blk_count-1) * CFS_BLK_SIZE;	//remove first block
 	if (size != 0) {
-
-		++blk_count;
-
 		// read last block to get data size ...
-		if (ree_lseek(handle->fd, blk_count * (sizeof(cfs_blk_t)), REE_SEEK_SET)
+		if (ree_lseek(handle->fd, (blk_count-1) * (sizeof(cfs_blk_t)), REE_SEEK_SET)
 				!= 0) {
 			fs_error("Failed to set file position!");
 			return (-1);
@@ -514,7 +510,7 @@ int32_t fs_fstat(cfs_t* handle, fs_stat* buf) {
 		}
 
 		if (__fs_decrypt_and_verify(&blk, handle->key_data, 32, &data,
-				blk_count) != 0) {
+				blk_count-1) != 0) {
 			fs_error("Failed to decrypt and verify file data!");
 			return (-1);
 		}
