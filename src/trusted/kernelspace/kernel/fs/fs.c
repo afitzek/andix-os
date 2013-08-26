@@ -357,8 +357,7 @@ int32_t fs_read(cfs_t* handle, void* buf, uint32_t count) {
 			//this is the last block!
 			if (totalread < count) {
 				// not enough data here to read ...
-				fs_error("Not enough data in this file");
-				goto cleanup;
+				break;
 			}
 		}
 
