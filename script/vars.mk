@@ -83,6 +83,7 @@ TZ_USER_C_INC := $(TZ_U_INC)/newlib_c
 TZ_USER_TEE_INC := $(TZ_U_INC)/tee_runtime
 TZ_USER_MANAGER_INC := $(TZ_U_INC)/andix_manager
 TZ_USER_SAMPLE_INC := $(TZ_U_INC)/sample_trustlet
+TZ_USER_RSA_INC := $(TZ_U_INC)/rsa_trustlet
 
 ####
 # Normal World includes
@@ -121,6 +122,7 @@ TZ_USER_C_SRC := $(TZ_U_SRC)/newlib_c
 TZ_USER_TEE_SRC := $(TZ_U_SRC)/tee_runtime
 TZ_USER_MANAGER_SRC := $(TZ_U_SRC)/andix_manager
 TZ_USER_SAMPLE_SRC := $(TZ_U_SRC)/sample_trustlet
+TZ_USER_RSA_SRC := $(TZ_U_SRC)/rsa_trustlet
 
 ####
 # Normal World sources

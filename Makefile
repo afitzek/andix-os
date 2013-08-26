@@ -43,9 +43,9 @@ linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean lin
 # TZ Build targets
 ####
 
-tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_sample_build tz_manager_build tz_kernel_build
+tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_sample_build tz_manager_build tz_rsa_build tz_kernel_build 
 	
-tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_sample_clean tz_manager_clean tz_kernel_clean	
+tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_sample_clean tz_manager_clean tz_rsa_clean tz_kernel_clean 
 	
 ####	
 	
@@ -185,6 +185,38 @@ tz_sample_pdfdoc:
 	@$(make-command) $(TZ_USER_SAMPLE_SRC) pdfdoc
 	$(sep-command)
 
+####
+
+####
+# Andix TZ RSA Trustlet
+####
+
+TZ_TEE_RSA = ANDIX TZ RSA
+
+tz_rsa_build:
+	$(build-num)
+	$(start-build-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_RSA_SRC)
+	$(sep-command)
+
+tz_rsa_clean:
+	$(start-clean-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_RSA_SRC) clean
+	$(sep-command)
+
+tz_rsa_doc:
+	$(start-build-doc-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_RSA_SRC) doc
+	$(sep-command)
+	
+tz_RSA_pdfdoc:
+	$(start-build-pdfdoc-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER__SRC) pdfdoc
+	$(sep-command)
 
 ####
 
