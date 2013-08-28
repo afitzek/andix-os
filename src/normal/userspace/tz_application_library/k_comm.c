@@ -52,7 +52,7 @@
 int tee_fd = 0;
 TZ_TEE_SPACE *comm = NULL;
 
-int processParameters(TEEC_Operation* source, TEECOM_Operation* target) {
+int preProcessParameters(TEEC_Operation* source, TEECOM_Operation* target) {
 	int pidx = 0;
 	uint32_t paramType = 0;
 	uint32_t pTypeSource = source->paramTypes;
@@ -65,6 +65,7 @@ int processParameters(TEEC_Operation* source, TEECOM_Operation* target) {
 		//printf("Getting Parameter type is %d\n", paramType);
 		switch (paramType) {
 		case TEEC_NONE:
+		case TEEC_VALUE_OUTPUT:
 			//printf("Processing parameters %d None\n", pidx);
 			target->params[pidx].value.a = 0;
 			target->params[pidx].value.b = 0;
@@ -106,6 +107,21 @@ int processParameters(TEEC_Operation* source, TEECOM_Operation* target) {
 	}
 	//printf("Processing parameters done\n");
 	return (TEEC_SUCCESS);
+}
+
+void postProcessParameters(TEEC_Operation* source, TEECOM_Operation* target) {
+	int pidx = 0;
+	uint32_t paramType = 0;
+	uint32_t pTypeSource = source->paramTypes;
+	target->paramTypes = source->paramTypes;
+	target->started = source->started;
+	for (pidx = 0; pidx < 4; pidx++) {
+		paramType = TEE_PARAM_TYPE_GET(pTypeSource, pidx);
+		if (paramType == TEEC_VALUE_OUTPUT || paramType == TEEC_VALUE_INOUT) {
+			source->params[pidx].value.a = target->params[pidx].value.a;
+			source->params[pidx].value.b = target->params[pidx].value.b;
+		}
+	}
 }
 
 int processComm() {

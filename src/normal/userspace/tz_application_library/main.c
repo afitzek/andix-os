@@ -156,7 +156,7 @@ TEEC_Result TEEC_OpenSession(TEEC_Context* context, TEEC_Session* session,
 	memcpy(&space->params.openSession.uuid, destination, sizeof(TEEC_UUID));
 
 	if (operation != NULL ) {
-		if (processParameters(operation,
+		if (preProcessParameters(operation,
 				&space->params.openSession.operation) != TEEC_SUCCESS) {
 			if (returnOrigin != NULL ) {
 				(*returnOrigin) = TEEC_ORIGIN_COMMS;
@@ -218,7 +218,7 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session* session, uint32_t commandID,
 	space->op = TZ_TEE_OP_INVOKE_CMD;
 	space->params.invokeCommand.command = commandID;
 
-	if (processParameters(operation,
+	if (preProcessParameters(operation,
 			&space->params.invokeCommand.operation) != TEEC_SUCCESS) {
 		if (returnOrigin != NULL ) {
 			(*returnOrigin) = TEEC_ORIGIN_COMMS;
@@ -234,9 +234,9 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session* session, uint32_t commandID,
 	if (returnOrigin != NULL ) {
 		(*returnOrigin) = space->params.openSession.returnOrigin;
 	}
-
 	res = space->ret;
 
+	postProcessParameters(operation, &space->params.invokeCommand.operation);
 	unlockComm();
 
 	return (res);

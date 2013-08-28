@@ -116,6 +116,7 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 			paramType = TEE_PARAM_TYPE_GET(comOp->paramTypes, pidx);
 			switch (paramType) {
 			case TEEC_NONE:
+			case TEEC_VALUE_OUTPUT:
 				rpc->tee_param[pidx].value.a = 0;
 				rpc->tee_param[pidx].value.b = 0;
 				break;
