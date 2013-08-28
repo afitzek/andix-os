@@ -204,12 +204,18 @@ int decrypt(TEEC_Context* ctx, TEEC_Session* session, unsigned int key,
 	return (res);
 }
 
+static inline unsigned int __raw_readl(const volatile void *addr) {
+	return (*(volatile uint32_t *) (addr));
+}
+
 int test_tmp(TEEC_Context* ctx, TEEC_Session* session) {
 	unsigned char ba[100];
 	unsigned char bs[100];
 	unsigned char bd[100];
 	int i = 0;
 	unsigned char c;
+	volatile unsigned int tmpa;
+	volatile unsigned int tmpb;
 	TEEC_Operation operation;
 	TEEC_Result result;
 	uint32_t origin = 0;
@@ -236,12 +242,17 @@ int test_tmp(TEEC_Context* ctx, TEEC_Session* session) {
 	operation.params[1].tmpref.size = 100;
 	operation.params[2].tmpref.buffer = (void*) bd;
 	operation.params[2].tmpref.size = 100;
+	operation.params[3].value.a = 100;
+	operation.params[3].value.b = 200;
+
+	printf("VALUE PARAMS: A 0x%x B 0x%x", operation.params[3].value.a,
+			operation.params[3].value.b);
 
 	operation.paramTypes = TEEC_PARAM_TYPES(
 			TEEC_MEMREF_TEMP_INOUT,
 			TEEC_MEMREF_TEMP_INPUT,
 			TEEC_MEMREF_TEMP_OUTPUT,
-			TEEC_NONE);
+			TEEC_VALUE_INOUT);
 
 	result = TEEC_InvokeCommand(session, TZ_TMP_TEST, &operation, &origin);
 
@@ -258,6 +269,12 @@ int test_tmp(TEEC_Context* ctx, TEEC_Session* session) {
 
 	printf("Third MEM:");
 	printHexMem(bd, 100);
+
+	tmpa = __raw_readl(&operation.params[3].value.a);
+	tmpb = __raw_readl(&operation.params[3].value.b);
+
+	printf("VALUE PARAMS: A %d B %d\n", tmpa,
+				tmpb);
 
 	return 0;
 }

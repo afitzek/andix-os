@@ -231,6 +231,15 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session* session, uint32_t commandID,
 
 	processComm();
 
+	if (processParameters(&space->params.invokeCommand.operation,
+			operation) != TEEC_SUCCESS) {
+			if (returnOrigin != NULL ) {
+				(*returnOrigin) = TEEC_ORIGIN_COMMS;
+			}
+			unlockComm();
+			return (TEEC_ERROR_BAD_PARAMETERS);
+		}
+
 	if (returnOrigin != NULL ) {
 		(*returnOrigin) = space->params.openSession.returnOrigin;
 	}

@@ -416,7 +416,7 @@ TEE_Result test_tmp(uint32_t paramTypes, TEE_Param params[4]) {
 			TEEC_MEMREF_TEMP_INOUT, // key_id [in]
 			TEEC_MEMREF_TEMP_INPUT,// plain blob [in]
 			TEEC_MEMREF_TEMP_OUTPUT,// crypt_pack_t [out]
-			TEEC_NONE)) {
+			TEEC_VALUE_INOUT)) {
 		printf("SAMPLE-TRUSTLET: Bad Parameters\n");
 		/* Bad parameter types */
 		return (TEE_ERROR_BAD_PARAMETERS);
@@ -442,6 +442,9 @@ TEE_Result test_tmp(uint32_t paramTypes, TEE_Param params[4]) {
 	for (i = 0; i < params[1].memref.size; i++) {
 		dbuffer[i] = ~(sbuffer[i]);
 	}
+
+	params[3].value.a = 666;
+	params[3].value.b = 999;
 
 	return (TEE_SUCCESS);
 }
