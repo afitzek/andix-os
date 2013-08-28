@@ -144,6 +144,8 @@ void dispatcher_loop(int fd) {
 				dispatch_ctrl(&comm);
 			}
 			ioctl(fd, ANDIX_CTRL_PUSH, &comm);
+		} else {
+			sleep(1);
 		}
 	}
 }
