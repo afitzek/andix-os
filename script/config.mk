@@ -31,6 +31,7 @@ ARM_NORM_PREFIX := arm-linux-gnueabihf-
 #ARM_NORM_TOOLCHAIN_LIB_DIR := /home/andy/apps/CodeSourcery_ARM_EABI_2012/lib/gcc/arm-none-eabi/4.6.3/
 
 LINUX_KERNEL_DIR := $(ANDIX_DIR)/../linux-linaro-tracking/
+ROOTFS_LIBDIR := $(ANDIX_DIR)/../linaro-userland/binary/lib/arm-linux-gnueabihf
 # QEMU KERNEL
 # QEMU ANDROID KERNEL 
 

@@ -138,6 +138,7 @@ NORM_US_APP_SRC := $(NORM_U_SRC)/tz_application
 NORM_US_APP_TZ_TEST_SRC := $(NORM_U_SRC)/tz_mem_test
 NORM_US_APP_ENC_SRC := $(NORM_U_SRC)/tz_encrypter
 NORM_US_APP_RSA_SRC := $(NORM_U_SRC)/tz_rsa
+NORM_US_RSA_ENGINE_SRC := $(NORM_U_SRC)/tz_rsa_engine
 NORM_US_SERVICE_DAEMON_SRC := $(NORM_U_SRC)/tz_service_daemon
 
 ####
