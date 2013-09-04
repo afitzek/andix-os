@@ -33,7 +33,7 @@ PROGRAM_NAME = rsa.bin
 ###############################################################################
 
 ASFLAGS = -g -mcpu=cortex-a8
-CFLAGS = -g -I$(NORM_US_APP_ENC_INC) -I$(ANDIX_INC_COMMON) -I$(ARM_NEWLIB_INC_DIR) -mcpu=cortex-a8 
+CFLAGS = -g -I$(NORM_US_APP_ENC_INC) -I$(ANDIX_INC_COMMON) -mcpu=cortex-a8 
 LDFLAGS = -L$(ANDIX_DEPLOY_DIR)/norm/lib 
 
 all: mkbuilddirs $(OUTDIR)$(PROGRAM_NAME)
