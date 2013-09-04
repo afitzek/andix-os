@@ -183,7 +183,7 @@ static TEE_Result TA_createKeyPair(void* sessionContext, __uint32_t_ paramTypes,
 static TEE_Result TA_readKeyPair(void* sessionContext, __uint32_t_ paramTypes, TEE_Param params[4]) {
 	if (paramTypes != TEE_PARAM_TYPES(
 			TEEC_MEMREF_TEMP_INPUT,
-			TEEC_NONE,
+			TEEC_VALUE_OUTPUT,
 			TEEC_NONE,
 			TEEC_NONE)) {
 		printf(MSG_ERROR "Bad Parameters\n");
@@ -200,6 +200,7 @@ static TEE_Result TA_readKeyPair(void* sessionContext, __uint32_t_ paramTypes, T
 		printf(MSG_TROPIC_ERR "rsa_check_privkey -%x\n", -ret);
 		return TEE_ERROR_BAD_FORMAT;
 	}
+	params[1].value.a = mpi_size(&(rsa->N));
 	return TEE_SUCCESS;
 }
 

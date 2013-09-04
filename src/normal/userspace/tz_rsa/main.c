@@ -6,7 +6,7 @@
 #include <trustlets/rsa_trustlet.h>
 #include <tee_utils.h>
 
-#define RSABITLEN 128
+#define RSABITLEN 512
 #define RSABYTELEN (RSABITLEN/8)
 
 static TEEC_Context ctx;
@@ -85,14 +85,15 @@ int newKey(char *keyfilename) {
 	return ret;
 }
 
-int loadKey(char *keyfilename) {
+int loadKey(char *keyfilename, int *len) {
 	TEEC_Operation op;
 	uint32_t origin = 0;
 	TEEC_Result ret;
 
 	printf("Loading RSA key '%s'\n", keyfilename);
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,	//keyfile
-			TEEC_NONE,
+	op.paramTypes = TEEC_PARAM_TYPES(
+			TEEC_MEMREF_TEMP_INPUT,	//keyfile
+			TEEC_VALUE_OUTPUT,	// byte length of modulus
 			TEEC_NONE,
 			TEEC_NONE);
 	op.params[0].tmpref.buffer = keyfilename;
@@ -100,6 +101,8 @@ int loadKey(char *keyfilename) {
 
 	ret = TEEC_InvokeCommand(&session, TZ_RSA_LOAD_KEY, &op, &origin);
 	report_on_error(origin, ret);
+	if (len)
+		*len = op.params[1].value.a;
 	return ret;
 }
 
@@ -111,10 +114,10 @@ int applyKey(char *keyfilename, enum keyselect key) {
 	unsigned char inbuf[RSABYTELEN], outbuf[RSABYTELEN];
 	size_t inbytes;
 
-	ret = loadKey(keyfilename);
+	ret = loadKey(keyfilename, NULL);
 	if (ret)
 		return ret;
-	printf("Loading key ok\n");
+	printf("Loading key ok. Waiting for input..\n");
 
 	memset(inbuf, 0, RSABYTELEN);
 //	inbytes = read(0, inbuf, RSABYTELEN);
@@ -172,32 +175,37 @@ int getPubKey(char *keyfilename) {
 	TEEC_Operation op;
 	uint32_t origin = 0;
 	TEEC_Result ret;
-	unsigned char bufN[RSABYTELEN], bufE[RSABYTELEN];
+	int rsalen;
 
-	ret = loadKey(keyfilename);
+	ret = loadKey(keyfilename, &rsalen);
 	if (ret)
 		return ret;
-	printf("Loading key ok. Waiting for input..\n");
+	printf("Loading key ok, len is %d.\n", rsalen);
+	if (!(rsalen > 0 && rsalen < 0xfff)) {
+		printf("RSA length seems stupid!\n");
+		return TEEC_ERROR_BAD_FORMAT;
+	}
 
-	memset(bufN, 0, RSABYTELEN);
-	memset(bufE, 0, RSABYTELEN);
+	unsigned char bufN[rsalen], bufE[rsalen];
+	memset(bufN, 0, rsalen);
+	memset(bufE, 0, rsalen);
 
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_OUTPUT,	//E
 			TEEC_MEMREF_TEMP_OUTPUT,	//N
 			TEEC_NONE,
 			TEEC_NONE);
 	op.params[0].tmpref.buffer = bufE;
-	op.params[0].tmpref.size = RSABYTELEN;
+	op.params[0].tmpref.size = rsalen;
 	op.params[1].tmpref.buffer = bufN;
-	op.params[1].tmpref.size = RSABYTELEN;
+	op.params[1].tmpref.size = rsalen;
 
 	ret = TEEC_InvokeCommand(&session, TZ_RSA_GET_PUBLIC_KEY, &op, &origin);
 	report_on_error(origin, ret);
 	if (!ret) {
 		printf("E:\n");
-		printHexMem(bufE, RSABYTELEN);
+		printHexMem(bufE, rsalen);
 		printf("N:\n");
-		printHexMem(bufN, RSABYTELEN);
+		printHexMem(bufN, rsalen);
 	}
 	return ret;
 }
