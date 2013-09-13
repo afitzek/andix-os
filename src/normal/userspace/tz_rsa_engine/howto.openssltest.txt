@@ -1,0 +1,12 @@
+Simple test loading:
+openssl engine dynamic -pre SO_PATH:/deploy/norm/lib/libtz_rsa_engine.so -pre LOAD 
+openssl engine dynamic -pre SO_PATH:tz_rsa_engine -pre LOAD 
+
+Create self signed cert:
+openssl req -x509 -engine tz_rsa_engine -new -key key12 -keyform e -out key12.cert
+
+Run server:
+openssl s_server -cert key12.cert -key key12 -keyform e -engine tz_rsa_engine -[state|debug]
+
+Run client:
+openssl s_client -connect 172.20.0.2:4433 -state
