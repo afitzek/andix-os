@@ -246,6 +246,10 @@ static EVP_PKEY *tz_loadKey(ENGINE *E, const char *name, UI_METHOD *ui_method, v
 }
 
 int tz_rsa_keygen(RSA *rsa, int bits, BIGNUM *e, BN_GENCB *cb) {
+	/*
+	 * The semantics of the API's keygen function is not very compatible with our
+	 * TZ implementation. The key is only generated in the RSA struct.
+	 */
 	fprintf(stderr, "Error: RSA key generation is not implemented via the RSA API!\n");
 	return 0;
 }
@@ -293,7 +297,9 @@ RSA_METHOD tz_rsa_methods= {
 		NULL, /* app_data */
 		NULL, /* rsa_sign */
 		NULL, /* rsa_verify */
+		// to be compatible with apache2 the built-in keygen will be used.
 		tz_rsa_keygen, /* rsa_keygen */
+
 };
 
 /* Engines can have additional configuration commands. We don't use them. */
@@ -339,6 +345,11 @@ static void setup_rsa() {
 	tz_rsa_methods.rsa_pub_dec = rsa_meth->rsa_pub_dec;
 	tz_rsa_methods.rsa_mod_exp = rsa_meth->rsa_mod_exp;
 	tz_rsa_methods.bn_mod_exp = rsa_meth->bn_mod_exp;
+	/*
+	 * The built-in keygen function doesn't actually create a key in the trust zone, of course.
+	 * apache2 creates a temporary key and therefore requires this function.
+	 */
+	tz_rsa_methods.rsa_keygen = rsa_meth->rsa_keygen;
 
 	// get an ex_data index. This provides some means of storing application specific data.
 	rsa_ex_index = RSA_get_ex_new_index(0, NULL, tz_rsa_ex_new, tz_rsa_ex_dup, tz_rsa_ex_free);
