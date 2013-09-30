@@ -193,6 +193,8 @@ int getPubKey(char *keyname, ENGINE *e) {
 		return -1;
 
 	RSA *rsa = loadKey(keyname, e);
+	if (rsa == NULL)
+		return 1;
 	PEM_write_RSAPublicKey(file, rsa);
 	RSA_free(rsa);
 	fclose(file);

@@ -139,7 +139,12 @@ static struct tz_rsa_ex_t *tz_openSession(ENGINE *E) {
 	uint32_t TEEorigin = 0;
 
 	// open session
-	TEE_uuid_parse(RSA_TRUSTLET_UUID, &uuid);
+	TEEret = TEE_uuid_parse(RSA_TRUSTLET_UUID, &uuid);
+	if (TEEret) {
+		printerr("uuid_parse failed %i\n", TEEret);
+		return NULL;
+	}
+
 	TEEret = TEEC_InitializeContext(ANDIX_TEE_NAME, &(tz_ref->ctx));
 
 	if (TEEret != TEEC_SUCCESS) {
@@ -150,9 +155,10 @@ static struct tz_rsa_ex_t *tz_openSession(ENGINE *E) {
 	}
 
 	TEEret = TEEC_OpenSession(&(tz_ref->ctx), &(tz_ref->session), &uuid, 0, NULL, NULL, &TEEorigin);
+	printinfo("tz_openSession %p %s\n", tz_ref, RSA_TRUSTLET_UUID);
 
 	if (TEEret != TEEC_SUCCESS) {
-		printerr("Failed to create session!\n");
+		printerr("Failed to create session with %s!\n", RSA_TRUSTLET_UUID);
 		report_on_TEEerror(TEEorigin, TEEret);
 		TEEC_FinalizeContext(&(tz_ref->ctx));
 		OPENSSL_free(tz_ref);
@@ -165,6 +171,7 @@ static void tz_closeSession(struct tz_rsa_ex_t *tz_ref) {
 	TEEC_CloseSession(&(tz_ref->session));
 	TEEC_FinalizeContext(&(tz_ref->ctx));
 	OPENSSL_free(tz_ref);
+	printinfo("tz_closeSession %p\n", tz_ref);
 }
 
 /*
@@ -198,6 +205,8 @@ static EVP_PKEY *tz_loadKey(ENGINE *E, const char *name, UI_METHOD *ui_method, v
 
 	TEEret = TEEC_InvokeCommand(&(tz_ref->session), TZ_RSA_LOAD_KEY, &TEEop, &TEEorigin);
 	report_on_TEEerror(TEEorigin, TEEret);
+	if (TEEret != TEEC_SUCCESS)
+		return NULL;
 	rsalen = TEEop.params[1].value.a;
 	printinfo("Key '%s' loaded. Modulus len is %d bytes\n", name, rsalen);
 
@@ -217,6 +226,8 @@ static EVP_PKEY *tz_loadKey(ENGINE *E, const char *name, UI_METHOD *ui_method, v
 
 	TEEret = TEEC_InvokeCommand(&(tz_ref->session), TZ_RSA_GET_PUBLIC_KEY, &TEEop, &TEEorigin);
 	report_on_TEEerror(TEEorigin, TEEret);
+	if (TEEret != TEEC_SUCCESS)
+		return NULL;
 
 	// Init EVP and RSA stuff
 	EVP_PKEY *pkey = EVP_PKEY_new();
