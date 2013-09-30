@@ -316,7 +316,8 @@ int tz_rsa_ex_dup(CRYPTO_EX_DATA *to, CRYPTO_EX_DATA *from, void *from_d,
 
 void tz_rsa_ex_free(void *parent, void *ptr, CRYPTO_EX_DATA *ad, int idx, long argl, void *argp) {
 	struct tz_rsa_ex_t *tz_ref = CRYPTO_get_ex_data(ad, idx);
-	tz_closeSession(tz_ref);
+	if (tz_ref)
+		tz_closeSession(tz_ref);
 }
 
 static void setup_rsa() {
