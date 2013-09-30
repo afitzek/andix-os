@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
 		usage(argv);
 		return -1;
 	}
-	uuid_parse(RSA_TRUSTLET_UUID, &uuid);
+	TEE_uuid_parse(RSA_TRUSTLET_UUID, &uuid);
 
 	TEE_ret = TEEC_InitializeContext(ANDIX_TEE_NAME, &ctx);
 

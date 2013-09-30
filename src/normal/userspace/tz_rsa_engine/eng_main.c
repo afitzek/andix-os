@@ -139,7 +139,7 @@ static struct tz_rsa_ex_t *tz_openSession(ENGINE *E) {
 	uint32_t TEEorigin = 0;
 
 	// open session
-	uuid_parse(RSA_TRUSTLET_UUID, &uuid);
+	TEE_uuid_parse(RSA_TRUSTLET_UUID, &uuid);
 	TEEret = TEEC_InitializeContext(ANDIX_TEE_NAME, &(tz_ref->ctx));
 
 	if (TEEret != TEEC_SUCCESS) {

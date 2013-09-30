@@ -138,7 +138,7 @@ unsigned short strtous(const char *nptr, char **endptr, int base) {
 	return (acc);
 }
 
-int uuid_parse(const char *in, TEEC_UUID* uuid)
+int TEE_uuid_parse(const char *in, TEEC_UUID* uuid)
 {
 	char		uuid_string[40];
 	int 		i;

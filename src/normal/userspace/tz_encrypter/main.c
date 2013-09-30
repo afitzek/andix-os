@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
 
 	origin = 0;
 
-	uuid_parse(TRUSTLET_UUID, &uuid);
+	TEE_uuid_parse(TRUSTLET_UUID, &uuid);
 
 	result = TEEC_InitializeContext(ANDIX_TEE_NAME, &ctx);
 
