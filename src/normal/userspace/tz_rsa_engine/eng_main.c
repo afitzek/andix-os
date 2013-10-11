@@ -45,6 +45,11 @@ static int tz_apply_private_key(int len,const unsigned char *inbuf, unsigned cha
 	uint32_t origin = 0;
 	TEEC_Result ret;
 	struct tz_rsa_ex_t *tz_ref = RSA_get_ex_data(rsa, rsa_ex_index);
+	if (tz_ref == NULL) {
+		printerr("No ex_data found. Unable to reference TZ key.\n");
+		return -1;
+	}
+
 	int rsalen = RSA_size(rsa);
 
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,	//input
