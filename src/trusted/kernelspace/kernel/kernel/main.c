@@ -65,6 +65,8 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	uint32_t _svc_vect = (uint32_t) &__svc_vector;
 	uint32_t _mon_vect = (uint32_t) &__monitor_vector;
 	uint32_t* v_load_addr = (uint32_t*) __virt_load_addr;
+	void* ptr = 0x021E8040;
+	__raw_writeb('A', ptr);
 	//uint32_t i = 0;
 
 	// ========================================================================

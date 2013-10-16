@@ -45,16 +45,16 @@ static const device_info_t imx6q_sl_dev_map[] = {
 				.base 	= (uintptr_t)0x02020000 ,
 				.size 	= 0x4000,
 				.driver = IMX53_UART_DRIVER_NAME,
-				.id		= 0,
-				.flags	= 0
+				.id		= 1,
+				.flags	= FLAG_DO_INIT
 		},
 		[1] = {
 				.name 	= SERIAL_DEVICE,
 				.base 	= (uintptr_t)0x021E8000,
 				.size 	= 0x4000,
 				.driver = IMX53_UART_DRIVER_NAME,
-				.id		= 1,
-				.flags	= FLAG_DO_INIT
+				.id		= 0,
+				.flags	= 0
 		},
 		[2] = {
 				.name 	= SERIAL_DEVICE,

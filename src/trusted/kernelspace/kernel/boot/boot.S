@@ -79,12 +79,27 @@
 	LDMFD   sp!, {r0-r12, pc}^
 .endm
 
+.macro dbg_print
+	LDR r1, __test_addr
+	LDR r2, =0x41
+	STR r2, [r1,#0x40]
+.endm
+
 .global _reset
 _reset:
+	MRC p15, 0, r1, c0, c0, 5
+	AND r1, r1, #0x3
+	CMP r1, #0
+	BEQ __initialize
+__wait_loop:
+	B	.
+
+__initialize:
 	//B	.
 	// save boot information
 	MOV r6, r1
 	MOV r7, r2
+	dbg_print
 	// Stack setup
 	LDR r1, =svc_stack
 	//ADR r1, _reset
@@ -187,6 +202,8 @@ DCC:
 	//LDR r0, =0x70204000
 	//SUB r0, r0, #24576			// start of TTBR1
 	LDR r1, __virt_load_addr
+	LDR r2, __mb_mask
+	AND r1, r1, r2
 	MOV r1, r1, LSR #18
 	ADD r0, r0, r1
 	//ADD r0, r0, #12288				// start of 0xC0000000
@@ -215,8 +232,11 @@ DR: // Create 1:1 mapping 70000000 -> B0000000
 	//LDR r0, =0x70208000
 	//ADD r0, r0, #7168		uncomment again ...		// start of 0x70000000
 	LDR r1, __phys_load_addr
+	LDR r2, __mb_mask
+	AND r1, r1, r2
 	MOV r1, r1, LSR #18
 	ADD r0, r0, r1
+	//BL print_r
 	//ADD r0, r0, #11264
 	LDR r1, __phys_target_addr 			// physical addr
 	ADD	r1, r1, #0x02
@@ -242,9 +262,13 @@ DI: // Map IO 0x53F00000 -> 0x53F00000
 	//LDR r0, =0x70208000
 	//LDR r1, =0x14FC
 	LDR r1, __phys_early_io
+	LDR r2, __mb_mask
+	AND r1, r1, r2
 	MOV r1, r1, LSR #18
 	ADD r0, r0, r1
 	LDR r1, __phys_early_io 			// early output ... physical addr
+	LDR r2, __mb_mask
+	AND r1, r1, r2
 	MOV r2, #0xFF
 	MOV r2, r2, LSL #4
 	ADD r2, #0xF
@@ -259,8 +283,8 @@ __start_reloc:
 	LDR r0, __phys_load_addr
 	LDR r1, __phys_target_addr
 	LDR r2, __kernel_b_size
-	//CMP	r0, r1
-	//BGE	__done_reloc
+	CMP	r0, r1
+	BGE	__done_reloc
 __reloc_copy:
 	// Perform copy ...
 	LDR     r3, [r0], #4
@@ -279,7 +303,7 @@ __done_reloc:
 	LDR r2, __phys_target_addr
 	SUB r2, r2, r1
 	ADD r0, r0, r2
-	MCR p15, 0, r0, c2, c0, 0
+	MCR p15, 0, r0, c2, c0, 0		// Set TTBR0
 	//ADR	r0, __ttbr1
 	//SUB r0, r0, #24576			// start of TTBR1
 	/*ADR	r0, _reset
@@ -291,13 +315,16 @@ __done_reloc:
 	LDR r2, __phys_target_addr
 	SUB r2, r2, r1
 	ADD r0, r0, r2*/
-	MCR p15, 0, r0, c2, c0, 1
+	//ADD r0, r0, #8192
+	MCR p15, 0, r0, c2, c0, 1		// SET TTBR1
 	MOV r0, #1
-	MCR p15, 0, r0, c2, c0, 2
+	MCR p15, 0, r0, c2, c0, 2		// SET TTBRC
 	LDR r0, =0x55555555
-	MCR p15, 0, r0, c3, c0, 0
+	MCR p15, 0, r0, c3, c0, 0		// Domain Access
 	MOV r0, #0
 	MCR p15, 0, r0, c8, c7, 0
+	//LDR r1, =__svc_vector
+	//MCR p15, 0, r1, c12, c0, 0
 	MRC    p15, 0, r1, c1, c0, 0
 	ORR    r1, r1, #1
 	BIC    r1, r1, #(1 << 1)
@@ -306,14 +333,15 @@ __done_reloc:
 	ORR    r1, r1, #(1 << 11)
 	ORR    r1, r1, #(1 << 12)
 	BIC    r1, r1, #(1 << 13)
-	ORR    r1, r1, #(1 << 22)
-	ORR    r1, r1, #(1 << 23)
+	//ORR    r1, r1, #(1 << 22)
+	//ORR    r1, r1, #(1 << 23)
 	BIC    r1, r1, #(1 << 29)
-	MCR    p15, 0, r1, c1, c0, 0
-	DSB
-	ISB
+	//dbg_print
+	MCR    p15, 0, r1, c1, c0, 0	// activate VM
+	dbg_print
+	dbg_print
+	dbg_print
 //__setup_vector:
-//	LDR r1, =__monitor_vector
 
 //	MCR p15, 0, r1, c12, c0, 0
 goc:
@@ -355,7 +383,7 @@ __phys_early_io:	.WORD	0xAAAAAAAA //0x53F00000 // BOARD SPECIFIC
 __reloc_ttbr1:		.WORD	0xA0000000
 __entry_addr:		.WORD	entry
 __kernel_b_size:	.WORD	0x0
-__board_infos_size:	.WORD	0x18
+__board_infos_size:	.WORD	0x24
 __kernel_mb_size:	.WORD	0x0
 __reset_addr:		.WORD	_reset
 __undef_addr:		.WORD	_undef
@@ -365,19 +393,25 @@ __data_ab_addr:		.WORD	_data_ab
 __irq_addr:			.WORD	_irq
 __fiq_addr:			.WORD	_fiq
 __ttbr1_addr:		.WORD	__ttbr1
+__test_addr:		.WORD	0x021E8000
+__mb_mask:			.WORD	0xFFE00000
 //__ttbr0_addr:		.WORD	__ttbr0
 
 __board_infos:
 // IMX53 QSB board
-.WORD	0xcc9
+.WORD	0x00000cc9
 .WORD	0xB0000000
 .WORD	0x53F00000
 
 // VEXPRESS A9
-.WORD	0x8e0
+.WORD	0x000008e0
 .WORD	0x60010000
 .WORD	0x10009000
 
+// IMX6Q SabreLite
+.WORD	0x00000eb9
+.WORD	0x40000000
+.WORD	0x021E8000
 
 .global __reset_addr
 .global __undef_addr
@@ -415,6 +449,104 @@ _fiq:
 	BL	pIRQ
 
 	swi_return
+
+.global print_r
+print_r:
+	# prolog
+    stmdb sp!, {r4-r11}
+    mov	r8, r0
+    ldr	r5, __test_addr
+	and	r8, r8, #-268435456
+	lsr	r8, r8, #28
+	cmp	r8, #9
+	bhi	__i000
+	add	r9, r8, #48
+	b	__i001
+__i000:
+	add	r9, r8, #55
+__i001:
+	str	r9, [r5,#0x40]
+  	mov	r8, r0
+  	and	r8, r8, #251658240
+  	lsr	r8, r8, #24
+ 	cmp	r8, #9
+ 	bhi	__i002
+  	add	r9, r8, #48
+  	b	__i003
+__i002:
+  	add	r9, r8, #55
+__i003:
+	str	r9, [r5,#0x40]
+  	mov	r8, r0
+  	and	r8, r8, #0xF00000
+  	lsr	r8, r8, #20
+ 	cmp	r8, #9
+ 	bhi	__i004
+  	add	r9, r8, #48
+  	b	__i005
+__i004:
+  	add	r9, r8, #55
+__i005:
+	str	r9, [r5,#0x40]
+  	mov	r8, r0
+  	and	r8, r8, #0xF0000
+  	lsr	r8, r8, #16
+ 	cmp	r8, #9
+ 	bhi	__i006
+  	add	r9, r8, #48
+  	b	__i007
+__i006:
+  	add	r9, r8, #55
+__i007:
+	str	r9, [r5,#0x40]
+  	str	r8, [r5,#0x40]
+  	mov	r8, r0
+  	and	r8, r8, #0xF000
+  	lsr	r8, r8, #12
+ 	cmp	r8, #9
+ 	bhi	__i008
+  	add	r9, r8, #48
+  	b	__i009
+__i008:
+  	add	r9, r8, #55
+__i009:
+  	str	r9, [r5,#0x40]
+  	mov	r8, r0
+  	and	r8, r8, #0xF00
+  	lsr	r8, r8, #8
+ 	cmp	r8, #9
+ 	bhi	__i010
+  	add	r9, r8, #48
+  	b	__i011
+__i010:
+  	add	r9, r8, #55
+__i011:
+  	str	r9, [r5,#0x40]
+  	mov	r8, r0
+  	and	r8, r8, #0xF0
+  	lsr	r8, r8, #4
+ 	cmp	r8, #9
+ 	bhi	__i012
+  	add	r9, r8, #48
+  	b	__i013
+__i012:
+  	add	r9, r8, #55
+__i013:
+  	str	r9, [r5,#0x40]
+  	mov	r8, r0
+  	and	r8, r8, #0xF
+ 	cmp	r8, #9
+ 	bhi	__i014
+  	add	r9, r8, #48
+  	b	__i015
+__i014:
+  	add	r9, r8, #55
+__i015:
+  	str	r9, [r5,#0x40]
+  	MOV r9, #10
+  	str	r9, [r5,#0x40]
+ 	ldmia sp!, {r4-r11}
+    mov pc, lr
 
 .global _pref_ab
 _pref_ab:

@@ -28,31 +28,11 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **/
-/*
- * imx6_early_io.c
- *
- *  Created on: Oct 7, 2013
- *      Author: andy
- */
 
+.text
+.arm
+.global boot_a8
+boot_a8:
 
-#include <platform/board/imx6/imx6_early_io.h>
-#include <drivers/serial/imx_uart.h>
-
-uint32_t imx6_uart_base = 0x021E8000;
-
-void imx6_early_init() {
-	imx6_uart_base = 0x021E8000;
-}
-
-void imx6_early_putchar(uint8_t c) {
-	__REG(imx6_uart_base + UTXD) = c;
-
-	/* wait for transmitter to be ready */
-	while (!(__REG(imx6_uart_base + UTS) & UTS_TXEMPTY))
-		;
-}
-
-uint8_t imx6_early_getchar() {
-	return (-1);
-}
+.type boot_a8, function
+.size boot_a8, . - boot_a8
