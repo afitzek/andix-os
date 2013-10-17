@@ -145,12 +145,14 @@ uintptr_t kmalloc_align(uint32_t size, uint32_t align) {
 			padding = (uint32_t) (align - ((uint32_t) offset & (align - 1)));
 			//vmm_debug("   OFFSET 0x%x PADDING 0x%x", offset, padding);
 			// this block would fit
-			if (current->size - padding >= size) {
-				if (best == 0) {
-					best = current;
-				} else {
-					if (best->size > current->size) {
+			if(padding < current->size) {
+				if (current->size - padding >= size) {
+					if (best == 0) {
 						best = current;
+					} else {
+						if (best->size > current->size) {
+							best = current;
+						}
 					}
 				}
 			}
