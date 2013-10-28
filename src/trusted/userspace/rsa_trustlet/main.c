@@ -336,11 +336,31 @@ void TA_CloseSessionEntryPoint(void* sessionContext) {
 	printf(MSG_INFO "SESSION CLOSED!\n");
 }
 
+static const char *cmd2string(__uint32_t_ commandID) {
+	switch (commandID) {
+	case TZ_RSA_NEW_KEY:
+		return TZ_RSA_NEW_KEY_STRING;
+	case TZ_RSA_LOAD_KEY:
+		return TZ_RSA_LOAD_KEY_STRING;
+	case TZ_RSA_GET_PUBLIC_KEY:
+		return TZ_RSA_GET_PUBLIC_KEY_STRING;
+	case TZ_RSA_PRIVATE:
+		return TZ_RSA_PRIVATE_STRING;
+	case TZ_RSA_PUBLIC:
+		return TZ_RSA_PUBLIC_STRING;
+#ifdef INSECURE
+	case TZ_RSA_CAT_KEY:
+		return TZ_RSA_CAT_KEY_STRING;
+#endif
+	default:
+		return "no string known for this command!";
+	}
+}
 TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext,
 		__uint32_t_ commandID, __uint32_t_ paramTypes, TEE_Param params[4]) {
 
 	printf(MSG_INFO "Parameter Types 0x%x\n", paramTypes);
-	printf(MSG_INFO "Command invoked 0x%x\n", commandID);
+	printf(MSG_INFO "Command invoked 0x%x %s\n", commandID, cmd2string(commandID));
 	switch (commandID) {
 	case TZ_RSA_NEW_KEY:
 		return TA_createKeyPair(sessionContext, paramTypes, params);
