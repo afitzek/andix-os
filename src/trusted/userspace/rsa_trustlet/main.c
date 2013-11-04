@@ -14,8 +14,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define INSECURE
-
 #define MSG_ERROR "RSA Trustlet Error: "
 #define MSG_INFO "RSA Trustlet Info: "
 #define MSG_TROPIC_ERR "RSA Trustlet TropicSSL error "
