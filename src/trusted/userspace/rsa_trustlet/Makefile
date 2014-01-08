@@ -40,7 +40,7 @@ all: mkbuilddirs $(OUTDIR)rsa.bin
 
 $(OUTDIR)rsa.bin: $(OBJS)
 	@echo Linking $@
-	@$(ARMLD) $(LDFLAGS) -o $@ $^ -landix 
+	@$(ARMLD) $(LDFLAGS) -o $@ $^ -landix -ltrustlet
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/trustlets
 	@cp $(OUTDIR)rsa.bin $(ANDIX_DEPLOY_DIR)/tz/trustlets/rsa.bin
 	

@@ -37,7 +37,7 @@ LIBC_FILE = $(ARM_NEWLIB_LIB_DIR)/$(LIBC_NAME)
 LIBGCC_FILE = $(ARM_TOOLCHAIN_LIB_DIR)/$(LIBGCC_NAME)
 
 ASFLAGS = -mcpu=cortex-a8 -mfloat-abi=soft
-CFLAGS = -I $(ARM_NEWLIB_INC_DIR) -I $(ARM_TROPICSSL_INC_DIR) -I $(TZ_USER_C_INC) -mcpu=cortex-a8 -nostdlib -mfloat-abi=soft
+CFLAGS = -I $(ARM_NEWLIB_INC_DIR) -I $(TZ_USER_C_INC) -mcpu=cortex-a8 -nostdlib -mfloat-abi=soft
 LDFLAGS = -nostdlib
 
 all: mkbuilddirs $(OUTDIR)libandixC.a
@@ -54,7 +54,7 @@ $(OUTDIR)libandixC.a: $(OBJS)
 	@echo Packing $@
 	@$(ARMAR) rcs $@ $^ $(OUTDIR)tmp/libc/*.o $(OUTDIR)tmp/libgcc/*.o
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/lib
-	@cp $(OUTDIR)libandixC.a $(ANDIX_DEPLOY_DIR)/tz/lib
+	@cp $@ $(ANDIX_DEPLOY_DIR)/tz/lib
 	@rm -rf $(OUTDIR)tmp
                 
 .PHONY: mkbuilddirs		

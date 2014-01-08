@@ -224,19 +224,21 @@ tz_RSA_pdfdoc:
 # Andix newlib c system interface library
 ####
 
-TZ_NEWLIB_C = ANDIX TZ NEWLIB C
+TZ_NEWLIB_C = ANDIX TZ NEWLIB C and libtrustlet
 
 tz_newlib_c_build:
 	$(build-num)
 	$(start-build-command) $(TZ_NEWLIB_C)
 	$(sep-command)
 	@$(make-command) $(TZ_USER_C_SRC)
+	@$(make-command) $(TZ_USER_TRUSTLET_SRC)
 	$(sep-command)
 
 tz_newlib_c_clean:
 	$(start-clean-command) $(TZ_NEWLIB_C)
 	$(sep-command)
 	@$(make-command) $(TZ_USER_C_SRC) clean
+	@$(make-command) $(TZ_USER_TRUSTLET_SRC) clean
 	$(sep-command)
 
 ####

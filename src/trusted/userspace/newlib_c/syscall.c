@@ -48,6 +48,10 @@ int _isatty(int file) {
 	return (0);
 }
 
+void _exit(int ret) {
+	for(;;) ;	// TODO
+}
+
 int _close(int file) {
 	return (__swi_1(SWI_CLOSE, file));
 }

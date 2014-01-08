@@ -120,6 +120,7 @@ TOOLS_SRC := $(ANDIX_SRC_DIR)/tools
 TZ_KERNEL_SRC := $(TZ_K_SRC)/kernel
 
 TZ_USER_C_SRC := $(TZ_U_SRC)/newlib_c
+TZ_USER_TRUSTLET_SRC := $(TZ_U_SRC)/libtrustlet
 TZ_USER_TEE_SRC := $(TZ_U_SRC)/tee_runtime
 TZ_USER_MANAGER_SRC := $(TZ_U_SRC)/andix_manager
 TZ_USER_SAMPLE_SRC := $(TZ_U_SRC)/sample_trustlet
