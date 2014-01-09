@@ -15,6 +15,9 @@ toolchain/**/*
 deploy
 deploy/**/*
 
+# Ignore generated payload files
+src/trusted/kernelspace/kernel/payload/*.bin
+
 # Ignore generated docs
 doc/generated/**/*
 
