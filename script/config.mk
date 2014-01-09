@@ -12,7 +12,7 @@ HOST_PREFIX :=
 ARM_TOOLCHAIN_DIR := $(ANDIX_DIR)/toolchain/bin/
 ARM_PREFIX := arm-none-eabi-
 #ARM_TOOLCHAIN_LIB_DIR := /home/andy/apps/CodeSourcery_ARM_EABI_2012/lib/gcc/arm-none-eabi/4.6.3/
-ARM_TOOLCHAIN_LIB_DIR := $(ANDIX_DIR)/toolchain/lib/gcc/arm-none-eabi/4.8.1/
+ARM_TOOLCHAIN_LIB_DIR := $(ANDIX_DIR)/toolchain/lib/gcc/arm-none-eabi/4.8.2/
 #ARM_TOOLCHAIN_LIB_DIR := $(ANDIX_DIR)/prebuild/tz_libgcc/
 #ARM_TOOLCHAIN_LIB_DIR := $(ANDIX_DIR)/prebuild/cs_libgcc/
 
