@@ -325,9 +325,9 @@ void entry_main_task() {
 
 	decision = 'n';
 
-	while (decision != 'a' && decision != 'l') {
+	while (decision != 'a' && decision != 'l' && decision != 't') {
 
-		kprintf("\nSelect Guest (a ... Android, l ... Linux): ");
+		kprintf("\nSelect Guest (a ... Android, l ... Linux) or start Andix tester (t): ");
 
 		decision = getchar();
 	}
@@ -337,6 +337,9 @@ void entry_main_task() {
 	if(decision == 'a') {
 		kprintf("\nLoading Android ...\n");
 		task = load_android();
+	} else if (decision == 't') {
+		kprintf("\nLoading Andix tester ...\n");
+		task = load_tester();
 	} else {
 		kprintf("\nLoading Linux ...\n");
 		task = load_linux();

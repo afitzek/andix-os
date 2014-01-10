@@ -47,6 +47,7 @@ void start_user(uint8_t* usr, uint32_t size);
 task_t* create_user_task(uint8_t* usr, uint32_t size);
 task_t* load_linux();
 task_t* load_android();
+task_t* load_tester();
 int32_t payload_load_data(void* vdata, void* pdest, uint32_t size);
 
 #endif /* LOADER_H_ */
