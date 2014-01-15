@@ -125,6 +125,7 @@ TZ_USER_TEE_SRC := $(TZ_U_SRC)/tee_runtime
 TZ_USER_MANAGER_SRC := $(TZ_U_SRC)/andix_manager
 TZ_USER_SAMPLE_SRC := $(TZ_U_SRC)/sample_trustlet
 TZ_USER_RSA_SRC := $(TZ_U_SRC)/rsa_trustlet
+TZ_TESTER_SRC := $(TZ_U_SRC)/andix_tester
 
 ####
 # Normal World sources
