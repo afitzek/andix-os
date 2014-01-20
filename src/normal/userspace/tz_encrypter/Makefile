@@ -32,14 +32,17 @@ PROGRAM_NAME = encrypter.bin
 
 ###############################################################################
 
+TROPIC_NAME = libtropicssl.a
+TROPIC_FILE = $(ARM_TROPICSSL_LIB_DIR)/$(TROPIC_NAME)
+
 ASFLAGS = -g -mcpu=cortex-a8
-CFLAGS = -g -I$(NORM_US_APP_ENC_INC) -I$(ANDIX_INC_COMMON) -I$(ARM_POLARSSL_INC_DIR) -I$(ARM_NEWLIB_INC_DIR) -mcpu=cortex-a8 
+CFLAGS = -g -I$(NORM_US_APP_ENC_INC) -I$(ANDIX_INC_COMMON) -I $(ARM_TROPICSSL_INC_DIR) -I$(ARM_NEWLIB_INC_DIR) -mcpu=cortex-a8 
 LDFLAGS = -L$(ANDIX_DEPLOY_DIR)/norm/lib 
 
 all: mkbuilddirs $(OUTDIR)$(PROGRAM_NAME)
 
 $(OUTDIR)$(PROGRAM_NAME): $(OBJS)
-	@$(ARMNORMCC) $(LDFLAGS) -o $@ $^ -landixtee
+	@$(ARMNORMCC) $(LDFLAGS) -o $@ $^ -landixtee -ltropicssl
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/norm/app
 	@cp $(OUTDIR)$(PROGRAM_NAME) $(ANDIX_DEPLOY_DIR)/norm/app
                 

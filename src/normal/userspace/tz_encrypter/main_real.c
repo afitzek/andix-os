@@ -40,14 +40,370 @@
 #include <string.h>
 #include <tee_client_api.h>
 #include <trustlets/sample_trustlet.h>
-#include <tee_utils.h>
+#include <sys/time.h>
+//#include <linux/time.h>
+//#include <sys/times.h>
 
+#define CLOCK_REALTIME 0
 #define INPUT_BUFFER_SIZE 256
+
+#define TEST_1_LEN 1024
+//#define TEST_10_LEN 10240
+//#define TEST_100_LEN 102400
 
 void report_error(uint32_t origin, TEEC_Result result) {
 	printf("Invoke failed!\n");
 	printf("  ORIGIN: %s (0x%08X)\n", TEEC_StringifyOrigin(origin), origin);
 	printf("  ERROR : %s (0x%08X)\n", TEEC_StringifyError(result), result);
+}
+
+int norm_initialize_key(TEEC_Session* session, unsigned int key) {
+	TEEC_Operation operation;
+	uint32_t origin;
+	TEEC_Result result;
+
+	operation.params[0].value.a = key;
+
+	operation.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT,
+			TEEC_NONE,
+			TEEC_NONE,
+			TEEC_NONE);
+
+	result = TA_InvokeCommandEntryPoint(session, TZ_NEW_KEY,
+			operation.paramTypes, &operation.params);
+
+	if (result != TEEC_SUCCESS) {
+		printf("Failed to invoke command!\n");
+		report_error(origin, result);
+		return (-1);
+	}
+	return (0);
+}
+
+int norm_encrypt(TEEC_Context* ctx, TEEC_Session* session, unsigned int key,
+		unsigned char* in, size_t inlen, crypt_pack_t* out) {
+	TEEC_Operation operation;
+	TEEC_TempMemoryReference shared_input;
+	TEEC_TempMemoryReference shared_pack;
+	uint32_t origin = 0;
+	int res;
+	TEEC_Result result;
+
+	shared_input.size = inlen;
+	shared_input.buffer = in;
+
+	shared_pack.size = sizeof(crypt_pack_t) + out->datasize;
+	shared_pack.buffer = out;
+
+	/*result = TEEC_RegisterSharedMemory(ctx, &shared_input);
+
+	 if (result != TEEC_SUCCESS) {
+	 printf("Failed to register memory!\n");
+	 report_error(origin, result);
+	 res = -1;
+	 goto clean;
+	 }
+
+	 result = TEEC_RegisterSharedMemory(ctx, &shared_pack);
+
+	 if (result != TEEC_SUCCESS) {
+	 printf("Failed to register memory!\n");
+	 report_error(origin, result);
+	 res = -1;
+	 goto clean;
+	 }*/
+
+	operation.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT,
+			TEEC_MEMREF_WHOLE,
+			TEEC_MEMREF_WHOLE,
+			TEEC_NONE);
+
+	operation.params[0].value.a = key;
+
+	operation.params[1].tmpref.size = shared_input.size;
+	operation.params[1].tmpref.buffer = shared_input.buffer;
+
+	operation.params[2].tmpref.size = shared_pack.size;
+	operation.params[2].tmpref.buffer = shared_pack.buffer;
+
+	result = TA_InvokeCommandEntryPoint(session, TZ_ENCRYPT,
+			operation.paramTypes, &operation.params);
+
+	if (result != TEEC_SUCCESS) {
+		printf("Failed to invoke command!\n");
+		report_error(origin, result);
+		res = -1;
+		goto clean;
+	}
+
+	res = 0;
+
+	clean:
+	/*TEEC_ReleaseSharedMemory(&shared_input);
+	 TEEC_ReleaseSharedMemory(&shared_pack);*/
+	return (res);
+}
+
+int norm_decrypt(TEEC_Context* ctx, TEEC_Session* session, unsigned int key,
+		crypt_pack_t* in, unsigned char* out, size_t outlen) {
+	TEEC_Operation operation;
+	TEEC_TempMemoryReference shared_output;
+	TEEC_TempMemoryReference shared_pack;
+	uint32_t origin = 0;
+	int res;
+	TEEC_Result result;
+
+	shared_output.size = outlen;
+	shared_output.buffer = out;
+
+	shared_pack.size = sizeof(crypt_pack_t) + in->datasize;
+	shared_pack.buffer = in;
+	/*
+	 result = TEEC_RegisterSharedMemory(ctx, &shared_output);
+
+	 if (result != TEEC_SUCCESS) {
+	 printf("Failed to register memory!\n");
+	 report_error(origin, result);
+	 res = -1;
+	 goto clean;
+	 }
+
+	 result = TEEC_RegisterSharedMemory(ctx, &shared_pack);
+
+	 if (result != TEEC_SUCCESS) {
+	 printf("Failed to register memory!\n");
+	 report_error(origin, result);
+	 res = -1;
+	 goto clean;
+	 }
+	 */
+	operation.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT,
+			TEEC_MEMREF_WHOLE,
+			TEEC_MEMREF_WHOLE,
+			TEEC_NONE);
+
+	operation.params[0].value.a = key;
+
+	operation.params[1].tmpref.size = shared_output.size;
+	operation.params[1].tmpref.buffer = shared_output.buffer;
+
+	operation.params[2].tmpref.size = shared_pack.size;
+	operation.params[2].tmpref.buffer = shared_pack.buffer;
+
+	result = TA_InvokeCommandEntryPoint(session, TZ_DECRYPT, &operation,
+			&origin);
+
+	if (result != TEEC_SUCCESS) {
+		printf("Failed to invoke command!\n");
+		report_error(origin, result);
+		res = -1;
+		goto clean;
+	}
+
+	res = 0;
+
+	clean:
+	/*TEEC_ReleaseSharedMemory(&shared_output);
+	 TEEC_ReleaseSharedMemory(&shared_pack);*/
+	return (res);
+}
+
+void run_perf_test(TEEC_Context* ctx, TEEC_Session* session, int runtz,
+		int runnorm) {
+	uint8_t buffer_1k[TEST_1_LEN];
+	//uint8_t buffer_10k[TEST_10_LEN];
+	//uint8_t buffer_100k[TEST_100_LEN];
+	int i = 0;
+	int r = 0;
+	unsigned int keyID = 99;
+	unsigned long time_tz_key;
+	unsigned long time_tz_enc_1k;
+	unsigned long time_norm_key;
+	unsigned long time_norm_enc_1k;
+	//clock_t time_tz_enc_10k;
+	//clock_t time_tz_enc_100k;
+	clock_t time_tz_dec_1k;
+	//clock_t time_tz_dec_10k;
+	//clock_t time_tz_dec_100k;
+	int result;
+	crypt_pack_t* pack_1k = NULL;
+	//crypt_pack_t* pack_10k = NULL;
+	//crypt_pack_t* pack_100k = NULL;
+	//struct tms stop_tm, start_tm;
+	//struct timeval stop, start;
+
+	pack_1k = malloc(sizeof(crypt_pack_t) + TEST_1_LEN);
+	pack_1k->datasize = TEST_1_LEN;
+
+	/*
+	 pack_10k = malloc(sizeof(crypt_pack_t) + TEST_10_LEN);
+	 pack_10k->datasize = TEST_10_LEN;
+
+	 pack_100k = malloc(sizeof(crypt_pack_t) + TEST_100_LEN);
+	 pack_100k->datasize = TEST_100_LEN;
+	 */
+	/* initialize random seed: */
+	srand(time(NULL ));
+
+	// read random data
+	for (i = 0; i < TEST_1_LEN; i = i + 4) {
+		r = rand();
+		buffer_1k[i] = (uint8_t) r;
+		buffer_1k[i + 1] = (uint8_t) r >> 8;
+		buffer_1k[i + 2] = (uint8_t) r >> 16;
+		buffer_1k[i + 3] = (uint8_t) r >> 24;
+	}
+	/*
+	 for (i = 0; i < TEST_10_LEN; i = i + 4) {
+	 r = rand();
+	 buffer_10k[i] = (uint8_t) r;
+	 buffer_10k[i + 1] = (uint8_t) r >> 8;
+	 buffer_10k[i + 2] = (uint8_t) r >> 16;
+	 buffer_10k[i + 3] = (uint8_t) r >> 24;
+	 }
+
+	 for (i = 0; i < TEST_100_LEN; i = i + 4) {
+	 r = rand();
+	 buffer_100k[i] = (uint8_t) r;
+	 buffer_100k[i + 1] = (uint8_t) r >> 8;
+	 buffer_100k[i + 2] = (uint8_t) r >> 16;
+	 buffer_100k[i + 3] = (uint8_t) r >> 24;
+	 }
+	 */
+	if (runtz != 0) {
+		// Run TZ Tests:
+		// =========================================================================
+		//gettimeofday(&start, NULL );
+		//times(&start_tm);
+
+		result = initialize_key(session, keyID);
+
+		//times(&stop_tm);
+		//gettimeofday(&stop, NULL );
+
+		if (result < 0) {
+			printf("Failed to initialize TZ key");
+			goto cleanup;
+		}
+
+		//time_tz_key = (stop.tv_usec - start.tv_usec)
+		//		+ (stop.tv_sec - start.tv_sec) * 1000 * 1000;
+		//time_tz_key = stop_tm.tms_stime - start_tm.tms_stime;
+
+		// =========================================================================
+		//clock_gettime(&start, NULL );
+		//times(&start_tm);
+
+		result = encrypt(ctx, session, keyID, buffer_1k, TEST_1_LEN, pack_1k);
+
+		//times(&stop_tm);
+		//clock_gettime(&stop, NULL );
+
+		if (result < 0) {
+			printf("Failed to encrypt 1k");
+			goto cleanup;
+		}
+
+		//time_tz_enc_1k = (stop.tv_usec - start.tv_usec)
+		//		+ (stop.tv_sec - start.tv_sec) * 1000 * 1000;
+		//time_tz_enc_1k = stop_tm.tms_stime - start_tm.tms_stime;
+	}
+	// =========================================================================
+	/*
+	 times(&start_tm);
+
+	 result = encrypt(ctx, session, keyID, buffer_10k, TEST_10_LEN, pack_10k);
+
+	 times(&stop_tm);
+
+	 if (result < 0) {
+	 printf("Failed to encrypt 10k");
+	 goto cleanup;
+	 }
+
+	 time_tz_enc_10k = stop_tm.tms_stime - start_tm.tms_stime;
+
+	 // =========================================================================
+
+	 times(&start_tm);
+
+	 result = encrypt(ctx, session, keyID, buffer_100k, TEST_100_LEN, pack_100k);
+
+	 times(&stop_tm);
+
+	 if (result < 0) {
+	 printf("Failed to encrypt 100k");
+	 goto cleanup;
+	 }
+
+	 time_tz_enc_100k = stop_tm.tms_stime - start_tm.tms_stime;
+	 */
+
+	if (runnorm != 0) {
+
+		// =========================================================================
+		// Run Norm Tests:
+		// =========================================================================
+		//clock_gettime(&start, NULL );
+		//times(&start_tm);
+
+		result = norm_initialize_key(session, keyID);
+
+		//times(&stop_tm);
+		//clock_gettime(&stop, NULL );
+
+		if (result < 0) {
+			printf("Failed to initialize TZ key");
+			goto cleanup;
+		}
+
+		//time_norm_key = (stop.tv_usec - start.tv_usec)
+		//		+ (stop.tv_sec - start.tv_sec) * 1000 * 1000;
+		//time_norm_key = stop_tm.tms_stime - start_tm.tms_stime + stop_tm.tms_utime - start_tm.tms_utime;
+
+		// =========================================================================
+		//clock_gettime(&start, NULL );
+		//times(&start_tm);
+
+		result = norm_encrypt(ctx, session, keyID, buffer_1k, TEST_1_LEN,
+				pack_1k);
+
+		//times(&stop_tm);
+		//clock_gettime(&stop, NULL );
+
+		if (result < 0) {
+			printf("Failed to encrypt 1k");
+			goto cleanup;
+		}
+
+		//time_norm_enc_1k = (stop.tv_usec - start.tv_usec)
+		//		+ (stop.tv_sec - start.tv_sec) * 1000 * 1000;
+		//time_norm_enc_1k = stop_tm.tms_stime - start_tm.tms_stime + stop_tm.tms_utime - start_tm.tms_utime;
+
+		// =========================================================================
+	}
+	/*printf(
+			"================================================================\n");
+	printf("TZ:\n");
+	printf("KEY GENERATION: %lu\n", time_tz_key);
+	printf("Encrypt 1K: 	%lu\n", time_tz_enc_1k);
+	printf("==============\n");
+	printf("Norm:\n");
+	printf("KEY GENERATION: %lu\n", time_norm_key);
+	printf("Encrypt 1K: 	%lu\n", time_norm_enc_1k);
+	printf(
+			"================================================================\n");*/
+	cleanup: if (pack_1k != NULL ) {
+		free(pack_1k);
+	}
+	/*
+	 if (pack_10k != NULL ) {
+	 free(pack_10k);
+	 }
+
+	 if (pack_100k != NULL ) {
+	 free(pack_100k);
+	 }*/
 }
 
 int initialize_key(TEEC_Session* session, unsigned int key) {
@@ -208,7 +564,7 @@ static inline unsigned int __raw_readl(const volatile void *addr) {
 	return (*(volatile uint32_t *) (addr));
 }
 
-int test_tmp(TEEC_Context* ctx, TEEC_Session* session) {
+int test_tmp_norm(TEEC_Context* ctx, TEEC_Session* session) {
 	unsigned char ba[100];
 	unsigned char bs[100];
 	unsigned char bd[100];
@@ -273,8 +629,7 @@ int test_tmp(TEEC_Context* ctx, TEEC_Session* session) {
 	tmpa = __raw_readl(&operation.params[3].value.a);
 	tmpb = __raw_readl(&operation.params[3].value.b);
 
-	printf("VALUE PARAMS: A %d B %d\n", tmpa,
-				tmpb);
+	printf("VALUE PARAMS: A %d B %d\n", tmpa, tmpb);
 
 	return 0;
 }
@@ -328,6 +683,14 @@ int main(int argc, char* argv[]) {
 		goto cleanup;
 	}
 
+	if (argc == 2) {
+		if (strcmp(argv[1], "-ttz") == 0) {
+			run_perf_test(&ctx, &session, 1, 0);
+		} else if (strcmp(argv[1], "-tnorm") == 0) {
+			run_perf_test(&ctx, &session, 0, 1);
+		}
+		goto cleanup;
+	}
 	do {
 		printf("> ");
 		memset(buffer, 0, INPUT_BUFFER_SIZE);
@@ -356,6 +719,7 @@ int main(int argc, char* argv[]) {
 			printf("enc <keyID> <message>        encrypt\n");
 			printf("init <keyID>                 initialize new key\n");
 			printf("dec <keyID>                  decrypt\n");
+			printf("runtest                      run performance test\n");
 		} else if (strcmp(command, "init") == 0) {
 			for (idx = argIdx; idx < INPUT_BUFFER_SIZE; idx++) {
 				if (buffer[idx] == ' ') {
@@ -445,7 +809,11 @@ int main(int argc, char* argv[]) {
 		} else if (strcmp(command, "tmp") == 0) {
 			printf("Temp Test ....\n");
 
-			test_tmp(&ctx, &session);
+			test_tmp_norm(&ctx, &session);
+		} else if (strcmp(command, "runtest") == 0) {
+			printf("Running performance ....\n");
+
+			run_perf_test(&ctx, &session, 1, 1);
 		} else {
 			printf("Unknown command (use h for help)\n");
 		}

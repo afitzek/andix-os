@@ -227,8 +227,8 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
 #define mon_error(...) subsys_error(MON_TAG, __VA_ARGS__)
 #define mon_info(...) subsys_info(MON_TAG, __VA_ARGS__)
-#define mon_debug(...) subsys_debug(MON_TAG, __VA_ARGS__)
-//#define mon_debug(...) non_print_handler(MON_TAG, __VA_ARGS__)
+//#define mon_debug(...) subsys_debug(MON_TAG, __VA_ARGS__)
+#define mon_debug(...) non_print_handler(MON_TAG, __VA_ARGS__)
 
 // CMM
 

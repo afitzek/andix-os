@@ -133,6 +133,8 @@ int32_t map_memory_v(uintptr_t vtable, kernel_mem_info_t *section) {
 
 		} else if (section->type == SMALL_PAGE || section->type == LARGE_PAGE) {
 			// create new coarse page table
+			//void* page = pmm_allocate_page();
+			//void* mapped_page = mmm_allocate_page();
 			l2_tt = (uint32_t*) kmalloc_align(COARSE_PAGE_SIZE, 0x1000);
 			for (int i = 0; i < COARSE_PAGE_SIZE / 4; i++) {
 				l2_tt[i] = 0;

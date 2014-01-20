@@ -231,7 +231,7 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session* session, uint32_t commandID,
 
 	processComm();
 
-	if (processParameters(&space->params.invokeCommand.operation,
+	if (processParametersToCom(&space->params.invokeCommand.operation,
 			operation) != TEEC_SUCCESS) {
 			if (returnOrigin != NULL ) {
 				(*returnOrigin) = TEEC_ORIGIN_COMMS;
