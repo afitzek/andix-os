@@ -87,13 +87,6 @@ uintptr_t kmalloc_align(uint32_t size, uint32_t align);
 void kfree(uintptr_t blk);
 
 /**
- * Get physical memory address
- * @param vaddr the virutal address
- * @return the physical address or NULL if not mapped
- */
-uintptr_t virt_to_phys(uintptr_t vaddr);
-
-/**
  * Get physical memory address for non secure virtual address
  * @param vaddr the virutal address
  * @return the physical address or NULL if not mapped
