@@ -44,7 +44,9 @@
  *	\{
  */
 
-#include <task/task.h>
+#include <task/user_process.h>
+
+#define USER_START_MAPPED_MEM 0x70001000
 
 /**
  * Create a new page directory
@@ -61,31 +63,31 @@ void map_initial_user_stack(uintptr_t vptd);
  * Unmaps memory from task
  * @param vaddr The virutal address
  * @param size The size
- * @param task The task
+ * @param proc
  */
-void unmap_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task);
+void unmap_mem_from_task(uint8_t* vaddr, uint32_t size, struct user_process_t *proc);
 
 /**
  * Map memory to task
  * @param paddr The physical address
  * @param size The size
- * @param task The task
+ * @param proc
  */
-uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task);
+uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, struct user_process_t *proc);
 
 /**
  * Frees a mapped page from task
  * @param page Address on the page
- * @param task The task
+ * @param proc
  */
-void free_task_mapped_page(void* page, task_t *task);
+void free_task_mapped_page(void* page, struct user_process_t *proc);
 
 /**
  * Allocates mapped pages in the task vm
  * @param numpages The number of pages
- * @param task The task
+ * @param proc
  */
-void* allocate_task_mapped_page_frames(uint32_t numpages, task_t *task);
+void* allocate_task_mapped_page_frames(uint32_t numpages, struct user_process_t *proc);
 
 /**
  * Maps memory to userspace vptd
@@ -97,17 +99,29 @@ void map_user_memory(uintptr_t vptd, kernel_mem_info_t *section);
 /**
  * Allocates mapped memory to task
  * @param size The size of the mapped memory
- * @param task The task
+ * @param proc
  */
-uint8_t* allocate_map_mem_to_task(uint32_t size, task_t* task);
+uint8_t* allocate_map_mem_to_task(uint32_t size, struct user_process_t *proc);
 
 /**
  * Fress memory from task
  * @param vaddr The virtual address
  * @param size The size to free
- * @param task The task
+ * @param proc
  */
-void free_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task);
+void free_mem_from_task(uint8_t* vaddr, uint32_t size, struct user_process_t *proc);
+
+/**
+ * Sets the TPIDRURO, User Read-Only Thread ID Register
+ * @param p
+ */
+void set_user_thread_reg(uint32_t p);
+
+/**
+ * Reads the TPIDRURO, User Read-Only Thread ID Register
+ * @return
+ */
+uint32_t get_user_thread_reg(void);
 
 /* \} group */
 

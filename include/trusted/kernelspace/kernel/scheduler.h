@@ -39,18 +39,27 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
-#include <common/list.h>
-#include <common/string.h>
-#include <common/atags.h>
 #include <common.h>
 #include <common/typedefs.h>
-#include <monitor/monitor.h>
-#include <task/task.h>
+#include <task/user_process.h>
 
 void init_scheduler();
-void switch_to_task(task_t *task);
+void switch_to_thread(struct thread_t *thread);
 void yield();
 void return_to_ns();
+
+void sched_init();
+struct thread_t *get_nonsecure_thread();
+void set_nonsecure_thread(struct thread_t *t);
+void sched_add_thread(struct thread_t *task);
+void sched_rm_thread(struct thread_t *thread);
+tid_t get_current_process_id();
+tid_t get_current_thread_id();
+struct thread_t *get_current_thread();
+void sched_thread_switched(struct thread_t *thread);
+struct thread_t *sched_get_next_ready_thread(void);
+struct user_process_t *get_process_by_uuid(TASK_UUID* uuid);
+void print_threads();
 
 
 #endif /* SCHEDULER_H_ */

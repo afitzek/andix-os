@@ -38,7 +38,7 @@
 
 #include <kprintf.h>
 #include <devices/devices.h>
-#include <task/task.h>
+#include <scheduler.h>
 #include <hal.h>
 
 extern uint32_t svc_stack;
@@ -56,10 +56,13 @@ void getSerial() {
 }
 
 char* gettaskname() {
-	if (get_current_task() != NULL ) {
-		return (get_current_task()->name);
+	struct thread_t *th = get_current_thread();
+	if (th != NULL ) {
+		if (th->process)
+			return th->process->name;
+		return "KERNEL";
 	}
-	return ("NO-TASK");
+	return "NO-TASK";
 }
 
 void kprintHex(uint8_t* buffer, uint32_t size) {
@@ -212,8 +215,8 @@ void dump_stack_trace() {
 
 	bt = (backtrace_t*) (fpAddr);
 
-	if (get_current_task() != NULL ) {
-		startstack = ((task_t*) get_current_task())->kernelStartSP;
+	if (get_current_thread() != NULL ) {
+		startstack = get_current_thread()->kernel_stack.base;
 	} else {
 		startstack = (uint32_t) &svc_stack;
 	}
@@ -238,8 +241,8 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp) {
 
 	bt = (backtrace_t*) (fp);
 
-	if (get_current_task() != NULL ) {
-		startstack = ((task_t*) get_current_task())->kernelStartSP;
+	if (get_current_thread() != NULL ) {
+		startstack = get_current_thread()->kernel_stack.base;
 	} else {
 		startstack = (uint32_t) &svc_stack;
 	}

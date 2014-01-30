@@ -41,7 +41,7 @@
 
 #include <common/typedefs.h>
 #include <communication_types.h>
-#include <task/task.h>
+#include <task/thread.h>
 /**
  * \addtogroup service
  *	\{
@@ -49,9 +49,15 @@
 
 typedef struct {
 	uint8_t ready;
-	task_t* returnTask;
+	struct thread_t *returnTask;
 	TZ_CTLR_SPACE* ctrl_space;
 } service_request;
+
+/**
+ * Get a pointer to the system service thread.
+ * @return
+ */
+struct thread_t *service_get_service_thread();
 
 /**
  * Request the service task to process the request space
@@ -76,7 +82,7 @@ void service_entry();
 /**
  * Set service pre task
  */
-void service_pre(task_t* task);
+void service_pre(struct thread_t *task);
 
 /* \} group */
 

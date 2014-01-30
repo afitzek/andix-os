@@ -39,14 +39,18 @@
 #include <loader.h>
 #include <mm/mm.h>
 
-uint32_t setup_elf(uint8_t* payload, uint32_t size, uintptr_t vptd, uintptr_t heapstart) {
+uint32_t setup_elf(uint8_t* payload, uint32_t size, struct user_process_t *process) {
 	Elf32_Ehdr *hdr;
 	Elf32_Phdr *phdr;
 	//Elf32_Shdr *shdr;
 
+	uint32_t vptd = process->vuserPD;
+	uint32_t *heapstart = &process->vheap;
 	*heapstart = 0;
 
 	hdr = (Elf32_Ehdr*) payload;
+
+	loader_debug("Starting at hdr=%p, size=%d", hdr, size);
 
 	if (hdr->e_ident[EI_MAG0] != ELFMAG0 || hdr->e_ident[EI_MAG1] != ELFMAG1
 			|| hdr->e_ident[EI_MAG2] != ELFMAG2
@@ -82,10 +86,6 @@ uint32_t setup_elf(uint8_t* payload, uint32_t size, uintptr_t vptd, uintptr_t he
 	loader_debug("String Table @ 0x%x", stringTable);
 
 	uint16_t idx = 0;
-
-	uint32_t* utable = get_user_table();
-	set_user_table(v_to_p(vptd));
-	invalidate_tlb();
 	loader_debug("PROGRAM HEADERS: ");
 
 	for (idx = 0; idx < hdr->e_phnum; idx++) {
@@ -186,55 +186,5 @@ uint32_t setup_elf(uint8_t* payload, uint32_t size, uintptr_t vptd, uintptr_t he
 	dump_mmu(0x0, 0x20000, vptd);
 
 	loader_debug("Entry point: 0x%x", entry);
-	set_user_table(utable);
-	invalidate_tlb();
 	return (entry);
-}
-
-task_t* create_user_task(uint8_t* usr, uint32_t size) {
-
-	loader_debug("ELF TASK 0x%x [%x]", usr, size);
-
-	task_t* task = create_kernel_task(USR_MODE, SECURE);
-
-	if(task == NULL) {
-		return (task);
-	}
-
-	loader_debug("Creating PD");
-
-	uintptr_t vptd = create_page_directory(&task->userPD);
-
-	task->vuserPD = vptd;
-
-	task->vheap = 0;
-
-	set_user_table(task->userPD);
-
-	for(int i = 0; i < sizeof(task->membitmap) / 4; i++) {
-		task->membitmap[i] = 0xFFFFFFFF;
-	}
-
-	loader_debug("PD: 0x%x v 0x%x", task->userPD, task->vuserPD);
-
-	dump_mmu(0x0, 0x7FFFFFFF, task->vuserPD);
-
-	map_initial_user_stack(vptd);
-
-	task->trustlet_state = NEW;
-	task->userSP = 0x78FFFFF8;
-	task->exec_context = SECURE;
-
-	loader_debug("Stack setup OK");
-
-	task->context.pc = setup_elf(usr, size, vptd, (uintptr_t)&(task->vheap));
-
-	if (task->context.pc == 0xFFFFFFFF) {
-		// Invalid ELF Image
-		return (NULL );
-	}
-
-	loader_debug("ELF setup OK");
-
-	return (task);
 }

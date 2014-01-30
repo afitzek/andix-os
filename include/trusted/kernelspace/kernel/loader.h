@@ -41,13 +41,23 @@
 
 #include <kprintf.h>
 #include <elf.h>
-#include <task/task.h>
+#include <task/thread.h>
 
 void start_user(uint8_t* usr, uint32_t size);
-task_t* create_user_task(uint8_t* usr, uint32_t size);
-task_t* load_linux();
-task_t* load_android();
-task_t* load_tester();
+struct thread_t* load_linux();
+struct thread_t* load_android();
+struct thread_t* load_tester();
 int32_t payload_load_data(void* vdata, void* pdest, uint32_t size);
+uint32_t setup_elf(uint8_t* payload, uint32_t size, struct user_process_t *process);
+/**
+ * Prepares userspace trustlet from elf memory block
+ * @param start The start address
+ * @param end The end address
+ * @param name THe name of the new task
+ * @param uuid_string The uuid of the new task
+ */
+struct user_process_t *create_static_userspace_trustlet(uintptr_t start, uintptr_t end,
+		char* name, char* uuid_string);
+
 
 #endif /* LOADER_H_ */

@@ -45,6 +45,11 @@
  */
 
 /**
+ * Get a pointer to the system TEE service thread.
+ * @return
+ */
+struct thread_t *tee_get_tee_thread(void);
+/**
  * TEE release memory handler
  */
 uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation);

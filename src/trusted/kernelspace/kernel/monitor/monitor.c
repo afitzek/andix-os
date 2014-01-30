@@ -38,12 +38,12 @@
 
 #include <monitor/monitor.h>
 #include <mm/mm.h>
-#include <task/task.h>
+#include <scheduler.h>
 #include <cache.h>
 #include <kprintf.h>
-
-task_t* returningTask;
-task_t* returningTaskTEE;
+#include <task/service.h>
+#include <task/tee.h>
+#include <platform/vector_debug.h>
 
 void dump_mon_context(mon_context_t* cont) {
 	mon_debug("----- REGS -----");
@@ -62,58 +62,65 @@ void dump_mon_context(mon_context_t* cont) {
 	mon_debug("----- DONE -----");
 }
 
-void mon_secure_switch_context(mon_context_t *regs, task_t *task) {
+void mon_secure_switch_context(mon_context_t *regs, struct thread_t *thread) {
 	// save old context ...
-	task_t* current = get_current_task();
+	struct thread_t *current = get_current_thread();
 
 	if (current != NULL ) {
-		//mon_debug("Saving task %s [%d]", current->name, current->tid);
+		mon_debug("Saving thread [%d]", current->tid);
 		memcpy(&current->context, regs, sizeof(mon_context_t));
 		monitor_save_sys_regs(&current->sys_context);
-		current->kernelSP = getSVCSP();
-		current->userSP = getSYSSP();
-		current->userPD = get_user_table();
+		current->kernel_stack.sp = getSVCSP();
+		current->user_stack.sp = getSYSSP();
+//		current->userPD = get_user_table();		hmm this shouldn't need to be saved, its constant anyways.
 		// TODO: Save different mode stacks cpsr etc
 		gotoMONMode();
 	}
 
-	//mon_debug("Loading task %d [%s] from: 0x%x", task->tid, task->name, task);
+	mon_debug("Loading thread [%d] from: 0x%x", thread->tid, thread);
 
 	//mon_debug("Restoring context");
 
 	// Restore the new context
-	monitor_restore_sys_regs(&task->sys_context);
-	memcpy(regs, &task->context, sizeof(mon_context_t));
+	monitor_restore_sys_regs(&thread->sys_context);
+	memcpy(regs, &thread->context, sizeof(mon_context_t));
 
 	//mon_debug("Current Mode: %s", getModeString(getCPSR()));
 
-	if (task->kernelSP != 0) {
+	if (thread->kernel_stack.sp != 0) {
 		//mon_debug("setting kernel stack to 0x%x", task->kernelSP);
-		setSVCSP((uintptr_t) task->kernelSP);
+		setSVCSP((uintptr_t) thread->kernel_stack.sp);
 		gotoMONMode();
 	}
 
-	if (task->userSP != 0) {
+	if (thread->user_stack.sp != 0) {
 		//mon_debug("setting user stack to 0x%x", task->userSP);
-		setSYSSP((uintptr_t) task->userSP);
+		setSYSSP((uintptr_t) thread->user_stack.sp);
 		gotoMONMode();
 	}
 
-	if (task->userPD != NULL ) {
+	if (thread->process != NULL && thread->process->userPD != NULL ) {
 		//mon_debug("setting user page directory to 0x%x", task->userPD);
-		set_user_table(task->userPD);
-		invalidate_tlb();
+		if (thread->process->userPD != get_user_table()) {
+			// not necessary on intra-process switches
+			set_user_table(thread->process->userPD);
+			invalidate_tlb();
+		}
 	}
 
 	//mon_debug("Current Mode: %s", getModeString(getCPSR()));
+	set_user_thread_reg(thread->thread_pointer);
+	sched_thread_switched(thread);
 
-	set_current_task(task);
+	// Invalidate exclusive monitors at context switch.
+	// Required to ensure correct mutex operation.
+	asm volatile ("CLREX \n" : : : "memory");
 
-	//mon_debug("ID of task %d:", task->tid);
+	mon_debug("Switch to thread 0x%x %d done.", thread, thread->tid);
 }
 
 uint32_t create_session(uint32_t paddr) {
-	task_t* task = NULL;
+	struct user_process_t *proc = NULL;
 	intptr_t mapped = NULL;
 	uint32_t ret = 0;
 	kernel_mem_info_t info;
@@ -135,14 +142,11 @@ uint32_t create_session(uint32_t paddr) {
 	map_kernel_memory(&info);
 	vaddr = (intptr_t) (((uint32_t) mapped & 0xFFFFF000) | (paddr & 0xFFF));
 	uuid = (TASK_UUID*) vaddr;
-	task = get_task_by_uuid(uuid);
+	proc = get_process_by_uuid(uuid);
 	//task = get_task_by_id(2);
-	if (task == NULL ) {
-		task = get_task_by_id(1);
-	}
-	if (task != NULL ) {
-		task->state = READY;
-		__smc_1(SSC_TASK_SWITCH, (uint32_t) task);
+
+	if (proc != NULL ) {
+		switch_to_thread(proc->tee_context.tee_handler);
 		ret = 0;
 	} else {
 		ret = -1;
@@ -295,7 +299,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 	//for (int i = 0; i < 60; i++) {
 	//	mon_debug("CLEANING BUFFER FROM NON SECURE!!");
 	//}
-	task_t* target_task = NULL;
+	struct thread_t* target_task = NULL;
 	uint32_t physical_package;
 	mon_debug("FROM NON SECURE");
 	dump_mon_context(cont);
@@ -308,7 +312,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 
 		// THIS REQUEST IS A RESPONSE => DISPATCH TO SERVICE TASK!
 		mon_debug("Process com memory! @ v 0x%x p 0x%x", com_mem,
-				virt_to_phys((uintptr_t)com_mem));
+				v_to_p((uintptr_t)com_mem));
 
 		mon_debug("CTRL RESULT: 0x%x", com_mem->ret);
 
@@ -320,8 +324,8 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 			inv_tz_memory(package, sizeof(TZ_PACKAGE));
 			//mon_info("COM MEMORY IN TZ:");
 			//kprintHex((uint8_t*)com_mem, sizeof(TZ_CTLR_SPACE));
-			get_current_task()->state = BLOCKED;
-			target_task = get_task_by_name(SERVICE_TASK);
+			get_current_thread()->state = BLOCKED;
+			target_task = service_get_service_thread();
 			if (target_task == NULL ) {
 				cont->r[0] = -1;
 				break;
@@ -338,7 +342,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 
 		// THIS REQUEST IS A REQUEST => DISPATCH TO PROCESS TASK!
 		mon_debug("Process tee memory! @ v 0x%x p 0x%x", tee_mem,
-				virt_to_phys((uintptr_t)tee_mem));
+				v_to_p((uintptr_t)tee_mem));
 
 		if (tee_mem == NULL ) {
 			cont->r[0] = -1;
@@ -349,7 +353,7 @@ void mon_smc_non_secure_handler(mon_context_t* cont) {
 			//mon_info("TEE MEMORY IN TZ:");
 			//kprintHex((uint8_t*)tee_mem, sizeof(TZ_TEE_SPACE));
 			//DEBUG_STOP;
-			target_task = get_task_by_name(TEE_TASK);
+			target_task = tee_get_tee_thread();
 			if (target_task == NULL ) {
 				cont->r[0] = -1;
 				break;
@@ -399,26 +403,27 @@ char* get_ssc_name(uint32_t num) {
 void mon_smc_secure_handler(mon_context_t* cont) {
 	//mon_debug("FROM SECURE");
 	dump_mon_context(cont);
-	task_t* task = NULL;
+	struct thread_t *thread = NULL;
 	//uint32_t tmp1;
 	mon_debug("ACTION: %d [%s]", cont->r[12], get_ssc_name(cont->r[12]));
 	switch (cont->r[12]) {
 	case SSC_TASK_SWITCH:
-		task = (task_t*) cont->r[0];
-		if (task == NULL ) {
+		thread = (struct thread_t*) cont->r[0];
+		if (thread == NULL ) {
 			mon_debug("FAILED TO CHANGE TO TASK NULL!!");
 			return;
 		}
-		mon_info("Switching to %s", task->name);
-		mon_secure_switch_context(cont, task);
+		mon_info("Switching to thread %d of %s", thread->tid,
+				thread->process ? thread->process->name : "Kernel Thread");
+		mon_secure_switch_context(cont, thread);
 		break;
 	case SSC_TASK_SCHEDULE:
-		task = task_get_next_ready();
-		if (task == NULL ) {
+		thread = sched_get_next_ready_thread();
+		if (thread == NULL ) {
 			mon_debug("FAILED TO CHANGE TO TASK NULL!!");
 			return;
 		}
-		mon_secure_switch_context(cont, task);
+		mon_secure_switch_context(cont, thread);
 		break;
 	case SSC_NONS_SERVICE:
 		// Return to non secure world
@@ -426,7 +431,7 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		package->result = cont->r[0];
 		//v7_flush_dcache_all();
 		free_tz_package();
-		mon_secure_switch_context(cont, get_nonsecure_task());
+		mon_secure_switch_context(cont, get_nonsecure_thread());
 		mon_debug("SSC_NONS_SERVICE context switched!");
 		break;
 	default:
@@ -434,9 +439,9 @@ void mon_smc_secure_handler(mon_context_t* cont) {
 		break;
 	}
 	dump_mon_context(cont);
-	if (task != NULL ) {
+	if (thread != NULL ) {
 	 mon_debug(
-	 "GOING FROM SECURE TO %sSECURE", (task->context.scr & 1) ? "NON-" : "");
+	 "GOING FROM SECURE TO %sSECURE", (thread->context.scr & 1) ? "NON-" : "");
 	 } else {
 	 mon_debug("GOING FROM SECURE TO (?)SECURE");
 	 }
@@ -472,8 +477,6 @@ void setup_mon_stacks() {
 
 	mon_info("Cacheline size: %d", cl_size);
 
-	returningTask = NULL;
-	returningTaskTEE = NULL;
 	uintptr_t mon_stack_addr = map_stack_mem(0x4000);
 	setMONSP(mon_stack_addr);
 	//mon_debug("Setup Monitor stack @ 0x%x p 0x%x", mon_stack_addr, v_to_p(mon_stack_addr));

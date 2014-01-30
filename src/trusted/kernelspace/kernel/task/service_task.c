@@ -38,11 +38,15 @@
 
 #include <common.h>
 #include <task/service.h>
-#include <task/task.h>
+#include <task/thread.h>
 #include <scheduler.h>
 
 queue* service_queue;
-task_t* service_task;
+static struct thread_t *service_thread;
+
+struct thread_t *service_get_service_thread() {
+	return service_thread;
+}
 
 void service_entry() {
 	service_request* request = NULL;
@@ -54,7 +58,7 @@ void service_entry() {
 
 		if (request == NULL ) {
 			// Nothing more to do ...
-			get_current_task()->state = BLOCKED;
+			get_current_thread()->state = BLOCKED;
 			service_info("Service task has nothing to do ...");
 
 			service_info("yielding");
@@ -70,8 +74,8 @@ void service_entry() {
 				service_error("No control structure available!");
 				//yield();
 				if (request->returnTask != NULL ) {
-					service_info("switching to %s", request->returnTask->name);
-					switch_to_task(request->returnTask);
+					service_info("switching to %s", request->returnTask->process->name);
+					switch_to_thread(request->returnTask);
 				} else {
 					service_info("yielding");
 					yield();
@@ -98,14 +102,14 @@ void service_entry() {
 
 			request->ready = 1;
 
-			switch_to_task(request->returnTask);
+			switch_to_thread(request->returnTask);
 		}
 	}
 }
 
-void service_pre(task_t* task) {
+void service_pre(struct thread_t *task) {
 	service_queue = queue_init();
-	service_task = task;
+	service_thread = task;
 }
 
 void service_do_request(TZ_CTLR_SPACE* space) {
@@ -115,14 +119,14 @@ void service_do_request(TZ_CTLR_SPACE* space) {
 	// add request wait until ready
 	service_add_request(&request);
 	//cur_request = &request;
-	request.returnTask = get_current_task();
-	service_task->state = READY;
+	request.returnTask = get_current_thread();
+	service_thread->state = READY;
 	//return_task = get_current_task();
-	service_info("Requesting Task: %s", request.returnTask->name);
+	service_info("Requesting Task: %s", request.returnTask->process->name);
 	while (request.ready != 1) {
-		switch_to_task(service_task);
+		switch_to_thread(service_thread);
 	}
-	service_info("Returned to Task: %s", get_current_task()->name);
+	service_info("Returned to Task: %s", get_current_thread()->process->name);
 	//return_task = NULL;
 	//cur_request = NULL;
 	service_debug("Request done!");

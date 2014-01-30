@@ -41,11 +41,10 @@
 
 #include <common.h>
 #include <tee/tee_context.h>
-#include <task/task.h>
 
 typedef struct {
 	uint32_t _id;
-	task_t*  tee_application;
+	struct user_process_t *tee_application;
 	tee_context* context;
 	uint32_t	tee_session_handle;
 } tee_session;

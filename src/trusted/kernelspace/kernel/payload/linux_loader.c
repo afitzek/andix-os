@@ -37,12 +37,14 @@
 
 #include <mm/mm.h>
 #include <hal.h>
-#include <task/task.h>
+#include <task/thread.h>
+#include <loader.h>
+#include <scheduler.h>
 
 extern uint32_t payload;
 extern uint32_t payload_end;
 
-task_t* load_linux() {
+struct thread_t* load_linux() {
 	// prepare payload ...
 	uint32_t vpayload_end = (uint32_t) &payload_end;
 	uint32_t vpayload = (uint32_t) &payload;
@@ -78,22 +80,20 @@ task_t* load_linux() {
 
 	main_info("%s PREPARE PAYLOAD [DONE] %s", SEPERATOR, SEPERATOR);
 
-	task_t* task = create_kernel_task(SVC_MODE, NONSECURE);
+	struct thread_t *thread = create_kernel_thread(SVC_MODE, NONSECURE);
 
-	if (task == NULL ) {
-		main_error("Failed to create nonsecure task");
+	if (thread == NULL ) {
+		main_error("Failed to create nonsecure thread");
 		return (NULL );
 	}
 
-	task->context.r[1] = hal_get_platform()->sys_id;
-	task->context.r[2] = 0x70000100;
-	task->context.pc = 0x70008000;
+	thread->context.r[1] = hal_get_platform()->sys_id;
+	thread->context.r[2] = 0x70000100;
+	thread->context.pc = 0x70008000;
 
-	task_set_name(task, "NONSECURE_LINUX");
+	sched_add_thread(thread);
 
-	add_task(task);
+	set_nonsecure_thread(thread);
 
-	set_nonsecure_task(task);
-
-	return (task);
+	return (thread);
 }
