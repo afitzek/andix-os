@@ -458,7 +458,7 @@ void vmm_get_virt_block_size(uintptr_t vtable, uint32_t addr, uintptr_t start,
 
 // ============================================================================
 
-void unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd) {
+uint32_t unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd) {
 	uint32_t* l1_tt = vpd;
 	uint32_t* l2_tt = NULL;
 
@@ -466,22 +466,30 @@ void unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd) {
 	uint32_t l2_index = (vaddr >> 12) & 0xFF;
 
 	uint32_t* l1_pte = (uint32_t*) ((uint32_t) l1_tt + l1_index * 4);
+	uint32_t pa = 0;
 
 	if (((*l1_pte) & L1_TYPE_MASK) == 0) {
 		// OK we are done ...
-		return;
+		return 0;
 	} else if (((*l1_pte) & L1_TYPE_MASK) == PAGE_TABLE_TYPE) {
 		l2_tt = (uint32_t*) ((*l1_pte) & L2_ADDR_MASK);
 		l2_tt = p_to_v(l2_tt);
 		if ((l2_tt[l2_index] & L2_TYPE_MASK) == 0) {
 			// Not mapped yet we are done ...
-			return;
+			return 0;
 		} else {
+			if ((l2_tt[l2_index] & L2_TYPE_MASK) == SMALL_PAGE_TYPE)
+				pa = l2_tt[l2_index] & SMALL_PAGE_MASK;
+			if ((l2_tt[l2_index] & L2_TYPE_MASK) == LARGE_PAGE_TYPE)
+				pa = l2_tt[l2_index] & LARGE_PAGE_MASK;
 			l2_tt[l2_index] = 0;
+			return pa;
 		}
 	} else {
 		(*l1_pte) = 0; // Unmap whole section ...
+		pa = *l1_pte & SECTION_MASK;
 	}
+	return pa;
 }
 
 void unmap_kernel_memory(uint32_t vaddr) {
