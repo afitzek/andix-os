@@ -40,7 +40,7 @@ all: mkbuilddirs $(OUTDIR)sample.bin
 
 $(OUTDIR)sample.bin: $(OBJS)
 	@echo Linking $@
-	@$(ARMLD) $(LDFLAGS) -o $@ $^ -landix -ltrustlet
+	@$(ARMLD) $(LDFLAGS) -o $@ $^ -ltrustlet -landix -ltrustlet
 	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/trustlets
 	@cp $(OUTDIR)sample.bin $(ANDIX_DEPLOY_DIR)/tz/trustlets/sample.bin
 	
