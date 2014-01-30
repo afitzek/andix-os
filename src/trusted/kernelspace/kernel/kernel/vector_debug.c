@@ -42,6 +42,7 @@
 #include <platform/platform.h>
 #include <vectors.h>
 #include <mm/mm.h>
+#include <devices/interrupt_controller/interrupt_controller.h>
 
 void provokeDA() {
 	volatile uint32_t* d = NULL;

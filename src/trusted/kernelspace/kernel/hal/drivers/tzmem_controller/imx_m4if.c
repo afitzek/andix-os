@@ -39,6 +39,7 @@
 #include <drivers/tzmem_controller/imx_m4if.h>
 #include <hal.h>
 #include <common.h>
+#include <mm/mm.h>
 
 /**
  * m4if probe handler

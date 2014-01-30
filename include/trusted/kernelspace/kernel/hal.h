@@ -183,6 +183,7 @@ platform_driver_t* hal_find_driver(const char* name);
  * @return the active platform
  */
 hal_platform_t* hal_get_platform();
+hal_platform_t * hal_find_platform(uint32_t sysid);
 
 /**
  * Translate a HAL_* error to a readable string

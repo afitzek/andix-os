@@ -53,4 +53,6 @@ typedef struct cpu_state {
 	uint32_t lr;
 } cpu_state_t;
 
+char* get_da_status(uint32_t status);
+
 #endif /* VECTOR_DEBUG_H_ */

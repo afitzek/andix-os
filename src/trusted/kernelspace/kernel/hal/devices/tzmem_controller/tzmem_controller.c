@@ -39,6 +39,7 @@
 #include <devices/devices.h>
 #include <devices/tzmem_controller/tzmem_controller.h>
 #include <kprintf.h>
+#include <hal.h>
 
 platform_device_t* tzmem_dev;
 

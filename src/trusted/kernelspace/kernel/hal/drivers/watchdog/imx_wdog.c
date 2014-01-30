@@ -38,6 +38,7 @@
 #include <drivers/watchdog/imx_wdog.h>
 #include <devices/watchdog/watchdog.h>
 #include <platform/vector_debug.h>
+#include <devices/interrupt_controller/interrupt_controller.h>
 
 void imx_wdog_reset(imx_wdog_t* wdog) {
 	__raw_writew(0x5555, &(wdog->wsr));
