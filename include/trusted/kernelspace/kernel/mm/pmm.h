@@ -110,6 +110,12 @@ void* pmm_allocate_pages(uint32_t numpages);
 void pmm_free_page(void* page);
 
 /**
+ * Free consecutive physical memory pages
+ * @param page start
+ * @param num number of pages
+ */
+void pmm_free_pages(void *page, uint32_t num);
+/**
  * Activate HW protection for secure memory!
  *
  * @return 0 on success -1 on failure
