@@ -175,6 +175,11 @@ uint32_t setup_elf(uint8_t* payload, uint32_t size, struct user_process_t *proce
 			//kdumpMem(mem, phdr->p_memsz);
 			loader_debug("Loading Program header loaded!");
 		}
+		if (phdr->p_type == PT_TLS) {
+			loader_debug("Found TLS v 0x%x [0x%x bytes]", phdr->p_vaddr, phdr->p_memsz);
+			process->tls_template.start = phdr->p_vaddr;
+			process->tls_template.size = phdr->p_memsz;
+		}
 	}
 
 	uint32_t entry = hdr->e_entry;
