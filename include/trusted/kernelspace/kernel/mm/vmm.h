@@ -183,6 +183,7 @@ uint32_t* get_user_table();
 uint32_t* get_kernel_table();
 void set_user_table(uint32_t* table);
 void set_kernel_table(uint32_t* table);
+int mmu_translate(void *va, uint32_t *pa);
 void* v_to_p(void* ptr);
 uint32_t getKernelVirtualOffset();
 void* p_to_v(void* ptr);

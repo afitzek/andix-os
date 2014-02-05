@@ -192,7 +192,7 @@ forceinline static void gotoSecure() {
 	__asm__ __volatile__(
 				"MRC p15, 0, %0, c1, c1, 0\n"
 				"BIC %0, %0, #0x1\n"
-				"MCR p15, 0, %0, c1, c1, 0\n":"=r" (fp):"r" (fp):"memory");
+				"MCR p15, 0, %0, c1, c1, 0\n":"=r" (fp)::"memory");
 }
 
 forceinline static void restoreABT(uint32_t lr, uint32_t cpsr) {

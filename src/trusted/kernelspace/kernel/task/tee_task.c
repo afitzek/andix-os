@@ -37,9 +37,15 @@
 #include <communication_types.h>
 #include <kprintf.h>
 #include <task/tee.h>
-#include <task/task.h>
+#include <task/thread.h>
 #include <scheduler.h>
 #include <tee_client_api.h>
+
+static struct thread_t *tee_thread;
+
+struct thread_t *tee_get_tee_thread(void) {
+	return tee_thread;
+}
 
 uint32_t tee_release_mem(TZ_TEE_REGISTER_MEM* operation) {
 	tee_memory* mem = tee_memory_find(operation->memid);
@@ -148,7 +154,7 @@ uint32_t tee_open_session(TZ_TEE_OPEN_SESSION* operation, TZ_TEE_SPACE* tee) {
 
 	// TODO we need a dynamic loader ...
 
-	task_t* trusted_app = get_task_by_uuid((TASK_UUID*) &operation->uuid);
+	struct user_process_t *trusted_app = get_process_by_uuid((TASK_UUID*) &operation->uuid);
 
 	if (trusted_app == NULL ) {
 		tee_error("UUID not found!");
@@ -159,10 +165,9 @@ uint32_t tee_open_session(TZ_TEE_OPEN_SESSION* operation, TZ_TEE_SPACE* tee) {
 	tee->params.openSession.session = session->_id;
 
 	session->tee_application = trusted_app;
-	trusted_app->tee_rpc = (uintptr_t)tee;
-	trusted_app->state = READY;
+	trusted_app->tee_context.tee_rpc = (uintptr_t)tee;
 	tee_info("Going to trusted app: %s", trusted_app->name);
-	switch_to_task(trusted_app);
+	switch_to_thread(trusted_app->tee_context.tee_handler);
 	tee_info("Back from trusted app: %s", trusted_app->name);
 	return (tee->ret);
 }
@@ -176,17 +181,16 @@ uint32_t tee_close_session(TZ_TEE_CLOSE_SESSION* operation, TZ_TEE_SPACE* tee) {
 		return (TEE_ERROR_OUT_OF_MEMORY);
 	}
 
-	task_t* trusted_app = session->tee_application;
+	struct user_process_t *trusted_app = session->tee_application;
 
 	if (trusted_app == NULL ) {
 		tee_error("Trustlet not found!");
 		return (TEE_ERROR_ITEM_NOT_FOUND);
 	}
 
-	trusted_app->tee_rpc = (uintptr_t)tee;
-	trusted_app->state = READY;
+	trusted_app->tee_context.tee_rpc = (uintptr_t)tee;
 
-	switch_to_task(trusted_app);
+	switch_to_thread(trusted_app->tee_context.tee_handler);
 
 	return (tee->ret);
 }
@@ -200,17 +204,16 @@ uint32_t tee_invoke(TZ_TEE_INVOKE_CMD* operation, TZ_TEE_SPACE* tee) {
 		return (TEE_ERROR_OUT_OF_MEMORY);
 	}
 
-	task_t* trusted_app = session->tee_application;
+	struct user_process_t *trusted_app = session->tee_application;
 
 	if (trusted_app == NULL ) {
 		tee_error("Trustlet not found!");
 		return (TEE_ERROR_ITEM_NOT_FOUND);
 	}
 
-	trusted_app->tee_rpc = (uintptr_t)tee;
-	trusted_app->state = READY;
+	trusted_app->tee_context.tee_rpc = (uintptr_t)tee;
 
-	switch_to_task(trusted_app);
+	switch_to_thread(trusted_app->tee_context.tee_handler);
 
 	return (tee->ret);
 }
@@ -219,10 +222,15 @@ void tee_task_entry() {
 	TZ_TEE_SPACE space;
 	TZ_TEE_SPACE* tee;
 	//void* ptee;
+	if (tee_thread) {
+		tee_error("tee_task_entry started a second time!");
+		kpanic();
+	}
+	tee_thread = get_current_thread();
 	while (1) {
 		tee = mon_get_tee_space();
 		if (tee == NULL ) {
-			get_current_task()->state = BLOCKED;
+			get_current_thread()->state = BLOCKED;
 			yield();
 			continue;
 		}
@@ -286,7 +294,7 @@ void tee_task_entry() {
 		 space.params.initCtx.context);
 		 tee_info("tee->params.initCtx.context: 0x%x",
 		 tee->params.initCtx.context);*/
-		get_current_task()->state = BLOCKED;
+		get_current_thread()->state = BLOCKED;
 
 		mon_tee_response();
 

@@ -37,6 +37,7 @@
  */
 
 #include <swi/swi.h>
+#include <task/tee.h>
 #include <tee/tee_constants.h>
 #include <tee/tee_context.h>
 #include <tee/tee_session.h>
@@ -46,7 +47,7 @@
 #include <scheduler.h>
 
 tee_temp_memory* swi_map_tee_temp_ref(TEEC_TmpMemoryReference* tmp,
-		uint32_t paramType, task_t* task) {
+		uint32_t paramType, struct user_process_t *task) {
 	if (!is_valid_nonsecure_ram_addr(tmp->buffer)) {
 		return (NULL );
 	}
@@ -61,7 +62,7 @@ tee_temp_memory* swi_map_tee_temp_ref(TEEC_TmpMemoryReference* tmp,
 
 	mem->paddr = tmp->buffer;
 	mem->size = tmp->size;
-	mem->task_id = task->tid;
+	mem->task_id = task->pid;
 	mem->vaddr = map_phys_mem(mem->paddr, mem->size, AP_SVC_RW_USR_NO, 0, 0, 0);
 	mem->uaddr = allocate_map_mem_to_task(mem->size, task);
 
@@ -80,7 +81,7 @@ tee_temp_memory* swi_map_tee_temp_ref(TEEC_TmpMemoryReference* tmp,
 }
 
 void swi_unmap_tee_temp_ref(tee_temp_memory* mem, uint32_t paramType,
-		task_t* task) {
+		struct user_process_t *task) {
 	uint32_t freed;
 	if (paramType == TEEC_MEMREF_TEMP_INOUT
 			|| paramType == TEEC_MEMREF_TEMP_OUTPUT) {
@@ -101,7 +102,7 @@ void swi_unmap_tee_temp_ref(tee_temp_memory* mem, uint32_t paramType,
 	tee_tmp_mem_free(mem);
 }
 
-int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) {
+int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, struct user_process_t *task) {
 	int pidx = 0;
 	uint32_t paramType = 0;
 	uint32_t paddr;
@@ -222,10 +223,9 @@ int parameters_to_userspace(TEECOM_Operation* comOp, TA_RPC *rpc, task_t* task) 
 }
 
 int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
-		task_t* task) {
+		struct user_process_t *task) {
 	int pidx = 0;
 	uint32_t paramType = 0;
-	uint32_t paddr;
 	uint32_t size = 0;
 	uint32_t freed;
 	uint8_t* v_mem_addr;
@@ -250,11 +250,10 @@ int parameters_from_userspace(TEECOM_Operation* comOp, TA_RPC *rpc,
 
 				tmpmem = tee_tmp_find_by_vaddr_and_task(
 						(uint32_t)rpc->tee_param[pidx].memref.buffer,
-						task->tid);
+						task->pid);
 
 				if (tmpmem == NULL ) {
-					tee_error("Failed to find memory with @ %x",
-							paddr);
+					tee_error("Failed to find memory");
 					return (TEEC_ERROR_BAD_PARAMETERS);
 				}
 
@@ -320,8 +319,8 @@ void swi_set_uuid(TASK_UUID* uuid) {
 		return;
 	}
 
-	task_t* current = get_current_task();
-	cpy_uuid(&(current->uuid), uuid);
+	struct user_process_t *current = get_current_thread()->process;
+	cpy_uuid(&(current->tee_context.uuid), uuid);
 }
 
 void swi_get_secure_request(TA_RPC* rpc) {
@@ -335,7 +334,7 @@ void swi_get_secure_request(TA_RPC* rpc) {
 		return;
 	}
 
-	task_t* task = get_current_task();
+	struct user_process_t *task = get_current_thread()->process;
 
 	if (!is_valid_kernel_addr(task)) {
 		// TODO: kernel panic!
@@ -343,8 +342,8 @@ void swi_get_secure_request(TA_RPC* rpc) {
 	}
 
 // TODO: process answer
-	if (task->tee_rpc != NULL ) {
-		TZ_TEE_SPACE* tee = (TZ_TEE_SPACE*) task->tee_rpc;
+	if (task->tee_context.tee_rpc != NULL ) {
+		TZ_TEE_SPACE* tee = (TZ_TEE_SPACE*) task->tee_context.tee_rpc;
 		switch (tee->op) {
 		case TZ_TEE_OP_OPEN_SESSION:
 			session = tee_session_find(tee->params.openSession.session);
@@ -357,7 +356,7 @@ void swi_get_secure_request(TA_RPC* rpc) {
 
 			tee->ret = parameters_from_userspace(
 					&tee->params.openSession.operation, rpc,
-					get_current_task());
+					get_current_thread()->process);
 
 			if (tee->ret != TEEC_SUCCESS) {
 				tee->params.openSession.returnOrigin = TEE_ORIGIN_TEE;
@@ -380,7 +379,7 @@ void swi_get_secure_request(TA_RPC* rpc) {
 
 			tee->ret = parameters_from_userspace(
 					&tee->params.invokeCommand.operation, rpc,
-					get_current_task());
+					get_current_thread()->process);
 
 			if (tee->ret != TEEC_SUCCESS) {
 				tee->params.invokeCommand.returnOrigin = TEE_ORIGIN_TEE;
@@ -393,24 +392,24 @@ void swi_get_secure_request(TA_RPC* rpc) {
 		}
 	}
 
-	task->tee_rpc = NULL;
+	task->tee_context.tee_rpc = NULL;
 
 	do {
 		// block current task ...
-		get_current_task()->state = BLOCKED;
-		task_t* tee_task = get_task_by_name(TEE_TASK);
+		get_current_thread()->state = BLOCKED;
+		struct thread_t *tee_task = tee_get_tee_thread();
 		// wait for TEE request ...
-		switch_to_task(tee_task);
+		switch_to_thread(tee_task);
 		procceed = 0;
-		if (task->tee_rpc != NULL ) {
-			TZ_TEE_SPACE* tee = (TZ_TEE_SPACE*) task->tee_rpc;
+		if (task->tee_context.tee_rpc != NULL ) {
+			TZ_TEE_SPACE* tee = (TZ_TEE_SPACE*) task->tee_context.tee_rpc;
 			switch (tee->op) {
 			case TZ_TEE_OP_OPEN_SESSION:
 				rpc->operation = TA_OPEN_SESSION;
 
 				result = parameters_to_userspace(
 						&tee->params.openSession.operation, rpc,
-						get_current_task());
+						get_current_thread()->process);
 
 				if (result != TEEC_SUCCESS) {
 					tee->params.openSession.returnOrigin = TEE_ORIGIN_TEE;
@@ -448,7 +447,7 @@ void swi_get_secure_request(TA_RPC* rpc) {
 
 				result = parameters_to_userspace(
 						&tee->params.invokeCommand.operation, rpc,
-						get_current_task());
+						get_current_thread()->process);
 
 				if (result != TEEC_SUCCESS) {
 					tee->params.openSession.returnOrigin = TEE_ORIGIN_TEE;

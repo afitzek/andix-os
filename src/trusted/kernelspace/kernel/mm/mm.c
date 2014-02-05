@@ -191,14 +191,6 @@ uintptr_t kmalloc_align(uint32_t size, uint32_t align) {
 	return ((uintptr_t) ((uint8_t*) best + sizeof(k_mem_block_t)));
 }
 
-uintptr_t virt_to_phys(uintptr_t vaddr) {
-	void* ptr = v_to_p((void*) vaddr);
-	if (ptr < (void*) 0xFF) {
-		return (NULL );
-	}
-	return ((uintptr_t) ptr);
-}
-
 uintptr_t virt_ns_to_phys(uintptr_t vaddr) {
 	uint32_t addr;
 	//vmm_debug("Translating v (0x%x)", ptr);

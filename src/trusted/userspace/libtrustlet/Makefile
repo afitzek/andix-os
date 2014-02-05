@@ -8,7 +8,7 @@ include common.mk
 # Configure sources
 ####
 
-PROGRAM = tz/andix/sample/
+PROGRAM = tz/andix/libtrustlet/
 OUTDIR = $(ANDIX_BUILD_DIR)/$(PROGRAM)
 D_DIR = $(ANDIX_BUILD_DIR)/$(PROGRAM)doc
 OUTDIR_DOC = $(subst /,\/,$(D_DIR))
@@ -30,20 +30,17 @@ DIRS = $(sort $(C_DIRS) $(A_DIRS))
 
 ###############################################################################
 
-ANDIXRUNTIME = $(ANDIX_DEPLOY_DIR)/libandix.a
+ASFLAGS = -mcpu=cortex-a8 -mfloat-abi=soft
+CFLAGS = -I $(ARM_NEWLIB_INC_DIR) -I $(ARM_TROPICSSL_INC_DIR) -I $(TZ_USER_C_INC) -mcpu=cortex-a8 -nostdlib -mfloat-abi=soft
+LDFLAGS = -nostdlib
 
-ASFLAGS = -g -mcpu=cortex-a8  -mfloat-abi=soft
-CFLAGS = -I $(ANDIX_INC_COMMON) -I $(ARM_NEWLIB_INC_DIR) -I $(TZ_USER_TEE_INC) -I $(ARM_TROPICSSL_INC_DIR) -I $(TZ_USER_C_INC) -I $(TZ_USER_SAMPLE_INC) -g -mcpu=cortex-a8  -mfloat-abi=soft
-LDFLAGS = -L$(ANDIX_DEPLOY_DIR)/tz/lib --nostdlib
+all: mkbuilddirs $(OUTDIR)libtrustlet.a
 
-all: mkbuilddirs $(OUTDIR)sample.bin
-
-$(OUTDIR)sample.bin: $(OBJS)
-	@echo Linking $@
-	@$(ARMLD) $(LDFLAGS) -o $@ $^ -ltrustlet -landix -ltrustlet
-	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/trustlets
-	@cp $(OUTDIR)sample.bin $(ANDIX_DEPLOY_DIR)/tz/trustlets/sample.bin
-	
+$(OUTDIR)libtrustlet.a: $(OBJS)
+	@$(ARMAR) rcs $@ $^ 
+	@mkdir -p $(ANDIX_DEPLOY_DIR)/tz/lib
+	@cp $@ $(ANDIX_DEPLOY_DIR)/tz/lib
+                
 .PHONY: mkbuilddirs		
 mkbuilddirs:
 	@mkdir -p $(DIRS)
@@ -53,9 +50,8 @@ $(C_OBJS):$(OUTDIR)%.o:%.c
 	
 $(A_OBJS):$(OUTDIR)%.o:%.S
 	$(arm-as-command)
-                                                                
+	
 .PHONY: clean
-clean:
+clean: 
 	@echo Removing directory $(OUTDIR)
 	@rm -rf $(OUTDIR)
-                                                                                

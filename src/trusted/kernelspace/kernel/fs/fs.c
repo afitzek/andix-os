@@ -43,6 +43,8 @@
 #include <tropicssl/sha2.h>
 #include <tropicssl/pbkdf2.h>
 #include <devices/random/random.h>
+#include <cache.h>
+#include <mm/mm.h>
 
 uint8_t* secret_value;
 uint32_t secret_length;

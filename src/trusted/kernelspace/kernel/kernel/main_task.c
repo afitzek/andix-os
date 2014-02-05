@@ -40,7 +40,7 @@
 #include <kprintf.h>
 #include <platform/board.h>
 #include <hal.h>
-#include <task/task.h>
+#include <scheduler.h>
 #include <task/service.h>
 #include <task/tee.h>
 #include <loader.h>
@@ -147,17 +147,17 @@ void entry_main_task() {
 
 	main_info("%s STARTING SERVICE TASKS %s", SEPERATOR, SEPERATOR);
 
-	task_t* service = create_kernel_task(SVC_MODE, SECURE);
+	struct thread_t *service = create_kernel_thread(SVC_MODE, SECURE);
 
 	if (service == NULL ) {
 		main_error("Failed to create service task");
 		kpanic();
 	}
 
-	service->context.pc = (uint32_t) (&(service_entry));
-	task_set_name(service, SERVICE_TASK);
-	add_task(service);
+	thread_set_entry(service, service_entry);
+	sched_add_thread(service);
 	service_pre(service);
+	yield();
 
 	main_info("%s STARTING SERVICE TASKS [DONE] %s", SEPERATOR, SEPERATOR);
 	/*
@@ -178,16 +178,16 @@ void entry_main_task() {
 	 */
 	main_info("%s STARTING TEE TASKS %s", SEPERATOR, SEPERATOR);
 
-	task_t* tee = create_kernel_task(SVC_MODE, SECURE);
+	struct thread_t* tee = create_kernel_thread(SVC_MODE, SECURE);
 
 	if (tee == NULL ) {
 		main_error("Failed to create process task");
 		kpanic();
 	}
 
-	tee->context.pc = (uint32_t) (&(tee_task_entry));
-	task_set_name(tee, TEE_TASK);
-	add_task(tee);
+	thread_set_entry(tee, tee_task_entry);
+	sched_add_thread(tee);
+	yield();
 
 	main_info("%s STARTING TEE TASKS [DONE] %s", SEPERATOR, SEPERATOR);
 
@@ -195,53 +195,20 @@ void entry_main_task() {
 
 	main_info("%s PREPARING SECURE USERSPACE TASKS %s", SEPERATOR, SEPERATOR);
 
-	//TASK_UUID uuid;
-
-	// 47b57610-925b-11e2-9e96-0800200c9a66
-	/*uuid.timeLow = 0x47b57610;
-	 uuid.timeMid = 0x925b;
-	 uuid.timeHiAndVersion = 0x11e2;
-	 uuid.clockSeqAndNode[7] = 0x9e;
-	 uuid.clockSeqAndNode[6] = 0x96;
-	 uuid.clockSeqAndNode[5] = 0x08;
-	 uuid.clockSeqAndNode[4] = 0x00;
-	 uuid.clockSeqAndNode[3] = 0x20;
-	 uuid.clockSeqAndNode[2] = 0x0c;
-	 uuid.clockSeqAndNode[1] = 0x9a;
-	 uuid.clockSeqAndNode[0] = 0x66;*/
-
-	task_t* user = prepare_static_userspace_task((uintptr_t) &_userpayload,
-			(uintptr_t) &_userpayload_end, "SYSTEM DAEMON",
-			"47b57610-925b-11e2-9e96-0800200c9a66");
-	init_userspace_task(user);
-
-	// 47b57610-925b-11e2-9e96-0800200c9a66
-	/*uuid.timeLow = 0x47b57610;
-	 uuid.timeMid = 0x925b;
-	 uuid.timeHiAndVersion = 0x11e2;
-	 uuid.clockSeqAndNode[7] = 0x9e;
-	 uuid.clockSeqAndNode[6] = 0x96;
-	 uuid.clockSeqAndNode[5] = 0x08;
-	 uuid.clockSeqAndNode[4] = 0x00;
-	 uuid.clockSeqAndNode[3] = 0x20;
-	 uuid.clockSeqAndNode[2] = 0x0c;
-	 uuid.clockSeqAndNode[1] = 0x9a;
-	 uuid.clockSeqAndNode[0] = 0x66;*/
-
-	task_t* sampleuser = prepare_static_userspace_task(
+	struct user_process_t* sampleuser = create_static_userspace_trustlet(
 			(uintptr_t) &_samplepayload, (uintptr_t) &_samplepayload_end,
 			"SAMPLE TRUSTLET", "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");
-	init_userspace_task(sampleuser);
+	yield();
 
-	task_t* rsatrustlet = prepare_static_userspace_task(
+	struct user_process_t* rsatrustlet = create_static_userspace_trustlet(
 			(uintptr_t) &_rsapayload, (uintptr_t) &_rsapayload_end,
 			"RSA TRUSTLET", "2b0c6603-ac6d-4817-a102-ebef1ae0f846");
-	init_userspace_task(rsatrustlet);
+	yield();
 
 	main_info("TASK UUID: %s", "47b57610-925b-11e2-9e96-0800200c9a66");
 	main_info("TASK UUID: %s", "7e58ce53-0ff2-4356-b1bd-cf81b708c6d5");
 
-	print_tasks();
+	print_threads();
 	//DEBUG_STOP;
 
 	main_info("%s PREPARING SECURE USERSPACE TASKS [DONE] %s", SEPERATOR,
@@ -250,99 +217,30 @@ void entry_main_task() {
 	//aes_self_test(1);
 
 	//DEBUG_STOP;
-/*
-	print_tasks();
-
-	main_info("%s BOOT NONSECURE %s", SEPERATOR, SEPERATOR);
-
-	main_info("%s PREPARE PAYLOAD %s", SEPERATOR, SEPERATOR);
-
-	main_debug("KERNEL ...");
-
-	 // prepare payload ...
-	 uint32_t vpayload_end = (uint32_t) &payload_end;
-	 uint32_t vpayload = (uint32_t) &payload;
-	 uint32_t payload_size = vpayload_end - vpayload;
-
-	 uintptr_t vpayload_ptr = map_phys_mem((uintptr_t) 0x70008000, payload_size,
-	 AP_SVC_RW_USR_NO, 1, 1, 0);
-
-	 if (vpayload_ptr == NULL ) {
-	 kpanic();
-	 }
-
-	 uint8_t* src = (uint8_t*) vpayload;
-	 uint8_t* dst = (uint8_t*) vpayload_ptr;
-
-	 main_debug("Copying kernel form 0x%x to 0x%x (p 0x%x)", src, dst,
-	 v_to_p(dst));
-
-	 for (uint32_t i = 0; i < payload_size; i++) {
-	 dst[i] = src[i];
-	 }
-
-	 main_debug("ATAGS ...");
-
-	 uintptr_t vatag_ptr = map_phys_mem((uintptr_t) 0x70000000,
-	 SMALL_PAGE_SIZE - 1, AP_SVC_RW_USR_NO, 1, 1, 0);
-
-	 if (vatag_ptr == NULL ) {
-	 kpanic();
-	 }
-	 vatag_ptr += 0x40;
-	 dst = (uint8_t*) vatag_ptr;
-
-	 atag_generate_nonsecure((uintptr_t) dst, 0, 0);
-	 main_info("Setup ATAGS:");
-	 atag_dump((struct atag*) dst);
-	 kdumpMem(dst, 100);
-
-	 //src = vdtb;
-
-	 //main_debug( "Copying ATAGS to 0x%x (p 0x%x)", dst, v_to_p(dst));
-
-	 //uint32_t* value = 0xC0008000;
-
-	 main_info("%s PREPARE PAYLOAD [DONE] %s", SEPERATOR, SEPERATOR);
-
-	 task_t* task = create_kernel_task(SVC_MODE, NONSECURE);
-
-	 if (task == NULL ) {
-	 main_error("Failed to create nonsecure task");
-	 kpanic();
-	 }
-
-	 task->context.r[1] = hal_get_platform()->sys_id;
-	 task->context.r[2] = 0x70000100;
-	 task->context.pc = 0x70008000;
-
-	 task_set_name(task, "NONSECURE_LINUX");
-
-	 add_task(task);
-
-	 set_nonsecure_task(task);
-*/
 
 	decision = 'n';
 
-	while (decision != 'a' && decision != 'l') {
+	while (decision != 'a' && decision != 'l' && decision != 't') {
 
-		kprintf("\nSelect Guest (a ... Android, l ... Linux): ");
+		kprintf("\nSelect Guest (a ... Android, l ... Linux) or start Andix tester (t): ");
 
 		decision = getchar();
 	}
 
-	task_t* task = NULL;
+	struct thread_t* mainthread = NULL;
 
 	if(decision == 'a') {
 		kprintf("\nLoading Android ...\n");
-		task = load_android();
+		mainthread = load_android();
+	} else if (decision == 't') {
+		kprintf("\nLoading Andix tester ...\n");
+		mainthread = load_tester();
 	} else {
 		kprintf("\nLoading Linux ...\n");
-		task = load_linux();
+		mainthread = load_linux();
 	}
 
-	if (task == NULL ) {
+	if (mainthread == NULL ) {
 		kpanic();
 	}
 
@@ -352,11 +250,11 @@ void entry_main_task() {
 
 	getchar();
 
-	get_current_task()->state = BLOCKED;
+	get_current_thread()->state = BLOCKED;
 
-	print_tasks();
+	print_threads();
 
-	__smc_1(SSC_TASK_SWITCH, (uint32_t) task);
+	yield();
 
 	main_info("%s ENTERING MAIN MONITOR TASK [DONE] %s", SEPERATOR, SEPERATOR);
 }

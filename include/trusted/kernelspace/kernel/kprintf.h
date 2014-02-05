@@ -83,6 +83,9 @@ char* gettaskname();
 
 void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 
+// from scheduler
+tid_t get_current_thread_id();
+
 #define non_print_handler(subsys,...) \
 	do{}while(0)
 
@@ -93,7 +96,7 @@ void dump_stack_trace_stack(uint32_t stack, uint32_t fp);
 	kprintf(__VA_ARGS__);
 
 #define subsys_error(subsys,...) \
-	kprintf("[ERR][%s]->%s [%s(%d)] [%s]:", subsys, __func__, __FILE__, __LINE__, gettaskname()); \
+	kprintf("[ERR][%s]->%s [%s(%d)] [%s %d]:", subsys, __func__, __FILE__, __LINE__, gettaskname(), get_current_thread_id()); \
 	kprintf(__VA_ARGS__); \
 	kprintf("\n")
 

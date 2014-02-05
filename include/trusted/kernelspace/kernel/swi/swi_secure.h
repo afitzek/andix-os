@@ -39,6 +39,7 @@
 #ifndef SWI_SECURE_H_
 #define SWI_SECURE_H_
 
+#include <task/uuid.h>
 
 /**
  * \addtogroup swi

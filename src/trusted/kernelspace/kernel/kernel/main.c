@@ -14,7 +14,7 @@
 #include <platform/board.h>
 #include <hal.h>
 #include <monitor/monitor.h>
-#include <task/task.h>
+#include <task/thread.h>
 #include <scheduler.h>
 #include <platform/vector_debug.h>
 #include <devices/interrupt_controller/interrupt_controller.h>
@@ -52,6 +52,11 @@ void dummy_irq_handler(int irq) {
 }
 
 /**
+ * Entrypoint for main kernel task
+ */
+void entry_main_task();
+
+/**
  * Main entry point
  * @param atagparam ATAG Parameters Pointer
  * @param systemID Plattform ID
@@ -70,7 +75,6 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	// ========================================================================
 	init_serial(sysid);
 
-	init_early_task();
 	//mputchar('c');
 	// ========================================================================
 	main_info(
@@ -287,19 +291,18 @@ void entry(uint32_t atagparam, uint32_t systemID) {
 	// ========================================================================
 	main_info("%s STARTING MAIN KERNEL TASK %s", SEPERATOR, SEPERATOR);
 
-	init_task();
+	sched_init();
 	init_scheduler();
 
-	task_t* main_task = create_kernel_task(SVC_MODE, SECURE);
-	main_task->context.pc = (uint32_t) (&(entry_main_task));
-	task_set_name(main_task, "MAIN KERNEL TASK");
-	add_task(main_task);
+	struct thread_t *main_thread = create_kernel_thread(SVC_MODE, SECURE);
+	thread_set_entry(main_thread, entry_main_task);
+	sched_add_thread(main_thread);
 
-	print_tasks();
+	print_threads();
 
 	main_info("Protected MEM 0x%x @ 0x%x", (*v_load_addr), __phys_target_addr);
 
-	switch_to_task(main_task);
+	switch_to_thread(main_thread);
 
 	main_info("%s STARTING MAIN KERNEL TASK [DONE] %s", SEPERATOR, SEPERATOR);
 	main_info("%s SHOULD NOT BE HERE FREEZING SYSTEM ... %s", SEPERATOR,

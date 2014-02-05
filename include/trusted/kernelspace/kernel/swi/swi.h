@@ -42,7 +42,6 @@
 #include <common/typedefs.h>
 #include <kprintf.h>
 #include <monitor/monitor.h>
-#include <task/task.h>
 #include <swi/swi_newlib.h>
 #include <swi/swi_secure.h>
 #include <platform/vector_debug.h>

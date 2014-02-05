@@ -35,7 +35,8 @@
  *      Author: andy
  */
 
-#include <task/task.h>
+#include <scheduler.h>
+#include <loader.h>
 #include <mm/mm.h>
 #include <hal.h>
 
@@ -51,7 +52,7 @@ extern uint32_t payload_and_rd_end;
 #define ANDROID_BOOTARGS_LVDS "console=ttymxc0,115200 di0_primary video=mxcdi0fb:RGB666,XGA ldb=di0 init=/init androidboot.console=ttymxc0 jtag=on mem=768M"
 
 
-task_t* load_android() {
+struct thread_t* load_android() {
 	// prepare payload ...
 	uint32_t android_kernel_end = (uint32_t) &payload_and_end;
 	uint32_t android_kernel = (uint32_t) &payload_and;
@@ -91,24 +92,22 @@ task_t* load_android() {
 
 	main_info("%s PREPARE PAYLOAD [DONE] %s", SEPERATOR, SEPERATOR);
 
-	task_t* task = create_kernel_task(SVC_MODE, NONSECURE);
+	struct thread_t *thread = create_kernel_thread(SVC_MODE, NONSECURE);
 
-	if (task == NULL ) {
-		main_error("Failed to create nonsecure task");
+	if (thread == NULL ) {
+		main_error("Failed to create nonsecure thread");
 		return (NULL );
 	}
 
-	task->context.r[1] = hal_get_platform()->sys_id;
-	task->context.r[2] = 0x70000100;
-	task->context.pc = 0x70008000;
+	thread->context.r[1] = hal_get_platform()->sys_id;
+	thread->context.r[2] = 0x70000100;
+	thread_set_entry(thread, (void*) 0x70008000);
 
-	task_set_name(task, "NONSECURE_LINUX");
+	sched_add_thread(thread);
 
-	add_task(task);
-
-	set_nonsecure_task(task);
+	set_nonsecure_thread(thread);
 
 	atag_dump((atag_t*)vatag_ptr);
 
-	return (task);
+	return (thread);
 }

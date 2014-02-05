@@ -65,8 +65,9 @@ void unmap_kernel_memory(uint32_t vaddr);
  * Unmap virtual address from page directory
  * @param vaddr the virtual address to unmap
  * @param vpd the virtual address to the page directory
+ * @return the physical address if the page was mapped, 0 otherwise
  */
-void unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd);
+uint32_t unmap_memory_from_pd(uint32_t vaddr, uintptr_t vpd);
 
 /**
  * Map memory to kernel

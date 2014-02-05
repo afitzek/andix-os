@@ -229,7 +229,7 @@ monitor_restore_sys_regs:
         MSR   SPSR, r1
 
         CPS   #FIQ_MODE
-        STMIA r0!, {r1, r8-r12, sp, lr}
+        LDMIA r0!, {r1, r8-r12, sp, lr}
         MSR   SPSR, r1
 
         CPS   #SYS_MODE

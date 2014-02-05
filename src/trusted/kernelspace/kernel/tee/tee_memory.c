@@ -181,7 +181,7 @@ void tee_memory_destroy(tee_memory* memory) {
 		if (pos->data != NULL ) {
 			mapped = (tee_mapped_mem*) pos->data;
 			unmap_mem_from_task((uint8_t*) mapped->vaddr, memory->size,
-					mapped->task);
+					mapped->proc);
 			kfree((uintptr_t) mapped);
 			list_remove(pos);
 		}
@@ -242,7 +242,7 @@ tee_memory* tee_memory_find_by_ctx(tee_context* context) {
 	return (session_res);
 }
 
-uint32_t tee_memory_map_to_task(task_t *task, tee_memory* memory) {
+uint32_t tee_memory_map_to_task(struct user_process_t *proc, tee_memory* memory) {
 	uint32_t tvaddr = 0;
 
 	if (memory == NULL ) {
@@ -250,8 +250,8 @@ uint32_t tee_memory_map_to_task(task_t *task, tee_memory* memory) {
 		return (0);
 	}
 
-	if (task == NULL ) {
-		tee_error("Failed to map memory to task (task is null)");
+	if (proc == NULL ) {
+		tee_error("Failed to map memory to task (proc is null)");
 		return (0);
 	}
 
@@ -263,7 +263,7 @@ uint32_t tee_memory_map_to_task(task_t *task, tee_memory* memory) {
 	{
 		if (pos->data != NULL ) {
 			mapped = (tee_mapped_mem*) pos->data;
-			if (mapped->task == task) {
+			if (mapped->proc == proc) {
 				tvaddr = mapped->vaddr;
 				return (tvaddr);
 			}
@@ -278,10 +278,10 @@ uint32_t tee_memory_map_to_task(task_t *task, tee_memory* memory) {
 	}
 
 	mapped->vaddr = (uint32_t) map_mem_to_task((uint8_t*) memory->paddr,
-			memory->size, task);
+			memory->size, proc);
 
 	if (mapped->vaddr == 0) {
-		tee_error("Failed to map memory to task (map to task failed!)");
+		tee_error("Failed to map memory to task (map to proc failed!)");
 		kfree((uintptr_t) mapped);
 		return (0);
 	}

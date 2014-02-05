@@ -230,9 +230,9 @@ uint32_t smm_get_end_addr() {
 uint8_t smm_is_mem_addr(uintptr_t vaddr) {
 	uint32_t nvaddr = (uint32_t) vaddr;
 
-	if (nvaddr >= mmm_get_start_addr() && nvaddr < mmm_get_end_addr()) {
+	if (nvaddr >= smm_get_start_addr() && nvaddr < smm_get_end_addr()) {
 		// is in mem space but not mapped
-		int offset = (nvaddr - mmm_get_start_addr()) / 4096;
+		int offset = (nvaddr - smm_get_start_addr()) / 4096;
 		int i = offset / 32;
 		int j = offset - (i * 32);
 		if ((stack_map_mem[i] & (1 << j)) == 1) {

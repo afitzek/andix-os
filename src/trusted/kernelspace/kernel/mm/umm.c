@@ -62,15 +62,12 @@ void map_user_memory(uintptr_t vptd, kernel_mem_info_t *section) {
 		umm_debug("We should not map memory to userspace with no user access");
 		return;
 	}
-
-	umm_debug("Mapping memory");
-
 	map_memory_v(vptd, section);
 
-	umm_debug("Memory mapped");
+	umm_debug("Memory mapped 0x%x -> 0x%x", section->paddr, section->vaddr);
 }
 
-void* allocate_task_mapped_page_frames(uint32_t numpages, task_t *task) {
+void* allocate_task_mapped_page_frames(uint32_t numpages, struct user_process_t *proc) {
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -80,10 +77,10 @@ void* allocate_task_mapped_page_frames(uint32_t numpages, task_t *task) {
 	int startj = 0;
 
 	// Mark free RAM
-	for (i = 0; i < sizeof(task->membitmap) / 4; i++) {
-		if (task->membitmap[i]) { // There is one bit set!
+	for (i = 0; i < sizeof(proc->membitmap) / 4; i++) {
+		if (proc->membitmap[i]) { // There is one bit set!
 			for (j = 0; j < 32; j++) {
-				if (task->membitmap[i] & (1 << j)) { // Find the set bit!
+				if (proc->membitmap[i] & (1 << j)) { // Find the set bit!
 					if (k == 0) {
 						starti = i;
 						startj = j;
@@ -106,7 +103,7 @@ void* allocate_task_mapped_page_frames(uint32_t numpages, task_t *task) {
 							}
 							//mmm_debug("ALOC: LOCK %d %d", i, j);
 							for (tj = from; tj <= to; tj++) {
-								task->membitmap[ti] = task->membitmap[ti]
+								proc->membitmap[ti] = proc->membitmap[ti]
 										& ~(1 << tj);
 							}
 						}
@@ -126,28 +123,28 @@ void* allocate_task_mapped_page_frames(uint32_t numpages, task_t *task) {
 	return (NULL );
 }
 
-void free_task_mapped_page(void* page, task_t *task) {
+void free_task_mapped_page(void* page, struct user_process_t *proc) {
 	int offset = ((uint8_t*) page - (uint8_t*) USER_START_MAPPED_MEM) / 4096;
 	int i = offset / 32;
 	int j = offset - (i * 32);
-	task->membitmap[i] = task->membitmap[i] | (1 << j); // Mark as free!
+	proc->membitmap[i] = proc->membitmap[i] | (1 << j); // Mark as free!
 }
 
-uint8_t* allocate_map_mem_to_task(uint32_t size, task_t* task) {
+uint8_t* allocate_map_mem_to_task(uint32_t size, struct user_process_t *proc) {
 	uint8_t* physical_mem = (uint8_t*)
 			pmm_allocate_pages(needed_pages(0, size));
 	if(physical_mem == NULL) {
 		return (NULL);
 	}
-	return (map_mem_to_task(physical_mem, size, task));
+	return (map_mem_to_task(physical_mem, size, proc));
 }
 
-void free_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task) {
+void free_mem_from_task(uint8_t* vaddr, uint32_t size, struct user_process_t *proc) {
 	//uint32_t pages = needed_pages(0, size);
 	uint8_t* paddr = v_to_p(vaddr);
 	uint32_t freed = 0;
 
-	unmap_mem_from_task(vaddr, size, task);
+	unmap_mem_from_task(vaddr, size, proc);
 
 	while(freed < size) {
 		pmm_free_page(paddr);
@@ -156,8 +153,8 @@ void free_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task) {
 	}
 }
 
-uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task) {
-	task_debug("Mapping mem 0x%x to task %d", paddr, task->tid);
+uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, struct user_process_t *proc) {
+	task_debug("Mapping mem 0x%x to proc %d", paddr, proc->pid);
 	kernel_mem_info_t info;
 	info.ap = AP_SVC_RW_USR_RW;
 	info.execute = EXEC_NON;
@@ -168,26 +165,26 @@ uint8_t* map_mem_to_task(uint8_t* paddr, uint32_t size, task_t* task) {
 	info.type = SMALL_PAGE;
 	uint32_t pgcount = needed_pages(paddr, size);
 	task_debug("Needing %d pages", pgcount);
-	uint32_t frame_start = (uint32_t) allocate_task_mapped_page_frames(pgcount, task);
+	uint32_t frame_start = (uint32_t) allocate_task_mapped_page_frames(pgcount, proc);
 	info.paddr = (uint32_t)paddr;
 
 	for(uint32_t i = 0; i < pgcount; i++) {
 		info.vaddr = frame_start + SMALL_PAGE_SIZE * i;
-		map_memory_v(task->vuserPD, &info);
+		map_memory_v(proc->vuserPD, &info);
 	}
-	task_debug("Memory mapped to 0x%x to task %d",
-			frame_start, task->tid);
+	task_debug("Memory mapped to 0x%x to proc %d",
+			frame_start, proc->pid);
 
 	return ((uint8_t*)((frame_start & 0xFFFFF000) | (((uint32_t)paddr) & 0xFFF)));
 }
 
-void unmap_mem_from_task(uint8_t* vaddr, uint32_t size, task_t* task) {
+void unmap_mem_from_task(uint8_t* vaddr, uint32_t size, struct user_process_t *proc) {
 	uint32_t freed = 0;
 	if((uint32_t)vaddr >= USER_START_MAPPED_MEM && ((uint32_t)vaddr + size) <
-			(USER_START_MAPPED_MEM + sizeof(task->membitmap) * 32 *
+			(USER_START_MAPPED_MEM + sizeof(proc->membitmap) * 32 *
 					SMALL_PAGE_SIZE)) {
 		for(freed = 0; freed < size; freed += SMALL_PAGE_SIZE) {
-			unmap_memory_from_pd((uint32_t)vaddr, task->vuserPD);
+			unmap_memory_from_pd((uint32_t)vaddr, proc->vuserPD);
 		}
 	} else {
 		task_error("Trying to unmap not mapable memory 0x%x", vaddr);
@@ -236,3 +233,14 @@ uintptr_t create_page_directory(uintptr_t* ptd) {
 	return (vptd);
 }
 
+void set_user_thread_reg(uint32_t p) {
+	asm volatile ("MCR p15, 0, %0, c13, c0, 3"
+			:: "r" (p) : );
+}
+
+uint32_t get_user_thread_reg(void) {
+	uint32_t p;
+	asm volatile ("MRC p15, 0, %0, c13, c0, 3"
+			: "=r" (p) :: );
+	return p;
+}

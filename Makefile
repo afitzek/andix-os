@@ -43,9 +43,9 @@ linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean lin
 # TZ Build targets
 ####
 
-tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_sample_build tz_manager_build tz_rsa_build tz_kernel_build 
+tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_sample_build tz_manager_build tz_rsa_build tz_tester_build tz_kernel_build 
 	
-tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_sample_clean tz_manager_clean tz_rsa_clean tz_kernel_clean 
+tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_sample_clean tz_manager_clean tz_rsa_clean tz_tester_clean tz_kernel_clean 
 	
 ####	
 	
@@ -224,19 +224,21 @@ tz_RSA_pdfdoc:
 # Andix newlib c system interface library
 ####
 
-TZ_NEWLIB_C = ANDIX TZ NEWLIB C
+TZ_NEWLIB_C = ANDIX TZ NEWLIB C and libtrustlet
 
 tz_newlib_c_build:
 	$(build-num)
 	$(start-build-command) $(TZ_NEWLIB_C)
 	$(sep-command)
 	@$(make-command) $(TZ_USER_C_SRC)
+	@$(make-command) $(TZ_USER_TRUSTLET_SRC)
 	$(sep-command)
 
 tz_newlib_c_clean:
 	$(start-clean-command) $(TZ_NEWLIB_C)
 	$(sep-command)
 	@$(make-command) $(TZ_USER_C_SRC) clean
+	@$(make-command) $(TZ_USER_TRUSTLET_SRC) clean
 	$(sep-command)
 
 ####
@@ -279,6 +281,27 @@ tool_scripts_clean:
 	$(start-clean-command) $(TOOL_SCRIPTS)
 	$(sep-command)
 	@$(make-command) $(TOOL_SCRIPTS_SRC) clean
+	$(sep-command)
+
+####
+
+####
+# Andix tester
+####
+
+TZ_TESTER = ANDIX TESTER
+
+tz_tester_build:
+	$(build-num)
+	$(start-build-command) $(TZ_TESTER)
+	$(sep-command)
+	@$(make-command) $(TZ_TESTER_SRC)
+	$(sep-command)
+
+tz_tester_clean:
+	$(start-clean-command) $(TZ_TESTER)
+	$(sep-command)
+	@$(make-command) $(TZ_TESTER_SRC) clean
 	$(sep-command)
 
 ####

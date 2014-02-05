@@ -43,6 +43,10 @@ SECTIONS
 		*(.rsapayload);
 		rsapayload_end = .; _rsapayload_end = .; __rsapayload_end = .;
     	. = ALIGN(4);
+		testerpayload = .; _testerpayload = .; __testerpayload = .;
+		*(.testerpayload);
+		testerpayload_end = .; _testerpayload_end = .; __testerpayload_end = .;
+    	. = ALIGN(4);
     	payload = .; _payload = .; __payload = .;
 		*(.payload);
 		payload_end = .; _payload_end = .; __payload_end = .;

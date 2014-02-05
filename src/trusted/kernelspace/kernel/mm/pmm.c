@@ -350,3 +350,9 @@ void pmm_free_page(void* page) {
 	int j = offset - (i * 32);
 	secure_phy_mem[i] = secure_phy_mem[i] | (1 << j); // Mark as free!
 }
+
+void pmm_free_pages(void *page, uint32_t num) {
+	uint32_t pagenr = (uint32_t) page;
+	for (uint32_t i = 0; i < num; i++)
+		pmm_free_page(pagenr + i);
+}

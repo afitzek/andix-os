@@ -38,15 +38,16 @@
 
 #include <swi/swi.h>
 #include <mm/mm.h>
-#include <task/task.h>
+#include <task/user_process.h>
+#include <scheduler.h>
 #include <fs/fs.h>
 #include <devices/random/random.h>
 
 int32_t swi_fstat(int file) {
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 	fs_stat stat;
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
@@ -54,7 +55,7 @@ int32_t swi_fstat(int file) {
 		return (-1);
 	}
 
-	task_file_handle_t* hdl = task_get_fhandle(task, file);
+	task_file_handle_t* hdl = proc_get_fhandle(proc, file);
 
 	if (hdl == NULL ) {
 		return (-1);
@@ -72,9 +73,9 @@ int32_t swi_fstat(int file) {
 
 int32_t swi_lseek(int32_t file, uint32_t ptr, int32_t dir) {
 
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
@@ -82,7 +83,7 @@ int32_t swi_lseek(int32_t file, uint32_t ptr, int32_t dir) {
 		return (-1);
 	}
 
-	task_file_handle_t* hdl = task_get_fhandle(task, file);
+	task_file_handle_t* hdl = proc_get_fhandle(proc, file);
 
 	if (hdl == NULL ) {
 		return (-1);
@@ -107,9 +108,9 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		return (-1);
 	}
 
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
@@ -135,7 +136,7 @@ int32_t swi_write(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		return (size);
 	}
 
-	task_file_handle_t* hdl = task_get_fhandle(task, socket);
+	task_file_handle_t* hdl = proc_get_fhandle(proc, socket);
 
 	if (hdl == NULL ) {
 		return (-1);
@@ -154,9 +155,9 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		return (-1);
 	}
 
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
@@ -180,7 +181,7 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 		kprintHex(buffer, size);
 	}
 
-	task_file_handle_t* hdl = task_get_fhandle(task, socket);
+	task_file_handle_t* hdl = proc_get_fhandle(proc, socket);
 
 	if (hdl == NULL ) {
 		return (-1);
@@ -194,23 +195,23 @@ int32_t swi_read(uint32_t socket, uint8_t* buffer, uint32_t size) {
 }
 
 uint32_t swi_heapend() {
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
-	return ((uint32_t) task->vheap);
+	return ((uint32_t) proc->vheap);
 }
 
 int32_t swi_close(int file) {
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
-	task_file_handle_t* hdl = task_get_fhandle(task, file);
+	task_file_handle_t* hdl = proc_get_fhandle(proc, file);
 
 	if (hdl == NULL ) {
 		return (0);
@@ -222,7 +223,7 @@ int32_t swi_close(int file) {
 		hdl->data = NULL;
 	}
 
-	task_rem_fhandle(task, hdl);
+	proc_rem_fhandle(proc, hdl);
 
 	kfree((void*) hdl);
 
@@ -230,13 +231,13 @@ int32_t swi_close(int file) {
 }
 
 int32_t swi_open(char *name, int flags, int mode) {
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 
 	if (!is_valid_user_addr(name)) {
 		return (-1);
 	}
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
@@ -259,14 +260,14 @@ int32_t swi_open(char *name, int flags, int mode) {
 
 	swi_info("Open %s [Flags 0x%x]", name, flags);
 
-	if (fs_open((uint8_t*) &task->uuid, sizeof(TASK_UUID), (uint8_t*) name,
+	if (fs_open((uint8_t*) &proc->tee_context.uuid, sizeof(TASK_UUID), (uint8_t*) name,
 			strlen(name), flags, mode, hdl->data) != 0) {
 		goto error;
 	}
 
-	hdl->user_fd = task_get_next_fd(task);
+	hdl->user_fd = proc_get_next_fd(proc);
 
-	task_add_fhandle(task, hdl);
+	proc_add_fhandle(proc, hdl);
 
 	return (hdl->user_fd);
 
@@ -281,13 +282,13 @@ int32_t swi_open(char *name, int flags, int mode) {
 }
 
 int32_t swi_sbrk(int32_t incr) {
-	task_t* task = get_current_task();
+	struct user_process_t *proc = get_current_thread()->process;
 
-	if (task == NULL ) {
+	if (proc == NULL ) {
 		kpanic();
 	}
 
-	uint32_t heap = (uint32_t) task->vheap;
+	uint32_t heap = (uint32_t) proc->vheap;
 	int32_t tmp_incr = incr;
 	uint32_t left_on_page = 0xFFF - (heap & 0xFFF);
 	kernel_mem_info_t mem_info;
@@ -314,7 +315,7 @@ int32_t swi_sbrk(int32_t incr) {
 
 		mem_info.paddr = physical_page_addr;
 		mem_info.vaddr = virtual_page_addr;
-		if (map_memory_v(task->vuserPD, &mem_info) != 0) {
+		if (map_memory_v(proc->vuserPD, &mem_info) != 0) {
 			kpanic();
 		}
 
@@ -322,15 +323,15 @@ int32_t swi_sbrk(int32_t incr) {
 		heap += 0x1000;
 	}
 
-	task->vheap = (uintptr_t) ((uint32_t) task->vheap + incr);
+	proc->vheap = (uintptr_t) ((uint32_t) proc->vheap + incr);
 
-	dump_mmu(0x0, 0x20000, task->vuserPD);
+	dump_mmu(0x0, 0x20000, proc->vuserPD);
 
-	main_debug("VHEAP: 0x%x INCR: 0x%x", task->vheap, incr);
+	main_debug("VHEAP: 0x%x INCR: 0x%x", proc->vheap, incr);
 
 	return (0);
 }
 
 uint32_t swi_get_pid() {
-	return (get_current_task_id());
+	return (get_current_process_id());
 }

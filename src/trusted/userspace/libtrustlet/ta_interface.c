@@ -91,4 +91,8 @@ void __ta_main() {
 	TA_DestroyEntryPoint();
 }
 
+int main() {
+	__ta_main();
+	return 0;
+}
 

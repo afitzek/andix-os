@@ -87,7 +87,7 @@ uint32_t map_atags(uintptr_t phys) {
 	vmm_debug("Mapping ATAGS @ 0x%x", section_description.vaddr);
 
 	if (map_kernel_memory(&section_description) != 0) {
-		return ((uint32_t)virt_to_phys(phys));
+		return ((uint32_t)v_to_p(phys));
 	}
 
 	return (section_description.vaddr + ((uint32_t) phys & 0xFFFFF));
@@ -256,23 +256,40 @@ void set_kernel_table(uint32_t* table) {
 /**
  * Translate virtual to a physical address
  * @param ptr The virtual address to translate
- * @return The physical address < 0xFFF on failure
+ * @return non-0 if translation successful
+ */
+int mmu_translate(void *va, uint32_t *pa) {
+	uint32_t par;
+	__asm__ __volatile__(						// B4-1748
+			"MCR p15, 0, %1, c7, c8, 1\n"		// ATS1CPW, PL1 write translation
+			"ISB\n"								// Ensure completion of the MCR write to CP15
+			"MRC p15, 0, %0, c7, c4, 0":		// PAR, Physical address register
+			"=r" (par): "r" (va):"memory", "cc");
+
+	// B4-1664 describes the PAR contents. Bit0 is 1 in case of error, 0 on success.
+	// Bits[6:1] describe the fault, the rest is reserved/unknown
+	if (par & 0x1) {
+		vmm_debug("Failed to translate v (0x%x) to p. PAR 0x%x", va, par);
+		if (pa)
+			*pa = par & 0x7F;		// return the fault code
+		return 0;
+	}
+	if (pa)
+		*pa = (par & 0xFFFFF000) + ((uint32_t) va & 0xFFF);
+	return 1;
+}
+
+/**
+ * Translates virtual to physical, but is less reliable on translation errors.
+ * Kept for compatibility.
+ * @param ptr
+ * @return physical address or NULL on error.
  */
 void* v_to_p(void* ptr) {
-	uint32_t addr;
-	//vmm_debug("Translating v (0x%x)", ptr);
-	__asm__ __volatile__(
-			"MCR p15, 0, %1, c7, c8, 1\n"
-			"MRC p15, 0, %0, c7, c4, 0":
-			"=r" (addr): "r" (ptr):"memory", "cc");
-
-	if (addr < 0xFF) {
-		vmm_debug("Failed to translate v (0x%x) to p", ptr);
-	}
-
-	addr = (addr & 0xFFFFF000) + ((uint32_t) ptr & 0xFFF);
-
-	return ((void*) addr);
+	uint32_t pa;
+	if (mmu_translate(ptr, &pa))
+		return (void*) pa;
+	return NULL;
 }
 
 /**
