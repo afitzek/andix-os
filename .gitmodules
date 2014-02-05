@@ -9,7 +9,7 @@
 	url = https://github.com/llvm-mirror/llvm.git
 [submodule "extern/binutils"]
 	path = extern/binutils
-	url = https://gnu.googlesource.com/binutils
+	url = git://sourceware.org/git/binutils-gdb.git
 [submodule "extern/compiler-rt"]
 	path = extern/compiler-rt
 	url = https://github.com/llvm-mirror/compiler-rt.git
@@ -19,3 +19,9 @@
 [submodule "extern/tropicssl"]
 	path = extern/tropicssl
 	url = git://gitorious.org/tropicssl/tropicssl.git
+[submodule "extern/gcc"]
+	path = extern/gcc
+	url = https://gnu.googlesource.com/gcc
+[submodule "extern/gdb"]
+	path = extern/gdb
+	url = extern/binutils

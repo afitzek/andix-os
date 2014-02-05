@@ -33,9 +33,9 @@ tool_clean: tool_packer_clean tool_scripts_clean
 # Linux Build targets
 ####
 
-linux_builds: linux_modules_build linux_serv_daemon_build linux_app_lib_build linux_app_daemon_build linux_app_build linux_enc_app_build linux_tz_test_app_build
+linux_builds: linux_modules_build linux_serv_daemon_build linux_app_lib_build linux_rsa_engine_build linux_app_daemon_build linux_app_build linux_enc_app_build linux_tz_test_app_build linux_rsa_app_build linux_rsa_engine_test_build
 
-linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean linux_app_daemon_clean linux_app_clean linux_enc_app_clean linux_tz_test_app_clean
+linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean linux_rsa_engine_clean linux_app_daemon_clean linux_app_clean linux_enc_app_clean linux_tz_test_app_clean linux_rsa_app_clean linux_rsa_engine_test_clean
 
 ####
 
@@ -43,9 +43,9 @@ linux_clean: linux_modules_clean linux_serv_daemon_clean linux_app_lib_clean lin
 # TZ Build targets
 ####
 
-tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_sample_build tz_manager_build tz_kernel_build
+tz_builds: tz_newlib_c_build tz_tee_runtime_build tz_sample_build tz_manager_build tz_rsa_build tz_kernel_build 
 	
-tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_sample_clean tz_manager_clean tz_kernel_clean	
+tz_clean: tz_newlib_c_clean tz_tee_runtime_clean tz_sample_clean tz_manager_clean tz_rsa_clean tz_kernel_clean 
 	
 ####	
 	
@@ -185,6 +185,38 @@ tz_sample_pdfdoc:
 	@$(make-command) $(TZ_USER_SAMPLE_SRC) pdfdoc
 	$(sep-command)
 
+####
+
+####
+# Andix TZ RSA Trustlet
+####
+
+TZ_TEE_RSA = ANDIX TZ RSA
+
+tz_rsa_build:
+	$(build-num)
+	$(start-build-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_RSA_SRC)
+	$(sep-command)
+
+tz_rsa_clean:
+	$(start-clean-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_RSA_SRC) clean
+	$(sep-command)
+
+tz_rsa_doc:
+	$(start-build-doc-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER_RSA_SRC) doc
+	$(sep-command)
+	
+tz_RSA_pdfdoc:
+	$(start-build-pdfdoc-command) $(TZ_TEE_RSA)
+	$(sep-command)
+	@$(make-command) $(TZ_USER__SRC) pdfdoc
+	$(sep-command)
 
 ####
 
@@ -371,6 +403,37 @@ linux_enc_app_clean:
 	@$(make-command) $(NORM_US_APP_ENC_SRC) clean
 	$(sep-command)
 
+LINUX_RSA_APP = ANDIX LINUX RSA APPLICATION
+
+linux_rsa_app_build: linux_app_lib_build
+	$(build-num)
+	$(start-build-command) $(LINUX_RSA_APP)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_RSA_SRC)
+	$(sep-command)
+
+linux_rsa_app_clean:
+	$(start-clean-command) $(LINUX_RSA_APP)
+	$(sep-command)
+	@$(make-command) $(NORM_US_APP_RSA_SRC) clean
+	$(sep-command)
+
+
+LINUX_RSA_ENGINE_TEST = ANDIX LINUX RSA ENGINE TEST
+
+linux_rsa_engine_test_build: 
+	$(build-num)
+	$(start-build-command) $(LINUX_RSA_ENGINE_TEST)
+	$(sep-command)
+	@$(make-command) $(NORM_US_RSA_ENGINE_TEST_SRC)
+	$(sep-command)
+
+linux_rsa_engine_test_clean:
+	$(start-clean-command) $(LINUX_RSA_ENGINE_TEST)
+	$(sep-command)
+	@$(make-command) $(NORM_US_RSA_ENGINE_TEST_SRC) clean
+	$(sep-command)
+
 ####
 
 ####
@@ -405,6 +468,28 @@ linux_app_lib_pdfdoc:
 	$(sep-command)
 
 ####
+
+####
+# Andix openssl rsa engine
+####
+
+LINUX_RSA_ENGINE_LIB = ANDIX OPENSSL RSA ENGINE
+
+linux_rsa_engine_build: linux_app_lib_build
+	$(build-num)
+	$(start-build-command) $(LINUX_RSA_ENGINE_LIB)
+	$(sep-command)
+	@$(make-command) $(NORM_US_RSA_ENGINE_SRC)
+	$(sep-command)
+
+linux_rsa_engine_clean:
+	$(start-clean-command) $(LINUX_RSA_ENGINE_LIB)
+	$(sep-command)
+	@$(make-command) $(NORM_US_RSA_ENGINE_SRC) clean
+	$(sep-command)
+
+####
+
 
 .PHONY: mkdirs
 mkdirs: mkdeploydir mkbuilddir

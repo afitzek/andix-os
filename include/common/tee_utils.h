@@ -38,6 +38,6 @@
 #ifndef TEE_UTILS_H_
 #define TEE_UTILS_H_
 
-int uuid_parse(const char *in, TEEC_UUID* uuid);
+int TEE_uuid_parse(const char *in, TEEC_UUID* uuid);
 
 #endif /* TEE_UTILS_H_ */
