@@ -73,7 +73,6 @@ int preProcessParameters(TEEC_Operation* source, TEECOM_Operation* target) {
 			break;
 		case TEEC_VALUE_INPUT:
 		case TEEC_VALUE_INOUT:
-		case TEEC_VALUE_OUTPUT:
 			target->params[pidx].value.a =
 					source->params[pidx].value.a;
 			target->params[pidx].value.b =

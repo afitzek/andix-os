@@ -1,4 +1,4 @@
-#include <common/typedefs.h>
+#include <communication_types.h>
 
 typedef uint32_t mutex_t;
 typedef uint32_t sem_t;
