@@ -231,8 +231,9 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session* session, uint32_t commandID,
 
 	processComm();
 
-	if (processParameters(&space->params.invokeCommand.operation,
-			operation) != TEEC_SUCCESS) {
+	//processParameters(&space->params.invokeCommand.operation, operation)
+	if (postProcessParameters(operation, &space->params.invokeCommand.operation)
+			 != TEEC_SUCCESS) {
 			if (returnOrigin != NULL ) {
 				(*returnOrigin) = TEEC_ORIGIN_COMMS;
 			}
@@ -245,7 +246,7 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session* session, uint32_t commandID,
 	}
 	res = space->ret;
 
-	postProcessParameters(operation, &space->params.invokeCommand.operation);
+	//postProcessParameters(operation, &space->params.invokeCommand.operation);
 	unlockComm();
 
 	return (res);
